@@ -14,10 +14,6 @@ ITItime = 1;
 firstTime =1;
 blockNum = 0;
 
-dataDir = 'C:\PostDoc Docs\Ca Imaging Project\Cmp_Timing_Files'; % save dir for timing files
-timeSave = datestr(now,'yyyymmddHHMMSS');
-indentString = 'RF_mapping_';
-
 %Stimulus
 %width = 10; % in degrees visual angle
 widthInPix = degreeVisualAngle2Pixels(1,width);
@@ -147,25 +143,25 @@ phaseincrement = (cyclespersecond * 360) * ifi;
 
 while ~KbCheck
     
-    AnalogueOutEvent(daq, 'TRIAL_START');
+     AnalogueOutEvent(daq, 'TRIAL_START');
     stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_START');
     
     %randomizes the condition order
-    cndOrder = datasample(1:noOfPositions,noOfPositions,'Replace', false);
-    
-    % send out condition order to 2P computer and CmpEventFile
+   cndOrder = datasample(1:noOfPositions,noOfPositions,'Replace', false);
+   
+   % send out condition order to 2P computer and CmpEventFile
     AnalogueOutEvent(daq, 'PARAM_START');
-    stimCmpEvents(end+1,:)= addCmpEvents('PARAM_START');
-    
-    for i=1:length(cndOrder)
-        AnalogueOutCode(daq, cndOrder(i)); % comdition num
+        stimCmpEvents(end+1,:)= addCmpEvents('PARAM_START');
+        
+        for i=1:length(cndOrder)
+             AnalogueOutCode(daq, cndOrder(i)); % comdition num
         stimCmpEvents(end+1,:)= addCmpEvents(cndOrder(i));
-    end
+        end
     
-    AnalogueOutEvent(daq, 'PARAM_END');
-    stimCmpEvents(end+1,:)= addCmpEvents('PARAM_END');
-    %      cndOrder = 1:noOfPositions; % for testing purposes
-    %     cndOrder = ones(noOfPositions)*54;
+         AnalogueOutEvent(daq, 'PARAM_END');
+        stimCmpEvents(end+1,:)= addCmpEvents('PARAM_END');
+%      cndOrder = 1:noOfPositions; % for testing purposes
+%     cndOrder = ones(noOfPositions)*54;     
     
     for stim =1:length(cndOrder) % runs through all stims
         dstRect = OffsetRect(stimRect, relPostitonsVector{1,cndOrder(stim)}(1), relPostitonsVector{1,cndOrder(stim)}(2)); % chooses location based on random draw of cndOrder
@@ -175,36 +171,24 @@ while ~KbCheck
             %create auxParameters matrix
             propertiesMat = [phase, freqPix, sigma, contrast, aspectRatio, 0, 0 ,0];
             
-            AnalogueOutEvent(daq, 'STIM_ON');
-            stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
             Screen('DrawTexture', windowPtr, gabortex, [], dstRect , orientation, [], [], [], [], [], propertiesMat' );
             
             % Flip to the screen
-            AnalogueOutEvent(daq, 'SCREEN_REFRESH');
-            stimCmpEvents(end+1,:)= addCmpEvents('SCREEN_REFRESH');
-            Screen('Flip', windowPtr);
+            Screen('Flip', windowPtr); 
             
             % Abort requested? Test for keypress:
             if KbCheck
                 break;
             end
-            AnalogueOutEvent(daq, 'STIM_OFF');
-            stimCmpEvents(end+1,:)= addCmpEvents('STIM_OFF');
             
         end
         % Abort requested? Test for keypress:
         if KbCheck
             break;
         end
-        AnalogueOutEvent(daq, 'TRIAL_END');
-        stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_END');
-        
-        WaitSecs(ITItime); % wait ITI time
     end
+    
 end
-
-%% save things before close
-saveCmpEventFile(stimCmpEvents, dataDir, indentString, timeSave);
 
 sca;
 

@@ -51,6 +51,5 @@ end
 % plot(rawEventData(:,1),rawEventData(:,2));
 % hold on
 % text(eventArray(:,1), eventArrayVoltage(:,2), num2str(eventArray(:,2)));
-% 
 
 end

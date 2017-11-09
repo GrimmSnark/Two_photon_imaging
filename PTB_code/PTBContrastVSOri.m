@@ -10,6 +10,7 @@ sca;
 % Should not change %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 dataDir = 'C:\PostDoc Docs\Ca Imaging Project\PTB_Timing_Files\'; % save dir for timing files
 timeSave = datestr(now,'yyyymmddHHMMSS');
+indentString = 'ContrstOrient_';
 
 stimTime = 1; %in s
 ITItime = 1;
@@ -176,8 +177,7 @@ while ~KbCheck
 end
 
 %% save things before close
-stimCmpEvents = stimCmpEvents(2:end,:);
-save([dataDir 'ContrstOrient_' timeSave], 'stimCmpEvents');
+ saveCmpEventFile(stimCmpEvents, dataDir, indentString, timeSave);
 
 % Clear screen
 sca;
