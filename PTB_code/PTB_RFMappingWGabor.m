@@ -10,7 +10,8 @@ sca;
 
 % Should not change %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 stimTime = 1; %in s
-ITItime = 1;
+ITItime = 1; % intertrial time
+ISItime = 1; % interstim time
 firstTime =1;
 blockNum = 0;
 
@@ -145,6 +146,10 @@ phaseincrement = (cyclespersecond * 360) * ifi;
 
 %% Start stim presentation
 
+% trigger image scan start
+DaqDConfigPort(daq,0,0);
+err = DigiOut(daq, 0, 255, 0.1);
+
 while ~KbCheck
     
     AnalogueOutEvent(daq, 'TRIAL_START');
@@ -196,11 +201,13 @@ while ~KbCheck
         if KbCheck
             break;
         end
-        AnalogueOutEvent(daq, 'TRIAL_END');
-        stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_END');
         
-        WaitSecs(ITItime); % wait ITI time
+        WaitSecs(ISItime); % wait ITI time
     end
+    
+    WaitSecs(ITItime); % wait ITI time
+    AnalogueOutEvent(daq, 'TRIAL_END');
+    stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_END');
 end
 
 %% save things before close

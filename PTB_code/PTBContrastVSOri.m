@@ -98,6 +98,10 @@ phaseincrement = (cyclespersecond * 360) * ifi;
 %% START STIM PRESENTATION
 counter =0;
 
+% trigger image scan start
+DaqDConfigPort(daq,0,0);
+err = DigiOut(daq, 0, 255, 0.1);
+
 while ~KbCheck
     counter = counter+1;
     
@@ -177,7 +181,7 @@ while ~KbCheck
 end
 
 %% save things before close
- saveCmpEventFile(stimCmpEvents, dataDir, indentString, timeSave);
+saveCmpEventFile(stimCmpEvents, dataDir, indentString, timeSave);
 
 % Clear screen
 sca;
