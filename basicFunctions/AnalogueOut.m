@@ -4,6 +4,6 @@ function err = AnalogueOut(daq, port, signal, waitTime)
 
 err = DaqAOut(daq,port,signal);
 WaitSecs(waitTime);
-err = DaqAOut(daq,port,signal);
+err = DaqAOut(daq,port,0);
 
 end
