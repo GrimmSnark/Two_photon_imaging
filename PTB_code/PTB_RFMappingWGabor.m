@@ -165,6 +165,7 @@ while ~KbCheck
     for i=1:length(cndOrder)
         AnalogueOutCode(daq, cndOrder(i)); % comdition num
         stimCmpEvents(end+1,:)= addCmpEvents(cndOrder(i));
+        WaitSecs(0.001);
     end
     
     AnalogueOutEvent(daq, 'PARAM_END');

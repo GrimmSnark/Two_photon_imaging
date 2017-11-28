@@ -134,8 +134,10 @@ while ~KbCheck
         stimCmpEvents(end+1,:)= addCmpEvents('PARAM_START');
         AnalogueOutCode(daq, blockNum); % block num
         stimCmpEvents(end+1,:)= addCmpEvents(blockNum);
+        WaitSecs(0.001);
         AnalogueOutCode(daq, cndOrder(trialCnd)); % condition num
         stimCmpEvents(end+1,:)= addCmpEvents(cndOrder(trialCnd));
+        WaitSecs(0.001);
         AnalogueOutEvent(daq, 'PARAM_END');
         stimCmpEvents(end+1,:)= addCmpEvents('PARAM_END');
         
