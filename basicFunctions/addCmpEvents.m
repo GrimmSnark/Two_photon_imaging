@@ -9,7 +9,7 @@ if isnumeric(evnt)
 else
     codes = prairieCodes();
     % find voltage level equal to string event
-    timestampEvent(1,2) = find(strcmp(string, codes), 1);
+    timestampEvent(1,2) = find(strcmp(evnt, codes), 1);
     
 end
 end

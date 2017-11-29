@@ -15,9 +15,10 @@ ISItime = 1; % interstim time
 firstTime =1;
 blockNum = 0;
 
-dataDir = 'C:\PostDoc Docs\Ca Imaging Project\Cmp_Timing_Files'; % save dir for timing files
+dataDir = 'C:\PostDoc Docs\Ca Imaging Project\PTB_Timing_Files\'; % save dir for timing files
 timeSave = datestr(now,'yyyymmddHHMMSS');
 indentString = 'RF_mapping_';
+stimCmpEvents = [1 1] ;
 
 %Stimulus
 %width = 10; % in degrees visual angle
@@ -194,16 +195,25 @@ while ~KbCheck
             if KbCheck
                 break;
             end
-            AnalogueOutEvent(daq, 'STIM_OFF');
-            stimCmpEvents(end+1,:)= addCmpEvents('STIM_OFF');
             
         end
+        
+        
+        Screen('Flip', windowPtr);
+        AnalogueOutEvent(daq, 'STIM_OFF');
+        stimCmpEvents(end+1,:)= addCmpEvents('STIM_OFF');
+        
         % Abort requested? Test for keypress:
         if KbCheck
             break;
         end
         
         WaitSecs(ISItime); % wait ITI time
+        
+    end
+    
+    if KbCheck
+        break;
     end
     
     WaitSecs(ITItime); % wait ITI time

@@ -36,9 +36,9 @@ end
 eventArrayVoltageMean = [rawEventData(eventDataLoc+1,1) mean(eventArrayVoltageMean,2)];
 
 % Uncomment to visualize the peak detection from raw signal...
-plot(rawEventData(:,1),rawEventData(:,2));
-hold on
-scatter(eventArrayVoltage(:,1), eventArrayVoltage(:,2), 'r');
+% plot(rawEventData(:,1),rawEventData(:,2));
+% hold on
+% scatter(eventArrayVoltage(:,1), eventArrayVoltage(:,2), 'r');
 
 % prep Event array with the timepoints
 eventArray(:,1) = eventArrayVoltage(:,1);
