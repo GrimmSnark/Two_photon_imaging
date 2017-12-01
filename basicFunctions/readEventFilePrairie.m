@@ -28,12 +28,12 @@ eventDataDirvative = gradient(rawEventData(:,2));
 [~, eventDataLoc]= findpeaks(eventDataDirvative, 'MinPeakHeight', 0.002 , 'MinPeakDistance', 10);
 
 eventArrayVoltage = [rawEventData(eventDataLoc+1,1) rawEventData(eventDataLoc+1,2)];
-
-for i =1:waveAveSample
-eventArrayVoltageMean(:,i) = rawEventData(eventDataLoc+1+i,2);
-end
-
-eventArrayVoltageMean = [rawEventData(eventDataLoc+1,1) mean(eventArrayVoltageMean,2)];
+% 
+% for i =1:waveAveSample
+% eventArrayVoltageMean(:,i) = rawEventData(eventDataLoc+1+i,2);
+% end
+% 
+% eventArrayVoltageMean = [rawEventData(eventDataLoc+1,1) mean(eventArrayVoltageMean,2)];
 
 % Uncomment to visualize the peak detection from raw signal...
 % plot(rawEventData(:,1),rawEventData(:,2));
@@ -50,8 +50,8 @@ errorLimit = Prairie.std;
 for i=1:length(eventArrayVoltage)
     
     tempLevel = 0;
-%     tempLevel=Prairie.VoltageLevels((eventArrayVoltage(i,2)>= Prairie.VoltageLevels(:,2)-errorLimit &  eventArrayVoltage(i,2) <=Prairie.VoltageLevels(:,2)+errorLimit),1);
-     tempLevel=Prairie.VoltageLevels((eventArrayVoltage(i,2)>= Prairie.VoltageLevels(:,2)-errorLimit &  eventArrayVoltageMean(i,2) <=Prairie.VoltageLevels(:,2)+errorLimit),1);
+     tempLevel=Prairie.VoltageLevels((eventArrayVoltage(i,2)>= Prairie.VoltageLevels(:,2)-errorLimit &  eventArrayVoltage(i,2) <=Prairie.VoltageLevels(:,2)+errorLimit),1);
+%     tempLevel=Prairie.VoltageLevels((eventArrayVoltage(i,2)>= Prairie.VoltageLevels(:,2)-errorLimit &  eventArrayVoltageMean(i,2) <=Prairie.VoltageLevels(:,2)+errorLimit),1);
 
     counter =1;
     while isempty(tempLevel)

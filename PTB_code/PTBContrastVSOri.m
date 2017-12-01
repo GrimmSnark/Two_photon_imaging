@@ -105,14 +105,16 @@ err = DigiOut(daq, 0, 255, 0.1);
 while ~KbCheck
     counter = counter+1;
     
-    AnalogueOutEvent(daq, 'TRIAL_START');
-    stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_START');
-    
     % randomizes the order of the conditions for this block
     cndOrder = datasample(1:numCnd,numCnd,'Replace', false);
     blockNum = blockNum+1;
     
     for trialCnd = 1:length(cndOrder)
+        
+        
+        AnalogueOutEvent(daq, 'TRIAL_START');
+        stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_START');
+        
         
         % Get trial cnds
         trialParams = possibleComb(:,cndOrder(trialCnd))';
@@ -142,7 +144,7 @@ while ~KbCheck
         stimCmpEvents(end+1,:)= addCmpEvents('PARAM_END');
         
         
-        
+        stimOnFlag =1;
         for frameNo =1:totalNumFrames
             % Increment phase by cycles/s:
             phase = phase + phaseincrement;
@@ -151,8 +153,13 @@ while ~KbCheck
             
             % draw grating on screen
             %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
-            AnalogueOutEvent(daq, 'STIM_ON');
-            stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
+            
+            if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
+                AnalogueOutEvent(daq, 'STIM_ON');
+                stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
+                stimOnFlag = 0;
+            end
+            
             Screen('DrawTexture', windowPtr, gratingid(constrastNo), [], dstRect , Angle(angleNo), [], [], [], [], [], propertiesMat' );
             
             % Flip to the screen
