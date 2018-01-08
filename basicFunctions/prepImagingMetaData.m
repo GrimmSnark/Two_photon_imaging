@@ -29,7 +29,9 @@ experimentStructure.date = extractFromStruct(imagingStructRAW, 0, [], 'PVScan', 
 
 experimentStructure.absoluteFrameTimes = extractFromStruct(imagingStructRAW, 1, 3, 'PVScan', 'Sequence', 'Frame', 'Attributes', 'absoluteTime');
 experimentStructure.relativeFrameTimes = extractFromStruct(imagingStructRAW, 1, 3, 'PVScan', 'Sequence', 'Frame', 'Attributes', 'relativeTime');
+experimentStructure.voltageFileAbsoluteTime = extractFromStruct(imagingStructRAW, 1, [], 'PVScan', 'Sequence', 'VoltageRecording', 'Attributes', 'absoluteTime');
 experimentStructure.filenamesFrame = extractFromStruct(imagingStructRAW, 0, 3, 'PVScan', 'Sequence', 'Frame', 'File', 'Attributes', 'filename');
+
 
 % imagingData = bfopen([folderFilepathPrairie experimentStructureImaging.filenames{1}]);
 %

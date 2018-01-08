@@ -34,6 +34,10 @@ if ~isempty(listEntry) % if you want to get data from a list
         end
     end
     
+    if isNumeric
+        a = cell2mat(a);
+    end
+    
 else % if there is no list
     a= eval(structString);
     
@@ -42,7 +46,4 @@ else % if there is no list
     end
 end
 
-if isNumeric
-   a = cell2mat(a); 
-end
 end
