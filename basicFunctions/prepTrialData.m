@@ -1,4 +1,4 @@
-function experimentStructure = prepTrialData(dataFilepathPrairie, checkFile, dataFilepathPTB, isRFmap)
+function experimentStructure = prepTrialData(experimentStructure, dataFilepathPrairie, checkFile, dataFilepathPTB, isRFmap)
 % loads and preprocesses the prairie event data into the experiment
 % structure, will all check consistency between the prairie file and the
 % PTB event file
@@ -70,7 +70,7 @@ if isempty(check) % if no disputes
             end
             
             nonEssentialIndStart = find(findEvents('PARAM_END',rawTrials{i,1},codes))+1; % gets the index for the event just after PARAM_END
-            nonEssentialIndEnd = find(findEvents('TRIAL_END',rawTrials{i,1},codes))-1; % gets the index for the event just before TRIAL_END
+            nonEssentialIndEnd = find(findEvents('TRIAL_END',rawTrials{i,1},codes)); % gets the index for TRIAL_END
             
             sizeInd = nonEssentialIndEnd-nonEssentialIndStart+1; % gets length of vector to come
             
@@ -107,7 +107,7 @@ else % if any disputes
 end
 
 %% build trial condition structure
-experimentStructure.prairiePath = ataFilepathPrairie(1:find(dataFilepathPrairie=='\',1,'last'));
+experimentStructure.prairiePath = dataFilepathPrairie(1:find(dataFilepathPrairie=='\',1,'last'));
 experimentStructure.prairieEventPath = dataFilepathPrairie;
 experimentStructure.rawTrials = rawTrials;
 experimentStructure.validTrial = validTrial;

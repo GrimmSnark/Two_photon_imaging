@@ -184,12 +184,15 @@ while ~KbCheck
             %create auxParameters matrix
             propertiesMat = [phase, freqPix, sigma, contrast, aspectRatio, 0, 0 ,0];
             
+
+            Screen('DrawTexture', windowPtr, gabortex, [], dstRect , orientation, [], [], [], [], [], propertiesMat' );
+            
+            
             if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
                 AnalogueOutEvent(daq, 'STIM_ON');
                 stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
                 stimOnFlag = 0;
             end
-            Screen('DrawTexture', windowPtr, gabortex, [], dstRect , orientation, [], [], [], [], [], propertiesMat' );
             
             % Flip to the screen
             AnalogueOutEvent(daq, 'SCREEN_REFRESH');

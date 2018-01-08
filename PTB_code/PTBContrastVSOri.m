@@ -154,13 +154,13 @@ while ~KbCheck
             % draw grating on screen
             %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
             
-            if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
+            Screen('DrawTexture', windowPtr, gratingid(constrastNo), [], dstRect , Angle(angleNo), [], [], [], [], [], propertiesMat' );
+            
+             if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
                 AnalogueOutEvent(daq, 'STIM_ON');
                 stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
                 stimOnFlag = 0;
-            end
-            
-            Screen('DrawTexture', windowPtr, gratingid(constrastNo), [], dstRect , Angle(angleNo), [], [], [], [], [], propertiesMat' );
+             end
             
             % Flip to the screen
             AnalogueOutEvent(daq, 'SCREEN_REFRESH');
