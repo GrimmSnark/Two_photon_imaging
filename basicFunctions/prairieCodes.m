@@ -1,4 +1,8 @@
 function codes = prairieCodes()
+% This function contains the event identities for the voltage output codes.
+% Fill in whatever codes you need in for your experiments in the blanks.
+% For now it is very simple but will be expanded in the future. DO NOT
+% change any codes already in place. 
 
 codes{1,1}= [];
 codes{2,1}= [];

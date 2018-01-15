@@ -1,3 +1,5 @@
+% wrapper script for reading all the experiment and imaging meta data
+
 experimentStructure =[];
 dataFilepathPrairie = 'C:\PostDoc Docs\Ca Imaging Project\Praire\contrast1\Contrast-000_Cycle00001_VoltageRecording_001.csv';
 checkFile =0;
