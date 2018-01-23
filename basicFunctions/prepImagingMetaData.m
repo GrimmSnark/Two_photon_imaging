@@ -20,6 +20,7 @@ if exist(filepath) ==7
     end
 else
     dataFilepathPrairie = filepath;
+    experimentStructure.prairiePath = dataFilepathPrairie(1:find(dataFilepathPrairie=='\',1,'last'));
 end
 
 imagingStructRAW = xml2struct(dataFilepathPrairie);

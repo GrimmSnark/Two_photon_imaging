@@ -5,7 +5,7 @@ syncData(1).checkFile =1;
 syncData(1).dataFilepathPTB ='C:\PostDoc Docs\Ca Imaging Project\SyncScreen\ScreenSync_20180123093448.mat';
 syncData(1).isRFmap =0;
 
-%%
+%% to add to the database
 % syncData(end+1).dataFilepathPrairie = 'C:\PostDoc Docs\Ca Imaging Project\Praire\contrast1\Contrast-000_Cycle00001_VoltageRecording_001.csv';
 % syncData(end+1).checkFile =0;
 % syncData(end+1).dataFilepathPTB =[];
