@@ -13,6 +13,7 @@ function experimentStructure = prepTrialData(experimentStructure, dataFilepathPr
 check =[];
 codes = prairieCodes();
 sizeIndMax =0;
+
 essentialEvents ={'TRIAL_END', 'PARAM_START', 'PARAM_END'};
 essentialEventsNum = stringEvent2Num(essentialEvents, codes);
 
@@ -27,7 +28,7 @@ end
 %% Proceed with trial event segementation
 if isempty(check) % if no disputes
     eventStream = eventArray;
-    eventStream(:,1) = eventStream(:,1)-eventStream(1,1); % zero all timestamps
+    %eventStream(:,1) = eventStream(:,1)-eventStream(1,1); % zero all timestamps
     
     % use trial end events to chunk up into indivdual trials
     endIndx = findEvents('TRIAL_END', eventStream, codes); % get trial start event times
