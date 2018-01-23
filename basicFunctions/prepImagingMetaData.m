@@ -13,8 +13,12 @@ if exist(filepath) ==7
     
     for i =1:length(fileList)
         dataFilepathPrairie = [filepath fileList(i).name];
-        if strcmp(dataFilepathPrairie(1:end-3), experimentStructure.prairieEventPath(1:end-3)) == 0
-            dataFilepathPrairie = dataFilepathPrairie;
+        if isfield(experimentStructure, 'prairieEventPath')
+            if strcmp(dataFilepathPrairie(1:end-3), experimentStructure.prairieEventPath(1:end-3)) == 0
+                dataFilepathPrairie = dataFilepathPrairie;
+                break
+            end
+        else
             break
         end
     end

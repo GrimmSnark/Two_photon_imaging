@@ -10,7 +10,12 @@ data = syncScreenData();
 
 for i = 1:length(data)
     experimentStructure = prepNONTrialData(experimentStructure, data(i).dataFilepathPrairie, data(i).checkFile, data(i).dataFilepathPTB);
-    experimentStructure = prepImagingMetaData(experimentStructure, experimentStructure.prairiePath);
+    %experimentStructure = prepImagingMetaData(experimentStructure, experimentStructure.prairiePath);
+    
+    
+    
+    [experimentStructure, vol]= prepImagingData(experimentStructure.prairiePath);
+    
     
     frameFilepath = [experimentStructure.prairiePath experimentStructure.filenamesFrame{1,1}];
     frame = imread(frameFilepath);
