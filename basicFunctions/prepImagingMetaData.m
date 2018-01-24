@@ -33,7 +33,9 @@ experimentStructure.date = extractFromStruct(imagingStructRAW, 0, [], 'PVScan', 
 
 
 experimentStructure.absoluteFrameTimes = extractFromStruct(imagingStructRAW, 1, 3, 'PVScan', 'Sequence', 'Frame', 'Attributes', 'absoluteTime');
+experimentStructure.absoluteFrameTimes = experimentStructure.absoluteFrameTimes * 1000; % converts the relative times to ms
 experimentStructure.relativeFrameTimes = extractFromStruct(imagingStructRAW, 1, 3, 'PVScan', 'Sequence', 'Frame', 'Attributes', 'relativeTime');
+experimentStructure.relativeFrameTimes = experimentStructure.relativeFrameTimes * 1000; % converts the relative times to ms
 %experimentStructure.voltageFileAbsoluteTime = extractFromStruct(imagingStructRAW, 1, [], 'PVScan', 'Sequence', 'VoltageRecording', 'Attributes', 'absoluteTime');
 experimentStructure.filenamesFrame = extractFromStruct(imagingStructRAW, 0, 3, 'PVScan', 'Sequence', 'Frame', 'File', 'Attributes', 'filename');
 

@@ -41,6 +41,11 @@ rectColorWhite = [1 1 1];
 PsychImaging('PrepareConfiguration');
 [windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, black); %opens screen and sets background to grey
 
+% Get frame rate fro moving patch
+frameRate=Screen('FrameRate',screenNumber);
+
+% Get the number of frames stim needs to be on for
+totalNumFrames = frameRate * stimTime;
 
 %% START STIM PRESENTATION
 
@@ -48,31 +53,34 @@ PsychImaging('PrepareConfiguration');
 DaqDConfigPort(daq,0,0);
 err = DigiOut(daq, 0, 255, 0.1);
 
-WaitSecs(1); % intial wait time
+WaitSecs(5); % intial wait time
 
 while ~KbCheck
     
     disp('Stim On');
-    Screen('FillRect', windowPtr, rectColorWhite, [] );
-    
     AnalogueOutEvent(daq, 'STIM_ON');
     stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
-    Screen('Flip', windowPtr);
     
-    WaitSecs(stimTime);
+    for i =1:totalNumFrames
+        Screen('FillRect', windowPtr, rectColorWhite, [] );
+        Screen('Flip', windowPtr);
+    end
+    
     
     disp('Stim Off');
-    Screen('FillRect', windowPtr, rectColorBlack, [] );
     AnalogueOutEvent(daq, 'STIM_OFF');
     stimCmpEvents(end+1,:)= addCmpEvents('STIM_OFF');
     Screen('Flip', windowPtr);
     
-    WaitSecs(stimTime);
+    for i =1:totalNumFrames
+        Screen('FillRect', windowPtr, rectColorBlack, [] );
+        Screen('Flip', windowPtr);
+    end
     
 end
 
 %% save things before close
- saveCmpEventFile(stimCmpEvents, dataDir, indentString, timeSave);
+saveCmpEventFile(stimCmpEvents, dataDir, indentString, timeSave);
 
 % Clear screen
 sca;

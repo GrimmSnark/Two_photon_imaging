@@ -1,5 +1,5 @@
 function [vol]=imreadBF(datname,zplanes,tframes,channel)
-%[vol]=imreadBF(datname,zplanes,tframes,channel)
+%[vol]=imreadBF(datname,zplannes,tframes,channel)
 %
 %imports images using the BioFormats package
 %you can load multiple z and t slices at once, e.g. zplanes=[1 2 5] loads

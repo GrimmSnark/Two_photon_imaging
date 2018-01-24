@@ -1,3 +1,4 @@
+function prepSyncScreenData()
 % wrapper script for reading all the experiment and imaging meta data
 
 experimentStructure =[];
@@ -10,19 +11,24 @@ data = syncScreenData();
 
 for i = 1:length(data)
     experimentStructure = prepNONTrialData(experimentStructure, data(i).dataFilepathPrairie, data(i).checkFile, data(i).dataFilepathPTB);
-    %experimentStructure = prepImagingMetaData(experimentStructure, experimentStructure.prairiePath);
     
+    [experimentStructure, vol]= prepImagingData(experimentStructure, experimentStructure.prairiePath, data(i).Z_or_TStack);
     
+    for x=1:size(vol, 3)
+        imageMean(x)= mean(mean(vol(:,:,x)));
+        
+    end
     
-    [experimentStructure, vol]= prepImagingData(experimentStructure.prairiePath);
+    onTimes = experimentStructure.eventArray(experimentStructure.eventArray(:,2)==60);
+    offTimes = experimentStructure.eventArray(experimentStructure.eventArray(:,2)==215);
     
-    
-    frameFilepath = [experimentStructure.prairiePath experimentStructure.filenamesFrame{1,1}];
-    frame = imread(frameFilepath);
-    meta=imreadBFmeta(frameFilepath);
-    vol = imreadBF(frameFilepath,1,1:length(experimentStructure.filenamesFrame),1);
-    StackSlider(vol);
-    
+    plot(experimentStructure.relativeFrameTimes,imageMean)
+    xlim(gca ,[0 experimentStructure.relativeFrameTimes(end)]);
+    hold on
+    vline(onTimes, 'g' );
+    vline(offTimes, 'r');
+end
+
 end
 
 
