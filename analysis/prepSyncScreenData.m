@@ -9,7 +9,7 @@ experimentStructure =[];
 
 data = syncScreenData();
 
-for i = 1:length(data)
+for i = 4:length(data)
     experimentStructure = prepNONTrialData(experimentStructure, data(i).dataFilepathPrairie, data(i).checkFile, data(i).dataFilepathPTB);
     
     [experimentStructure, vol]= prepImagingData(experimentStructure, experimentStructure.prairiePath, data(i).Z_or_TStack);
@@ -27,6 +27,10 @@ for i = 1:length(data)
     hold on
     vline(onTimes, 'g' );
     vline(offTimes, 'r');
+    
+    %StackSlider(vol); % will display the stack of images, need to click
+    %greyscale button
+    
 end
 
 end

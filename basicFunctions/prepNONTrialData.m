@@ -6,6 +6,9 @@ function experimentStructure = prepNONTrialData(experimentStructure, dataFilepat
 % flag is set to 1
 % code outputs experiment structure with all the data in it
 
+%% initalise
+check =[];
+
 %% read in events
 
 eventArray = readEventFilePrairie(dataFilepathPrairie, []);
