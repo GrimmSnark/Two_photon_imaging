@@ -5,15 +5,15 @@ function PTB_RFMappingByHandv2(sendOutSignalsFlag, varargin)
 % a grey level of the background screen (0-255) Allows the following
 % commands
 %
-% Esc = ends experiement 
-% up Arrow = moves stim up the screen 
-% down Arrow = moves stim down screen 
-% left Arrow = moves stim left 
-% right Arrow = moves stim right 
-% space Key = toggles stim on and off 
-% enter Key = increases rotation of gabor 
-% back space = decreases rotation of gabor 
-% plus key =increase radius of gabor 
+% Esc = ends experiement
+% up Arrow = moves stim up the screen
+% down Arrow = moves stim down screen
+% left Arrow = moves stim left
+% right Arrow = moves stim right
+% space Key = toggles stim on and off
+% enter Key = increases rotation of gabor
+% back space = decreases rotation of gabor
+% plus key =increase radius of gabor
 % minus ky = decreases radius of gabor
 
 %% set up parameters of stimuli
@@ -83,16 +83,6 @@ end
 PsychDefaultSetup(2); % PTB defaults for setup
 
 screenNumber = max(Screen('Screens')); % makes display screen the secondary one
-% resolution = Screen('Resolution',screenNumber); %% may give weird result, so hard coding for now
-
-% screenCentre(1) = resolution.width/2; % uncomment to check for your setup
-% screenCentre(2) = resolution.height/2;
-screenCentre = [850 650]; % screen centre of Shel 1170 WEIRD, calcualted by physical measurement...
-
-screenStimCentreOffset(1) = degreeVisualAngle2Pixels(1,initialCenter(1));
-screenStimCentreOffset(2) = degreeVisualAngle2Pixels(1,initialCenter(2));
-
-screenStimCentre = screenCentre + screenStimCentreOffset; % screenStimCentre actual refers to the top left corner of the stimulus....bloody PTB nonsense 
 
 %% intial set up of experiment
 
@@ -121,8 +111,18 @@ ifi = Screen('GetFlipInterval', windowPtr);
 % Get the size of the on screen window
 % [screenXpixels, screenYpixels] = Screen('WindowSize', windowPtr); % uncomment for your setup
 
-screenXpixels = 1925; % hard coded cause reasons.. weird screens % comment out for your setup
-screenYpixels = 1525;
+screenXpixels = 1915; % hard coded cause reasons.. weird screens % comment out for your setup
+screenYpixels = 1535;
+
+screenCentre = [0.5 * screenXpixels , 0.5 * screenYpixels]; % screen centre of Shel 1170 WEIRD, calcualted by physical measurement...
+
+screenStimCentreOffset(1) = degreeVisualAngle2Pixels(1,initialCenter(1));
+screenStimCentreOffset(2) = degreeVisualAngle2Pixels(1,initialCenter(2));
+
+screenStimCentre = screenCentre + screenStimCentreOffset; % screenStimCentre actual refers to the top left corner of the stimulus....bloody PTB nonsense
+
+
+
 
 % The avaliable keys to press
 KbName('UnifyKeyNames')
@@ -162,6 +162,7 @@ size = 4;
 bckgrdRangeIndx = 20;
 stimFirstOffFlag =0;
 updateInfo = 0;
+ stimRadius = (stimRect(3,size)/2);
 %%
 
 if sendOutSignalsFlag ==1
@@ -218,12 +219,12 @@ while exitDemo == false
         
     elseif keyCode(plusKey) && size < length(stimeSizeRange) % increase size of stim
         size = size+1;
-        screenStimCentre = screenStimCentre - degreeVisualAngle2Pixels(1,incrementAngle)/2;
         updateInfo = 1;
+        stimRadius = (stimRect(3,size)/2); % for setting actual stim position due to wierd drawing of stim (ie from top left of object)
     elseif keyCode(minusKey) && size > 1 % decrease sie of stim
         size = size-1;
-        screenStimCentre = screenStimCentre + degreeVisualAngle2Pixels(1,incrementAngle)/2;
         updateInfo = 1;
+        stimRadius = (stimRect(3,size)/2);  % for setting actual stim position due to wierd drawing of stim (ie from top left of object)
         
         %     elseif keyCode(leftBracketKey) && bckgrdRangeIndx > 1
         %         bckgrdRangeIndx = bckgrdRangeIndx- 1;
@@ -235,18 +236,17 @@ while exitDemo == false
     
     % We set bounds to make sure our square doesn't go completely off of
     % the screen
-    if screenStimCentre(1) < 0
-        screenStimCentre(1) = 0;
-    elseif screenStimCentre(1) + stimRect(3,size) > screenXpixels
-        screenStimCentre(1) = screenXpixels - stimRect(3,size);
+    if screenStimCentre(1) - stimRadius < 0
+        screenStimCentre(1) = stimRadius;
+    elseif screenStimCentre(1)  + stimRadius > screenXpixels
+        screenStimCentre(1) = screenXpixels - stimRadius;
     end
     
-    if screenStimCentre(2) < 0
-        screenStimCentre(2) = 0;
-    elseif screenStimCentre(2) + stimRect(3,size) > screenYpixels
-        screenStimCentre(2) = screenYpixels - stimRect(3,size);
+    if screenStimCentre(2) - stimRadius < 0
+        screenStimCentre(2) = stimRadius;
+    elseif screenStimCentre(2) + stimRadius > screenYpixels
+        screenStimCentre(2) = screenYpixels - stimRadius;
     end
-    
     
     
     % Increment phase by cycles/s:
@@ -254,11 +254,7 @@ while exitDemo == false
     %create auxParameters matrix
     propertiesMat = [phase, freqPix, sigma(size), contrast, aspectRatio, 0, 0 ,0];
     
-    dstRect = OffsetRect(stimRect(:,size)', screenStimCentre(1), screenStimCentre(2));
-%     dstRect2 =  OffsetRect([0 0 5 5], screenStimCentre(1), screenStimCentre(2));
-%     screenStimCentreActual = screenStimCentre + (stimRect(3,size)/2); % actual stim center
-%        dstRect3 =  OffsetRect([0 0 5 5], screenStimCentreActual(1), screenStimCentreActual(2));
-%     disp(screenStimCentre);
+    dstRect = OffsetRect(stimRect(:,size)', screenStimCentre(1) - stimRadius, screenStimCentre(2) - stimRadius);
     
     if stimOn ==1
         Screen('FillRect', windowPtr, backgrdColGabor);
@@ -286,20 +282,24 @@ while exitDemo == false
         end
     end
     
-    % Flip to the screen
-%     Screen('FillRect', windowPtr, [1 0 0], dstRect2);
-%      Screen('FillRect', windowPtr, [0 1 0], dstRect3);
+
+%     Screen('DrawDots', windowPtr, screenStimCentre, [5], [1 0 0], [] , [], []);    
+%     Screen('DrawDots', windowPtr, [ 0.5 * screenXpixels, screenYpixels]  , [10], [1 0 0], [] , [], []);
+%     Screen('DrawDots', windowPtr, [ screenXpixels, 0.5 * screenYpixels]  , [10], [1 0 0], [] , [], []);  
+%     Screen('DrawDots', windowPtr, [ 0.5 * screenXpixels, 0]  , [10], [1 0 0], [] , [], []);
+%     Screen('DrawDots', windowPtr, [ 0, 0.5 * screenYpixels]  , [10], [1 0 0], [] , [], []);
+  
+    
     vbl  = Screen('Flip', windowPtr, vbl + (waitframes - 0.5) * ifi);
     
     if updateInfo == 1
         
-        screenStimCentreActual = screenStimCentre + (stimRect(3,size)/2); % actual stim center
-        positionInDegrees(1) = pixels2DegreeVisualAngle(1, screenStimCentreActual(1) - screenCentre(1));
-        positionInDegrees(2) = pixels2DegreeVisualAngle(1, screenCentre(2) - screenStimCentreActual(2));
+        positionInDegrees(1) = pixels2DegreeVisualAngle(1, screenStimCentre(1) - screenCentre(1));
+        positionInDegrees(2) = pixels2DegreeVisualAngle(1, screenCentre(2) - screenStimCentre(2));
         
         disp('###########################################');
         disp(['Stim size: ' num2str(stimeSizeRange(size))]);
-        disp(['Stim centre location (in pix): ' num2str(screenStimCentreActual)]);
+        disp(['Stim centre location (in pix): ' num2str(screenStimCentre)]);
         disp(['Stim centre location (in degrees): ' num2str(positionInDegrees)]);
         disp(['Stim orientation: ' num2str(orientation(orientationNo))]);
         disp('###########################################');

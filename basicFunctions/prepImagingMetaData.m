@@ -30,6 +30,7 @@ end
 imagingStructRAW = xml2struct(dataFilepathPrairie);
 
 experimentStructure.date = extractFromStruct(imagingStructRAW, 0, [], 'PVScan', 'Attributes', 'date');
+experimentStructure.scanType = extractFromStruct(imagingStructRAW, 0, 3, 'PVScan', 'PVStateShard', 'PVStateValue', 'Attributes', 'value');
 
 
 experimentStructure.absoluteFrameTimes = extractFromStruct(imagingStructRAW, 1, 3, 'PVScan', 'Sequence', 'Frame', 'Attributes', 'absoluteTime');
@@ -37,6 +38,7 @@ experimentStructure.absoluteFrameTimes = experimentStructure.absoluteFrameTimes 
 experimentStructure.relativeFrameTimes = extractFromStruct(imagingStructRAW, 1, 3, 'PVScan', 'Sequence', 'Frame', 'Attributes', 'relativeTime');
 experimentStructure.relativeFrameTimes = experimentStructure.relativeFrameTimes * 1000; % converts the relative times to ms
 %experimentStructure.voltageFileAbsoluteTime = extractFromStruct(imagingStructRAW, 1, [], 'PVScan', 'Sequence', 'VoltageRecording', 'Attributes', 'absoluteTime');
+
 
 try
     experimentStructure.filenamesFrame = extractFromStruct(imagingStructRAW, 0, 3, 'PVScan', 'Sequence', 'Frame', 'File', 'Attributes', 'filename');

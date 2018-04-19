@@ -1,4 +1,4 @@
-function PTB_RFMappingWGabor(width,stimCenter)
+function PTB_RFMappingWGabor(width,stimCenter,varargin)
 % Visual field mappping script for defining response in recording areas
 % with gabor like patch grid, basically reverse correlation
 % width = gabor size, stimCenter = [x,y] center loction for stimulation in
@@ -7,6 +7,11 @@ function PTB_RFMappingWGabor(width,stimCenter)
 %% set up parameters of stimuli
 clc
 sca;
+
+doNotSendEvents = 0;
+if ~isempty(varargin)
+    doNotSendEvents = 1;
+end
 
 % Should not change %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 stimTime = 1; %in s
@@ -39,13 +44,16 @@ orientation =90;
 
 stimRect = [0 0 widthInPix widthInPix];
 
-% set up DAQ box
-daq =[];
 
-% set up DAQ
-if isempty(daq)
-    clear PsychHID;
-    daq = DaqDeviceIndex([],0);
+if doNotSendEvents ==0
+    % set up DAQ box
+    daq =[];
+    
+    % set up DAQ
+    if isempty(daq)
+        clear PsychHID;
+        daq = DaqDeviceIndex([],0);
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -54,11 +62,15 @@ end
 PsychDefaultSetup(2); % PTB defaults for setup
 
 screenNumber = max(Screen('Screens')); % makes display screen the secondary one
-resolution = Screen('Resolution',screenNumber); %% may give weird result, so hard coding for now
 
-% screenCentre(1) = resolution.width/2;
-% screenCentre(2) = resolution.height/2;
-screenCentre = [910 785]; % screen centre of Shel 1170 WEIRD, calcualted by physical measurement..
+
+% Get the size of the on screen window
+% [screenXpixels, screenYpixels] = Screen('WindowSize', windowPtr); % uncomment for your setup
+
+screenXpixels = 1915; % hard coded cause reasons.. weird screens % comment out for your setup
+screenYpixels = 1535;
+
+screenCentre = [0.5 * screenXpixels , 0.5 * screenYpixels]; % screen centre of Shel 1170 WEIRD, calcualted by physical measurement...
 
 screenStimCentreOffset(1) = degreeVisualAngle2Pixels(1,stimCenter(1));
 screenStimCentreOffset(2) = degreeVisualAngle2Pixels(1,stimCenter(2));
@@ -87,6 +99,11 @@ for i =1: stimGrid(2)/2 % for half the columns
     middleRow{1,i} = [(widthInPix*i) 0];
 end
 
+% fix middle row x offsets
+middleOffsetCell = repmat({[widthInPix/2 0]},1,stimGrid(2)/2); % create offset cell array to center stimuli to account of top left drawing of stimulus location by PTB...
+middleRow = cellfun(@minus,middleRow, middleOffsetCell, 'UniformOutput',false);
+
+
 middleRowN = cellfun(@FrstNeg,fliplr(middleRow), 'UniformOutput',false);
 middleRow = [middleRowN middleRow];
 
@@ -98,6 +115,12 @@ for i = 1:floor(stimGrid(1)/2) % for each row
         
     end
 end
+
+% shift over grid to the right by radius of gabor...so that the gabors
+% touch the center point
+
+rightOffsetCell = repmat({[widthInPix/2 0]},(floor(stimGrid(1)/2)),stimGrid(2)/2); % create offset cell array to center stimuli to account of top left drawing of stimulus location by PTB...
+tempGrid = cellfun(@minus,tempGrid, rightOffsetCell, 'UniformOutput',false);
 
 % make all the quaters with proper signs
 rightGridP = flip(tempGrid,1);
@@ -113,8 +136,13 @@ bottomGrid = [leftGridN rightGridN];
 relPositionsGrid = vertcat(topGrid,middleRow, bottomGrid);
 
 finalPostionsStim = cellfun(@plus,coordinateGrid,relPositionsGrid,'UniformOutput',false);
+finalPostionsStim = flipud(finalPostionsStim);
 
 relPostitonsVector = reshape(finalPostionsStim,1,[]);
+
+offsetCell = repmat({[widthInPix/2 widthInPix/2]},1,108); % create offset cell array to center stimuli to account of top left drawing of stimulus location by PTB...
+
+relPostitonsVector = cellfun(@minus, relPostitonsVector, offsetCell,'UniformOutput',false);
 
 %% intial set up of experiment
 
@@ -144,39 +172,47 @@ totalNumFrames = frameRate * stimTime;
 
 % Compute increment of phase shift per redraw:
 phaseincrement = (cyclespersecond * 360) * ifi;
+disp('Finished prepping');
 
 %% Start stim presentation
 
-% trigger image scan start
-DaqDConfigPort(daq,0,0);
-err = DigiOut(daq, 0, 255, 0.1);
+if doNotSendEvents ==0
+    % trigger image scan start
+    DaqDConfigPort(daq,0,0);
+    err = DigiOut(daq, 0, 255, 0.1);
+end
 
 while ~KbCheck
     
-    AnalogueOutEvent(daq, 'TRIAL_START');
-    stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_START');
+    if doNotSendEvents ==0
+        AnalogueOutEvent(daq, 'TRIAL_START');
+        stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_START');
+    end
     
     %randomizes the condition order
     cndOrder = datasample(1:noOfPositions,noOfPositions,'Replace', false);
     
-    % send out condition order to 2P computer and CmpEventFile
-    AnalogueOutEvent(daq, 'PARAM_START');
-    stimCmpEvents(end+1,:)= addCmpEvents('PARAM_START');
-    
-    for i=1:length(cndOrder)
-        AnalogueOutCode(daq, cndOrder(i)); % comdition num
-        stimCmpEvents(end+1,:)= addCmpEvents(cndOrder(i));
-        WaitSecs(0.001);
+    if doNotSendEvents ==0
+        % send out condition order to 2P computer and CmpEventFile
+        AnalogueOutEvent(daq, 'PARAM_START');
+        stimCmpEvents(end+1,:)= addCmpEvents('PARAM_START');
+        
+        for i=1:length(cndOrder)
+            AnalogueOutCode(daq, cndOrder(i)); % comdition num
+            stimCmpEvents(end+1,:)= addCmpEvents(cndOrder(i));
+            WaitSecs(0.001);
+        end
+        
+        AnalogueOutEvent(daq, 'PARAM_END');
+        stimCmpEvents(end+1,:)= addCmpEvents('PARAM_END');
     end
-    
-    AnalogueOutEvent(daq, 'PARAM_END');
-    stimCmpEvents(end+1,:)= addCmpEvents('PARAM_END');
-    %      cndOrder = 1:noOfPositions; % for testing purposes
-    %     cndOrder = ones(noOfPositions)*54;
+    %            cndOrder = 1:noOfPositions; % for testing purposes
+    %         cndOrder = ones(noOfPositions)*51;
+    %     disp('Got cnd Order');
     
     for stim =1:length(cndOrder) % runs through all stims
         dstRect = OffsetRect(stimRect, relPostitonsVector{1,cndOrder(stim)}(1), relPostitonsVector{1,cndOrder(stim)}(2)); % chooses location based on random draw of cndOrder
-       
+        
         stimOnFlag =1;
         for frameNo =1:totalNumFrames
             % Increment phase by cycles/s:
@@ -184,20 +220,26 @@ while ~KbCheck
             %create auxParameters matrix
             propertiesMat = [phase, freqPix, sigma, contrast, aspectRatio, 0, 0 ,0];
             
-
+            
             Screen('DrawTexture', windowPtr, gabortex, [], dstRect , orientation, [], [], [], [], [], propertiesMat' );
             
-            
-            if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
-                AnalogueOutEvent(daq, 'STIM_ON');
-                stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
-                stimOnFlag = 0;
+            if doNotSendEvents ==0
+                if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
+                    AnalogueOutEvent(daq, 'STIM_ON');
+                    stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
+                    stimOnFlag = 0;
+                end
             end
             
             % Flip to the screen
-            AnalogueOutEvent(daq, 'SCREEN_REFRESH');
-            stimCmpEvents(end+1,:)= addCmpEvents('SCREEN_REFRESH');
+            if doNotSendEvents ==0
+                AnalogueOutEvent(daq, 'SCREEN_REFRESH');
+                stimCmpEvents(end+1,:)= addCmpEvents('SCREEN_REFRESH');
+            end
+            %              Screen('DrawDots', windowPtr, screenStimCentre, [5], [1 0 0], [] , [], []); % Fixation/ screen centre spot
+            
             Screen('Flip', windowPtr);
+            disp(['Displaying Stim No. ' num2str(cndOrder(stim))]);
             
             % Abort requested? Test for keypress:
             if KbCheck
@@ -206,10 +248,11 @@ while ~KbCheck
             
         end
         
-        
         Screen('Flip', windowPtr);
-        AnalogueOutEvent(daq, 'STIM_OFF');
-        stimCmpEvents(end+1,:)= addCmpEvents('STIM_OFF');
+        if doNotSendEvents ==0
+            AnalogueOutEvent(daq, 'STIM_OFF');
+            stimCmpEvents(end+1,:)= addCmpEvents('STIM_OFF');
+        end
         
         % Abort requested? Test for keypress:
         if KbCheck
@@ -225,12 +268,16 @@ while ~KbCheck
     end
     
     WaitSecs(ITItime); % wait ITI time
-    AnalogueOutEvent(daq, 'TRIAL_END');
-    stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_END');
+    if doNotSendEvents ==0
+        AnalogueOutEvent(daq, 'TRIAL_END');
+        stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_END');
+    end
 end
 
 %% save things before close
-saveCmpEventFile(stimCmpEvents, dataDir, indentString, timeSave);
+if doNotSendEvents ==0
+    saveCmpEventFile(stimCmpEvents, dataDir, indentString, timeSave);
+end
 
 sca;
 

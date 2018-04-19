@@ -67,8 +67,7 @@ if ~isempty(listEntry) % if you want to get data from a list
             
             if isNumeric
                 a = cell2mat(a);
-            end
-            
+            end   
     end
     
 else % if there is no list
