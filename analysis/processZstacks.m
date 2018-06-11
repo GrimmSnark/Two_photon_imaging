@@ -7,19 +7,20 @@ experimentStructure =[];
 % analysisChannel = 2;
 saveDir = createSavePath(path2ImagingFolder, 2);
 Z_or_TStack = 1;
+loadMetaData = 1;
 
 %% initalizes Fiji/ImageJ
 % intializeMIJ; % This is now done in wrapper
 
 %% reads in image stack
 try
-    [~, vol]= prepImagingData(experimentStructure, path2ImagingFolder, Z_or_TStack, analysisChannel);
+    [experimentStructure, vol]= prepImagingData(experimentStructure, path2ImagingFolder, Z_or_TStack, loadMetaData,  analysisChannel);
 catch ME % if the channel requested is not present
     switch analysisChannel % trys to read in the other channel
         case 1
-            [~, vol]= prepImagingData(experimentStructure, path2ImagingFolder, Z_or_TStack, 2);
+            [experimentStructure, vol]= prepImagingData(experimentStructure, path2ImagingFolder, Z_or_TStack, 2);
         case 2
-            [~, vol]= prepImagingData(experimentStructure, path2ImagingFolder, Z_or_TStack, 1);
+            [experimentStructure, vol]= prepImagingData(experimentStructure, path2ImagingFolder, Z_or_TStack, 1);
     end
 end
 
@@ -51,6 +52,8 @@ MIJ.selectWindow("Imaging data");
 ij.IJ.saveAs("Tiff", [saveDir  'Registered_stack.tif' ]);
 
 MIJ.closeAllWindows;
+
+save([saveDir 'experimentStructure.mat'], 'experimentStructure');
 
 
 end

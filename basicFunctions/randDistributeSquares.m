@@ -1,4 +1,6 @@
 function [indxOfSquares] = randDistributeSquares(gridSize, minAllowableDistance,maxNumPoints, indxOfSquaresPrev)
+% created for making sparse noise stimulus....
+
 % gridSize = [15 28];
 % minAllowableDistance = 5;
 % maxNumPoints = 12;

@@ -14,7 +14,7 @@ check =[];
 codes = prairieCodes();
 sizeIndMax =0;
 
-essentialEvents ={'TRIAL_END', 'PARAM_START', 'PARAM_END'};
+essentialEvents ={'TRIAL_START', 'PARAM_START', 'PARAM_END', 'TRIAL_END'};
 essentialEventsNum = stringEvent2Num(essentialEvents, codes);
 
 
@@ -64,7 +64,7 @@ if isempty(check) % if no disputes
         if validTrial(i) ==1 % only for valid trials
             
             if isRFmap % for RF_map experiment, we have different structure of conditions
-               RF_stream(:,:,i) =  rawTrials{i,1}(find(findEvents('PARAM_START',rawTrials{i,1},codes))+1:find(findEvents('PARAM_END',rawTrials{i,1},codes))-1,:);
+                RF_stream(:,:,i) =  rawTrials{i,1}(find(findEvents('PARAM_START',rawTrials{i,1},codes))+1:find(findEvents('PARAM_END',rawTrials{i,1},codes))-1,:);
             else % for any experiment that is not RF mapping
                 block(i,:) = rawTrials{i,1}(find(findEvents('PARAM_START',rawTrials{i,1},codes))+1,:); % finds block num and timestamp for all valid trials
                 cnd(i,:) = rawTrials{i,1}(find(findEvents('PARAM_START',rawTrials{i,1},codes))+2,:); % finds condition num and timestamp for all valid trials
@@ -94,7 +94,7 @@ if isempty(check) % if no disputes
     nonEssentialEventNumbers = unique(nonEssentialCodes(:,2,:));
     
     for i =1:length(nonEssentialEventNumbers)
-        nonEssentialEvent{1,i}= codes(nonEssentialEventNumbers(i));
+        nonEssentialEvent{1,i}= codes{nonEssentialEventNumbers(i)};
         
         indexOfCodes = nonEssentialCodes == (nonEssentialEventNumbers(i));
         indexOfTimes = circshift(indexOfCodes,-1,2);
@@ -108,8 +108,8 @@ else % if any disputes
 end
 
 %% build trial condition structure
-experimentStructure.prairiePath = dataFilepathPrairie(1:find(dataFilepathPrairie=='\',1,'last'));
-experimentStructure.prairieEventPath = dataFilepathPrairie;
+% experimentStructure.prairiePath = dataFilepathPrairie(1:find(dataFilepathPrairie=='\',1,'last'));
+% experimentStructure.prairieEventPath = dataFilepathPrairie;
 experimentStructure.rawTrials = rawTrials;
 experimentStructure.validTrial = validTrial;
 experimentStructure.cndTotal = cndTotal;
@@ -117,6 +117,12 @@ experimentStructure.cndTotal = cndTotal;
 if any(cnd)
     experimentStructure.block = block;
     experimentStructure.cnd = cnd;
+    
+    cnd = cnd(:,2);
+    for i=1:length(cndTotal)
+        cndTrials{i} = find(cnd == i)';
+    end
+    experimentStructure.cndTrials = cndTrials;
 end
 
 if exist('RF_stream')
@@ -124,4 +130,10 @@ if exist('RF_stream')
 end
 
 experimentStructure.nonEssentialEvent= nonEssentialEvent;
+
+%% align events to frame times and numbers
+
+for i =1:length(experimentStructure.nonEssentialEvent)
+    experimentStructure = alignEvents2Frames(experimentStructure.nonEssentialEvent{1,i}, experimentStructure);
+end
 end
