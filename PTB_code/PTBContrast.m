@@ -4,7 +4,7 @@ function PTBContrast(width, stimCenter, stimTime, dropRed, numReps, varargin)
 % options width (degrees)
 % stimCenter [0,0] (degrees visual angle from screen center)
 % stim time (seconds)
-% dropRed 1/0 (drops the red channel completely, useful as mice do not see 
+% dropRed 1/0 (drops the red channel completely, useful as mice do not see
 % red)
 % numReps (number of blocks of all stim repeats, if blank is infinite)
 % varargin (if filled DOES NOT send events out via DAQ)
@@ -64,6 +64,7 @@ Angle =[0    45    90   135   180   225   270   315]; % angle in degrees
 numCnd = length(Angle);
 
 %% intial set up of experiment
+Screen('Preference', 'VisualDebugLevel', 1); % removes welcome screen
 PsychDefaultSetup(2); % PTB defaults for setup
 
 if doNotSendEvents ==0
@@ -78,10 +79,10 @@ end
 
 screenNumber = max(Screen('Screens')); % makes display screen the secondary one
 % Get the size of the on screen window
-% [screenXpixels, screenYpixels] = Screen('WindowSize', windowPtr); % uncomment for your setup
+[screenXpixels, screenYpixels] = Screen('WindowSize', screenNumber); % uncomment for your setup
 
-screenXpixels = 1915; % hard coded cause reasons.. weird screens % comment out for your setup
-screenYpixels = 1535;
+% screenXpixels = 1915; % hard coded cause reasons.. weird screens % comment out for your setup
+% screenYpixels = 1535;
 
 screenCentre = [0.5 * screenXpixels , 0.5 * screenYpixels]; % screen centre of Shel 1170 WEIRD, calcualted by physical measurement...
 % Set up relative stim centre based on degree visual angle
@@ -124,6 +125,8 @@ totalNumFrames = frameRate * stimTime;
 phaseincrement = (cyclespersecond * 360) * ifi;
 
 %% START STIM PRESENTATION
+
+HideCursor(windowPtr, []);
 
 if doNotSendEvents ==0
     % trigger image scan start
@@ -226,6 +229,10 @@ while ~KbCheck
                 stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_END');
             end
         end
+        % Abort requested? Test for keypress:
+        if KbCheck
+            break;
+        end
     end
     toc;
     break % breaks when reaches requested number of blocks
@@ -235,6 +242,8 @@ end
 if doNotSendEvents ==0
     saveCmpEventFile(stimCmpEvents, dataDir, indentString, timeSave);
 end
+
+ShowCursor([],[windowPtr],[]);
 
 % Clear screen
 sca;
