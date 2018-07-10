@@ -30,7 +30,7 @@ if isempty(check) % if no disputes
     eventStream = eventArray;
     %eventStream(:,1) = eventStream(:,1)-eventStream(1,1); % zero all timestamps
     
-    % use trial end events to chunk up into indivdual trials
+    % use trial end events to chunk up into individual trials
     endIndx = findEvents('TRIAL_END', eventStream, codes); % get trial start event times
     endArray = eventStream(endIndx,:);
     endIndxNum = find(endIndx);

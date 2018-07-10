@@ -9,7 +9,7 @@ data = syncScreenData();
 for i = 4:length(data) % modified for just one session
     experimentStructure = prepNONTrialData(experimentStructure, data(i).dataFilepathPrairie, data(i).checkFile, data(i).dataFilepathPTB);
     
-    [experimentStructure, vol]= prepImagingData(experimentStructure, experimentStructure.prairiePath, data(i).Z_or_TStack);
+    [experimentStructure, vol]= prepImagingData(experimentStructure, experimentStructure.prairiePath, data(i).Z_or_TStack, 1);
     
     for x=1:size(vol, 3)
         imageMean(x)= mean(mean(vol(:,:,x)));

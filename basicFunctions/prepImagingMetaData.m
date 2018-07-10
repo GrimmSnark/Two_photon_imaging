@@ -12,6 +12,12 @@ function experimentStructure = prepImagingMetaData(experimentStructure, filepath
 if exist(filepath) ==7
     fileList = dir([filepath '*.xml']);
     
+    if isempty(fileList)
+        error(['Please check filepath:' ...
+        '\n%s'], filepath); 
+    end
+    
+    
     for i =1:length(fileList)
         dataFilepathPrairie = [filepath fileList(i).name];
         if isfield(experimentStructure, 'prairieEventPath')
@@ -25,12 +31,16 @@ if exist(filepath) ==7
     end
 else
     dataFilepathPrairie = filepath;
-%     experimentStructure.prairiePathXML = dataFilepathPrairie(1:find(dataFilepathPrairie=='\',1,'last'));
+    %     experimentStructure.prairiePathXML = dataFilepathPrairie(1:find(dataFilepathPrairie=='\',1,'last'));
 end
 
 %% get all the folder and file paths
 CSVList = dir([filepath '*.csv']);
-prairiePathCSV = [filepath CSVList(1).name];
+if ~isempty(CSVList)
+    prairiePathCSV = [filepath CSVList(1).name];
+else
+    prairiePathCSV = [];
+end
 experimentStructure.prairiePathVoltage = prairiePathCSV;
 experimentStructure.prairiePathXML = dataFilepathPrairie;
 

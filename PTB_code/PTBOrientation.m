@@ -1,8 +1,9 @@
-function PTBContrast(width, stimCenter, stimTime, dropRed, numReps, varargin)
+function PTBOrientation(width, stimCenter, preStimTime, stimTime, dropRed, numReps, varargin)
 % Experiment which displays moving gratings at 2Hz
 %
-% options width (degrees)
+% options width (degrees) for full screen leave blank
 % stimCenter [0,0] (degrees visual angle from screen center)
+% pre stimulus spontaneous activity period (preStimTime, in seconds)
 % stim time (seconds)
 % dropRed 1/0 (drops the red channel completely, useful as mice do not see
 % red)
@@ -16,12 +17,19 @@ sca;
 
 
 doNotSendEvents = 0;
+fullfieldStim = 0;
+
 if ~isempty(varargin)
     doNotSendEvents = 1;
 end
 
 if isempty(numReps)
     numReps = Inf;
+end
+
+if isempty(width)
+    fullfieldStim =1;
+    width = 0;
 end
 
 
@@ -31,8 +39,8 @@ timeSave = datestr(now,'yyyymmddHHMMSS');
 indentString = 'Contrst_';
 
 % stimTime = 1; %in s
-ITItime = 2;
-firstTime =1;
+ITItime = 2; % intertrial interval in seconds
+% firstTime =1;
 blockNum = 0;
 stimCmpEvents = [1 1] ;
 
@@ -44,18 +52,20 @@ else
     backgroundColorOffset = [0.5 0.5 0.5 0]; %RGBA offset color
     modulateCol = [];
 end
+
 %Stimulus
 %width = 10; % in degrees visual angle
 widthInPix = degreeVisualAngle2Pixels(1,width);
 heightInPix =widthInPix;
 radius=widthInPix/2; % circlar apature in pixels
 
+%spatial frequency
 freq = 0.5 ; % in cycles per degree
 freq = 1/freq; % hack hack hack
 freqPix = degreeVisualAngle2Pixels(1,freq);
 freqPix =1/freqPix; % use the inverse as the function below takes bloody cycles/pixel...
 
-cyclespersecond =2; % temporal frequency to stimulate all cells
+cyclespersecond =2; % temporal frequency to stimulate all cells (in Hz)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 contrast =  1 ; % should already be set by the sine grating creation??
@@ -110,7 +120,11 @@ PsychImaging('AddTask','General', 'FloatingPoint32Bit'); % sets accuracy of fram
 [windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, [ grey ] ); %opens screen and sets background to grey
 
 %create all gratings on GPU.....should be very fast
-[gratingid, gratingrect] = CreateProceduralSineGrating(windowPtr, widthInPix, heightInPix, backgroundColorOffset, radius, contrast);
+if fullfieldStim ==0
+    [gratingid, gratingrect] = CreateProceduralSineGrating(windowPtr, widthInPix, heightInPix, backgroundColorOffset, radius, contrast);
+else
+    [gratingid, gratingrect] = CreateProceduralSineGrating(windowPtr, screenXpixels*1.5, screenXpixels*1.5, backgroundColorOffset, [], contrast);
+end
 
 % Retrieve video redraw interval for later control of our animation timing:
 ifi = Screen('GetFlipInterval', windowPtr);
@@ -120,6 +134,9 @@ frameRate=Screen('FrameRate',screenNumber);
 
 % Get the number of frames stim needs to be on for
 totalNumFrames = frameRate * stimTime;
+
+% Get number of frames for prestimulus time
+preStimFrames = frameRate * preStimTime;
 
 % Compute increment of phase shift per redraw:
 phaseincrement = (cyclespersecond * 360) * ifi;
@@ -151,9 +168,11 @@ while ~KbCheck
             % Get trial cnds
             trialParams = Angle(cndOrder(trialCnd));
             
-            
-            dstRect = OffsetRect(gratingrect, screenStimCentre(1)-radius, screenStimCentre(2)-radius);
-            
+            if fullfieldStim ==0
+                dstRect = OffsetRect(gratingrect, screenStimCentre(1)-radius, screenStimCentre(2)-radius);
+            else
+                dstRect = [];
+            end
             %display trial conditions
             
             fprintf(['Block No: %i \n'...
@@ -176,9 +195,24 @@ while ~KbCheck
                 stimCmpEvents(end+1,:)= addCmpEvents('PARAM_END');
             end
             
+            % blank screen flips for prestimulus time period
+            if doNotSendEvents ==0
+                AnalogueOutEvent(daq, 'PRESTIM_ON');
+                stimCmpEvents(end+1,:)= addCmpEvents('PRESTIM_ON');
+            end
+            
+            for prestimFrameNp = 1:preStimFrames
+                Screen('Flip', windowPtr);
+            end
+            
+            if doNotSendEvents ==0
+                AnalogueOutEvent(daq, 'PRESTIM_OFF');
+                stimCmpEvents(end+1,:)= addCmpEvents('PRESTIM_OFF');
+            end
+            
             
             stimOnFlag =1;
-            for frameNo =1:totalNumFrames
+            for frameNo =1:totalNumFrames % stim presentation loop
                 % Increment phase by cycles/s:
                 phase = phase + phaseincrement;
                 %create auxParameters matrix
@@ -211,7 +245,7 @@ while ~KbCheck
                     break;
                 end
                 
-            end
+            end % end stim presentation loop
             
             % Abort requested? Test for keypress:
             if KbCheck
@@ -233,7 +267,7 @@ while ~KbCheck
         if KbCheck
             break;
         end
-    end
+    end % end number of blocks 
     toc;
     break % breaks when reaches requested number of blocks
 end
