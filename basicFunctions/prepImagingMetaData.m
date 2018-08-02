@@ -13,8 +13,13 @@ if exist(filepath) ==7
     fileList = dir([filepath '*.xml']);
     
     if isempty(fileList)
-        error(['Please check filepath:' ...
-        '\n%s'], filepath); 
+        filepath = [filepath '\'];
+        fileList = dir([filepath '*.xml']); % trys to add last backslash if can not find files
+        
+        if isempty(fileList)
+            error(['Please check filepath:' ...
+                '\n%s'], filepath);
+        end
     end
     
     

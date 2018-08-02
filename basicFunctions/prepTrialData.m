@@ -1,4 +1,4 @@
-function experimentStructure = prepTrialData(experimentStructure, dataFilepathPrairie, checkFile, dataFilepathPTB, isRFmap)
+function experimentStructure = prepTrialData(experimentStructure, dataFilepathPrairie, checkFile, dataFilepathPTB, experimentType)
 % loads and preprocesses the prairie event data into the experiment
 % structure, will all check consistency between the prairie file and the
 % PTB event file
@@ -63,7 +63,7 @@ if isempty(check) % if no disputes
     for i =1:length(validTrial)
         if validTrial(i) ==1 % only for valid trials
             
-            if isRFmap % for RF_map experiment, we have different structure of conditions
+            if strcmp(experimentType, 'RFmap') % for RF_map experiment, we have different structure of conditions
                 RF_stream(:,:,i) =  rawTrials{i,1}(find(findEvents('PARAM_START',rawTrials{i,1},codes))+1:find(findEvents('PARAM_END',rawTrials{i,1},codes))-1,:);
             else % for any experiment that is not RF mapping
                 block(i,:) = rawTrials{i,1}(find(findEvents('PARAM_START',rawTrials{i,1},codes))+1,:); % finds block num and timestamp for all valid trials
