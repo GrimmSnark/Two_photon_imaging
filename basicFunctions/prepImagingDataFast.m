@@ -4,7 +4,7 @@ function [experimentStructure, vol]= prepImagingDataFast(experimentStructure, pa
 % all channels and z series together. Stack needs to be split depending on
 % iamaging parameters
 
-experimentStructure.prairiePath = path2ImagingFolder; % sets folder path
+experimentStructure.prairiePath = [path2ImagingFolder '\']; % sets folder path
 
 if loadMetaData ==1 %  if metal exsists from praire xml file
     experimentStructure = prepImagingMetaData(experimentStructure, experimentStructure.prairiePath); % gets metadata from the xml files
@@ -15,7 +15,12 @@ else
 end
 
 experimentStructure.fullfile = frameFilepath;
+
+
 vol = read_Tiffs(frameFilepath,1);
+if ndims(vol) ~=3
+    vol = readMultipageTifFiles(experimentStructure.prairiePath);
+end
 
 % TODO work out how to deal with z and t stacks together...
 

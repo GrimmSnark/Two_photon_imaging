@@ -21,6 +21,10 @@ experimentStructure = [];
 
 experimentStructure.experimentType = experimentType;
 
+savePath = createSavePath(dataDir, 1);
+
+experimentStructure.savePath = savePath;
+
 % get imaging meta data and trial data
 % start image processing
 [experimentStructure, vol]= prepImagingDataFast(experimentStructure, dataDir, loadMeta); % faster version
@@ -38,11 +42,15 @@ end
 
 % Register imaging data and save registered image stack
 if regOrNot ==1
+    disp('Starting image registration');
     [vol,xyShifts] = imageRegistration(vol, [], micronsPerPix, [], templateImageForReg);
     experimentStructure.xyShifts = xyShifts;
+    
     if saveRegMovie ==1
-        savePath = createSavePath(dataDir, 1);
+        %         savePath = createSavePath(dataDir, 1);
+        disp('Saving registered image stack')
         saveastiff(vol, [savePath 'registered.tif']);
+        disp('Finished saving registered image stack');
         %     saveImagingData(vol,savePath,1,size(vol,3));
     end
 end
@@ -52,8 +60,12 @@ stdVol = std(double(vol), [], 3);
 stdVol = uint16(stdVol);
 saveastiff(stdVol, [savePath 'STD_Average.tif']);
 
+%Create normal average image and save
+meanVol = mean(double(vol),3);
+meanVol = uint16(meanVol);
+saveastiff(meanVol, [savePath 'Average.tif']);
+
 % save experimentStructure
-if saveExperimentStructure
-    save([savePath 'experimentStructure.mat'], experimentStructure);
-end
+    save([savePath 'experimentStructure.mat'], 'experimentStructure');
+
 end

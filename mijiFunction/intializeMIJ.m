@@ -9,9 +9,11 @@ set(0,'DefaultFigureWindowStyle','normal') %docked or normal
 set(0,'DefaultFigureColor','w')
 warning('off','images:imshow:magnificationMustBeFitForDockedFigure');
 
-currentJavaPath = javaclasspath( '-dynamic');
-
-if ~any(contains(currentJavaPath, [matlabroot '\java\jar\mij.jar'])) % skip if MIJI has already been started
+try  ij.IJ.getInstance().toFront();
+    
+    
+catch ME
+    
     % Add ImageJ to working directory
     javaaddpath([matlabroot '\java\jar\mij.jar']);
     javaaddpath([matlabroot '\java\jar\ij.jar']);
@@ -28,6 +30,7 @@ if ~any(contains(currentJavaPath, [matlabroot '\java\jar\mij.jar'])) % skip if M
     
     % Startup ImageJ
     mij = Miji;
+    
 end
 
 clear currentJavaPath
