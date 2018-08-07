@@ -195,4 +195,7 @@ if strcmp(recordingType, 'Multi')
     save([currentRecordingFolder '\grandStructure.mat'], 'grandStructure');
 end
 
+% Clean up windows
+ MIJ.closeAllWindows;
+ 
 end
