@@ -10,8 +10,8 @@ switch setup
         
     case 2 % placeholder
         hM = 30; % hight of monitor in cm
-        d = 25; % distance from monitor in cm
-        res = 1024; % vertical resolution of monitor in cm
+        d = 30; % distance from monitor in cm
+        res = 1440; % vertical resolution of monitor in cm
 end
 
 degreePerPix = rad2deg(atan2((0.5*hM),d)) / (0.5*res);

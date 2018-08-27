@@ -55,14 +55,14 @@ end
 
 %Stimulus
 %width = 10; % in degrees visual angle
-widthInPix = degreeVisualAngle2Pixels(1,width);
+widthInPix = degreeVisualAngle2Pixels(2,width);
 heightInPix =widthInPix;
 radius=widthInPix/2; % circlar apature in pixels
 
 %spatial frequency
 freq = 0.5 ; % in cycles per degree
 freq = 1/freq; % hack hack hack
-freqPix = degreeVisualAngle2Pixels(1,freq);
+freqPix = degreeVisualAngle2Pixels(2,freq);
 freqPix =1/freqPix; % use the inverse as the function below takes bloody cycles/pixel...
 
 cyclespersecond =2; % temporal frequency to stimulate all cells (in Hz)
@@ -97,8 +97,8 @@ screenNumber = max(Screen('Screens')); % makes display screen the secondary one
 screenCentre = [0.5 * screenXpixels , 0.5 * screenYpixels]; % screen centre of Shel 1170 WEIRD, calcualted by physical measurement...
 % Set up relative stim centre based on degree visual angle
 
-screenStimCentreOffset(1) = degreeVisualAngle2Pixels(1,stimCenter(1));
-screenStimCentreOffset(2) = degreeVisualAngle2Pixels(1,stimCenter(2));
+screenStimCentreOffset(1) = degreeVisualAngle2Pixels(2,stimCenter(1));
+screenStimCentreOffset(2) = degreeVisualAngle2Pixels(2,stimCenter(2));
 
 screenStimCentre = screenCentre + screenStimCentreOffset;
 
