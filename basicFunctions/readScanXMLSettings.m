@@ -44,6 +44,8 @@ switch experimentStructure.scanMode
                     experimentStructure.currentPostion = [str2num(imagingStructRAW.PVScan.PVStateShard.PVStateValue{1, i}.SubindexedValues{1, 1}.SubindexedValue.Attributes.value)  ...
                         str2num(imagingStructRAW.PVScan.PVStateShard.PVStateValue{1, i}.SubindexedValues{1, 2}.SubindexedValue.Attributes.value)  ...
                         str2num(imagingStructRAW.PVScan.PVStateShard.PVStateValue{1, i}.SubindexedValues{1, 3}.SubindexedValue.Attributes.value)] ;
+                case 23
+                    experimentStructure.rastersPerFrame = str2num(imagingStructRAW.PVScan.PVStateShard.PVStateValue{1, i}.Attributes.value);
                 case 26
                     experimentStructure.twoPhotonLaserPower = str2num(imagingStructRAW.PVScan.PVStateShard.PVStateValue{1, i}.IndexedValue.Attributes.value);
             end
@@ -83,11 +85,12 @@ switch experimentStructure.scanMode
                 case 19
                     experimentStructure.PMTGain = [str2num(imagingStructRAW.PVScan.PVStateShard.PVStateValue{1, i}.IndexedValue{1, 1}.Attributes.value)  ...
                         str2num(imagingStructRAW.PVScan.PVStateShard.PVStateValue{1, i}.IndexedValue{1, 2}.Attributes.value)];
-                    
                 case 20
                     experimentStructure.currentPostion = [str2num(imagingStructRAW.PVScan.PVStateShard.PVStateValue{1, i}.SubindexedValues{1, 1}.SubindexedValue.Attributes.value)  ...
                         str2num(imagingStructRAW.PVScan.PVStateShard.PVStateValue{1, i}.SubindexedValues{1, 2}.SubindexedValue.Attributes.value)  ...
                         str2num(imagingStructRAW.PVScan.PVStateShard.PVStateValue{1, i}.SubindexedValues{1, 3}.SubindexedValue.Attributes.value)] ;
+                case 23
+                    experimentStructure.rastersPerFrame = str2num(imagingStructRAW.PVScan.PVStateShard.PVStateValue{1, i}.Attributes.value);
                 case 24
                     experimentStructure.resonantSamplesPerPixel = str2num(imagingStructRAW.PVScan.PVStateShard.PVStateValue{1, i}.Attributes.value);
                 case 27
@@ -95,14 +98,14 @@ switch experimentStructure.scanMode
             end
             
         end
-  
+        
     case 'Spiral'
-%%        
+        %%
         disp('What were you using Spiral Scan for? You need to add to this section of code, good luck');
         return
         
     otherwise
-%%        
+        %%
         
         disp('What scan were you using? Please check data and code');
         return

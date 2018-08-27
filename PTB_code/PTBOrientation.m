@@ -36,7 +36,7 @@ end
 % Should not change %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 dataDir = 'C:\PostDoc Docs\Ca Imaging Project\PTB_Timing_Files\'; % save dir for timing files
 timeSave = datestr(now,'yyyymmddHHMMSS');
-indentString = 'Contrst_';
+indentString = 'Orientation_';
 
 % stimTime = 1; %in s
 ITItime = 2; % intertrial interval in seconds
@@ -47,7 +47,7 @@ stimCmpEvents = [1 1] ;
 phase = 0;
 if dropRed ==1
     backgroundColorOffset = [0 0.5 0.5 0]; %RGBA offset color
-    modulateCol = [0 255 255];
+    modulateCol = [];
 else
     backgroundColorOffset = [0.5 0.5 0.5 0]; %RGBA offset color
     modulateCol = [];
@@ -68,7 +68,7 @@ freqPix =1/freqPix; % use the inverse as the function below takes bloody cycles/
 cyclespersecond =2; % temporal frequency to stimulate all cells (in Hz)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-contrast =  1 ; % should already be set by the sine grating creation??
+contrast =  0.5 ; % should already be set by the sine grating creation??
 Angle =[0    45    90   135   180   225   270   315]; % angle in degrees
 
 numCnd = length(Angle);
@@ -220,7 +220,6 @@ while ~KbCheck
                 
                 % draw grating on screen
                 %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
-                
                 Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
                 
                 if doNotSendEvents ==0

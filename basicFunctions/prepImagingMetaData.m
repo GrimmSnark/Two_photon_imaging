@@ -40,7 +40,7 @@ else
 end
 
 %% get all the folder and file paths
-CSVList = dir([filepath '*.csv']);
+CSVList = dir([filepath '*VoltageRecording*.csv']);
 if ~isempty(CSVList)
     prairiePathCSV = [filepath CSVList(1).name];
 else

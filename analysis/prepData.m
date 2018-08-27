@@ -55,17 +55,36 @@ if regOrNot ==1
     end
 end
 
+% save experimentStructure
+save([savePath 'experimentStructure.mat'], 'experimentStructure');
+
+
+
 % Create STD average image and save
-stdVol = std(double(vol), [], 3);
-stdVol = uint16(stdVol);
+
+% deals with issues of stack size
+stdVol = zeros(size(vol,1), size(vol,2));
+
+if size(vol,3)< 2000 
+    stdVol = std(double(vol), [], 3);
+    stdVol = uint16(stdVol);
+else
+    for yy = 1:size(vol,1)
+        for xx = 1:size(vol,2)
+            stdVol(yy,xx) = std2(vol(yy,xx,:));
+        end
+    end
+    stdVol = uint16(stdVol);
+end
+
 saveastiff(stdVol, [savePath 'STD_Average.tif']);
 
 %Create normal average image and save
-meanVol = mean(double(vol),3);
+meanVolTall = mean(volTall,3);
+meanVol = gather(meanVolTall);
 meanVol = uint16(meanVol);
-saveastiff(meanVol, [savePath 'Average.tif']);
 
-% save experimentStructure
-    save([savePath 'experimentStructure.mat'], 'experimentStructure');
+meanVol = mean(vol,3);
+saveastiff(meanVol, [savePath 'Average.tif']);
 
 end

@@ -20,8 +20,6 @@ for(i=1:nROIs)
     localCellImg = reshape(boundedPixels,[width,height]);
     localCellImg(localCellImg==-1) = i;
     
-    % Add ROI to labeled ROI
-    
     % HACK HACK
     if X<0
         X = 0;
@@ -31,5 +29,15 @@ for(i=1:nROIs)
         Y = 0;
     end
     
-    labeledROI(Y+[1:height],X+[1:width]) = localCellImg';
+    %     labeledROI(Y+[1:height],X+[1:width]) = localCellImg';
+    
+    % Only adds elements that are non zero, stops bounding box overlap
+    localCellImg = localCellImg';
+    for x=1:numel(localCellImg)
+        if localCellImg(x) ~=0
+            [currentW, currentH] = ind2sub([ height width],x);
+            labeledROI(Y+currentW,X+currentH) = localCellImg(x);
+        end
+    end
+    %     imagesc(labeledROI);
 end

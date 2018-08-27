@@ -30,14 +30,19 @@ end
 % Register each image to the template
 numberOfImages = size(tifStack,3);
 xyShifts       = zeros(2,numberOfImages);
+parfor_progress(numberOfImages);
+disp('Starting to calculate frame shifts');
+
 parfor(ii = 1:numberOfImages)
+   parfor_progress; % get progress in parfor loop
+   
     % Get current image to register to the template image and pre-process the current frame.
     sourceImg = tifStack(:,:,ii);
     if(useSpatialFiltering)
         sourceImg = real(bandpassFermiFilter(sourceImg,-1,filterCutOff(2),spatialResolution));        % Lowpass filtering step
         sourceImg = imfilter(sourceImg,fspecial('average',round(filterCutOff(1)/spatialResolution))); % Highpass filtering step
     end
-
+	
     % Determine offsets to shift image
     switch imageRegistrationMethod
         case 'subMicronMethod'
@@ -47,7 +52,12 @@ parfor(ii = 1:numberOfImages)
             [xyShifts(:,ii)] = downsampleReg_singleImage(sourceImg,templateImg);
     end
 end
+parfor_progress(0)
+
+disp('Finished calculating frame shifts');
+disp('Starting to apply frame shifts');
+
 tifStack = shiftImageStack(tifStack,xyShifts([2 1],:)'); % Apply actual shifts to tif stack
 
 timeElapsed = toc(t0);
-sprintf('Finished registering imaging data - Time elapsed is %4.2f seconds',timeElapsed)
+sprintf('Finished registering imaging data - Time elapsed is %4.2f seconds',timeElapsed);

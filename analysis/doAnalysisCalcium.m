@@ -1,4 +1,42 @@
-function experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, prestimTime, behaviouralResponseFlag, RC)
+function experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, prestimTime, behaviouralResponseFlag)
+% Function enacts main Ca trace analysis for movie files, applys motion
+% correction shifts which were previously calculated, exacts rawF for cells
+% and neuropil, does neuropil correction, calculates dF/F and segements out
+% traces into cell x cnd x trace and makes averages & STDs per cnd 
+%
+% Inputs - experimentStructure (structure containing all experimental data)
+%
+%          neuropilCorrectionType ('adaptive', 'fixed', 'none')
+%
+%          prestimTime ( [], fixed prestim time for analysis before stim on,
+%                      curretly not need as we have prestim events)
+%
+%          behaviouralResponseFlag (NOT used, future proofing for awake
+%                                   animals)
+%
+% Outputs - experimentStructure (updated structure) 
+
+%% Clear previously calculated stuff
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% IF YOU ADD ANY MORE ANALYSIS FIELDS THEY NEED TO BE ADDED TO REMOVEFIELDS
+% OTHERWISE OVERWRITE ERRROS CAN OCCUR
+ removeFields = { 'rawF', 'rawF_neuropil', 'xPos', 'yPos', 'subtractionFactor', ...
+                  'correctedF', 'rate', 'baseline', 'dF', 'dFperCnd', ...
+                  'dFperCndMean','dFperCndSTD', 'meanFrameLength'};
+                
+ removeFieldLogical = isfield(experimentStructure, removeFields);
+                
+if any(removeFieldLogical)  
+    experimentStructure = rmfield(experimentStructure, removeFields(removeFieldLogical));   
+end
+
+%% Basic setup of tif stack
+% sets up ROI manager for this function
+RM = ij.plugin.frame.RoiManager();
+RC = RM.getInstance();
+
 % read in tiff file
 
 vol = read_Tiffs(experimentStructure.fullfile,1);
@@ -99,10 +137,17 @@ if isempty(behaviouralResponseFlag) % if no behaviour, ie trials are the same le
     % analysis
     if isfield(experimentStructure.EventFrameIndx, 'PRESTIM_ON')
         analysisFrameLength = ceil(mean(experimentStructure.EventFrameIndx.TRIAL_END - experimentStructure.EventFrameIndx.PRESTIM_ON));
+        stimOnFrames = [ceil(mean(experimentStructure.EventFrameIndx.STIM_ON - experimentStructure.EventFrameIndx.PRESTIM_ON))-1 ...
+                        ceil(mean(experimentStructure.EventFrameIndx.STIM_OFF - experimentStructure.EventFrameIndx.PRESTIM_ON))-1];
     else
         analysisFrameLength = ceil(mean(experimentStructure.EventFrameIndx.TRIAL_END - (experimentStructure.EventFrameIndx.STIM_ON- prestimFrameTime)));
+        stimOnFrames = [ceil(mean(experimentStructure.EventFrameIndx.STIM_ON -(experimentStructure.EventFrameIndx.STIM_ON- prestimFrameTime)))-1 ...
+                        ceil(mean(experimentStructure.EventFrameIndx.STIM_OFF - (experimentStructure.EventFrameIndx.STIM_ON- prestimFrameTime)))-1];
         noPrestim_Flag =1; %#ok<NASGU> supressed warning as no need to worry about it
     end
+    
+    experimentStructure.meanFrameLength = analysisFrameLength; % saves the analysis frame length into structure, just FYI
+    experimentStructure.stimOnFrames = stimOnFrames; % saves the frame index for the trial at which stim on and off occured, ie [7 14] from prestim on
     
     % chunks up dF into cell x cnd x trial
     for p = 1:experimentStructure.cellCount % for each cell
@@ -118,7 +163,7 @@ if isempty(behaviouralResponseFlag) % if no behaviour, ie trials are the same le
                         currentTrialFrameStart = experimentStructure.EventFrameIndx.PRESTIM_ON(currentTrial);
                     end
                     %cell cnd trial
-                    experimentStructure.dFperCnd{p}{x}(:,y) = experimentStructure.dF(p,currentTrialFrameStart:currentTrialFrameStart+ analysisFrameLength); %chunks data and sorts into structure
+                    experimentStructure.dFperCnd{p}{x}(:,y) = experimentStructure.dF(p,currentTrialFrameStart:currentTrialFrameStart+ (analysisFrameLength-1)); %chunks data and sorts into structure
                 end
             end
         end
@@ -131,10 +176,11 @@ else % if there are behaviours......TO DO!!!! whenever we get to awake animals
     
 end
 
+% sets up average traces per cnd and STDs
 for i = 1:length(experimentStructure.dFperCnd) % for each cell
     for x = 1:length(experimentStructure.dFperCnd{i}) % for each condition
-        experimentStructure.dFperCndMean{i}(x,:) = mean(experimentStructure.dFperCnd{i}{x}, 1); % means for each cell cnd x frame value
-        experimentStructure.dFperCndSTD{i}(x,:) = std(experimentStructure.dFperCnd{i}{x}, 1); % std for each cell cnd x frame value
+        experimentStructure.dFperCndMean{i}(:,x) = mean(experimentStructure.dFperCnd{i}{x}, 2); % means for each cell frame value x cnd
+        experimentStructure.dFperCndSTD{i}(:,x) = std(experimentStructure.dFperCnd{i}{x}, 0, 2); % std for each cell frame value x cnd
     end
 end
 

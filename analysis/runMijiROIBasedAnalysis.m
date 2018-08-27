@@ -7,15 +7,15 @@ function runMijiROIBasedAnalysis(recordingDir, recordingType, overwriteROIFile, 
 %                       imaging runs, can be processed or raw folder)
 %
 %          recordingType ('Single' or 'Multi' for number of t series
-%                        folders found in the recordingDir, will also be 
-%                        dictated by whether you used prepDataMultiSingle 
+%                        folders found in the recordingDir, will also be
+%                        dictated by whether you used prepDataMultiSingle
 %                        or prepDataMultfileRecording)
 %
 %          overwriteROIFile (set 0 or 1, if set 1 will look for previously
 %                           chosen ROI file)
 %
 %          preproFolder2Open (usually leave blank unless you want to
-%                             specify the preprocessed folder number 1,2 
+%                             specify the preprocessed folder number 1,2
 %                             etc to use)
 %
 %          neuropilCorrectionType ('adaptive', 'fixed', 'none')
@@ -34,12 +34,15 @@ end
 %% Deals with ROI zip file creation and loading and makes neuropil surround ROIs
 
 if contains(recordingDir, 'Raw') % if you specfy the raw folder then it finds the appropriate processed folder
-    recordingDirRAW = recordingDir;
+    recordingDirRAW = recordingDir; % sets raw data path
+    
+    % sets processed data path
     recordingDirProcessed = createSavePath(recordingDir, 1, 1);
     recordingDirProcessed = recordingDirProcessed(1: find(recordingDirProcessed =='\', 2, 'last'));
+    
 elseif  contains(recordingDir, 'Processed')
-    recordingDirProcessed = recordingDir;
-    recordingDirRAW = createRawFromSavePath(recordingDir);
+    recordingDirProcessed = recordingDir; % sets processed data path
+    recordingDirRAW = createRawFromSavePath(recordingDir); % sets raw data path
 end
 
 switch recordingType % decides if the requested folder for analysis is a single view movie or multiple movies of the same FOV
@@ -50,18 +53,18 @@ switch recordingType % decides if the requested folder for analysis is a single 
             imageROI = read_Tiffs([recordingDirProcessed 'STD_Average.tif'],1);
         else
             
-            fistSubFolder = returnSubFolderList(recordingDirProcessed);
+            firstSubFolder = returnSubFolderList(recordingDirProcessed);
             
             if isempty(preproFolder2Open) % if not otherwise specified chooses the latest preprocessing folder
-                preproFolder2Open = length(fistSubFolder);
+                preproFolder2Open = length(firstSubFolder);
             end
             
-            recordingDirProcessed = [fistSubFolder(preproFolder2Open).folder '\' fistSubFolder(preproFolder2Open).name '\'];
+            recordingDirProcessed = [firstSubFolder(preproFolder2Open).folder '\' firstSubFolder(preproFolder2Open).name '\']; % gets analysis subfolder
             
             try
-                imageROI = read_Tiffs([recordingDirProcessed 'STD_Average.tif'],1);
+                imageROI = read_Tiffs([recordingDirProcessed 'STD_Average.tif'],1); % reads in average image
                 
-            catch ME
+            catch
                 disp('Average image not found, check filepath or run prepData.m  or prepDataMultiSingle.m on the recording folder')
                 return
             end
@@ -69,8 +72,11 @@ switch recordingType % decides if the requested folder for analysis is a single 
         
     case 'Multi'
         
+         firstSubFolder = returnSubFolderList(recordingDirProcessed);
+         recordingDirProcessed = [recordingDirProcessed firstSubFolder(1).name '\'];
+         
         if exist([recordingDirProcessed 'Recording_Average_ROI_Image.tif'], 'file')
-            imageROI = read_Tiffs([recordingDirProcessed 'Recording_Average_ROI_Image.tif'],1);
+            imageROI = read_Tiffs([ recordingDirProcessed 'Recording_Average_ROI_Image.tif'],1); % reads in average image
         else
             disp('Average image not found, check filepath or run prepDataMultfileRecording.m on the recording folder')
             return
@@ -92,7 +98,7 @@ if overwriteROIFile
     % Sets up diolg box to allow for user input to choose cell ROIs
     happy = 0;
     while ~happy % loops for a long as you need to if you do not exit or choose continue, ie reset number of ROIs
-        response = MFquestdlg([0.5,1],sprintf(['Choose cell ROIs with magic wand tool and ctr+t to add to ROI manager \n' ...
+        response = MFquestdlg([0.5,1],sprintf(['Choose cell ROIs with magic wand tool and "t" to add to ROI manager \n' ...
             'If you are happy to move on with analysis click Continue \n' ...
             'If you want to clear all current ROIs click Clear All \n' ...
             'Or exit out of this window to exit script']), ...
@@ -133,17 +139,23 @@ else % if not overwrite, then tries to find already saved ROI file
     end
 end
 
-neuropilRois = generateNeuropilROIs(RC.getRoisAsArray);
+% calculate average cell ROI radius
+averageROIRadius = calculateNeuropilRoiRadius(RC.getRoisAsArray);
+
+% get cell ROI radius, match neuropil ROI radius
+neuropilRois = generateNeuropilROIs(RC.getRoisAsArray,(averageROIRadius*2)); % generates neuropil surround ROIs
 
 %% load the appropriate data subfolder, runs through all movie folders for this experiment
 
-if strcmp(recordingType, 'Multi')
-    recordingFolders = returnSubFolderList(recordingDirRAW); % gets all image runs in this experiment
+if strcmp(recordingType, 'Multi') % for multi video FOVs
+    recordingDirProcessedRoot = recordingDirProcessed(1: find(recordingDirProcessed =='\', 2, 'last'));
+    recordingFolders = returnSubFolderList(recordingDirProcessedRoot); % gets all image runs in this experiment
+    recordingFolders = recordingFolders(2:end);
     
-    for i =1:length(recordingFolders) % runs through them all to process
+    for i =1:length(recordingFolders) % runs through them all to process (skips folder which contains recording average ROI image)
         
         % gets the number of analysis runs in the analysed folder
-        currentRecordingFolder = [recordingDirRAW recordingFolders(i).name];
+        currentRecordingFolder = [recordingDirProcessedRoot recordingFolders(i).name];
         currentSubFolders = returnSubFolderList(currentRecordingFolder);
         
         if isempty(preproFolder2Open) % if not otherwise specified chooses the latest preprocessing folder
@@ -153,49 +165,67 @@ if strcmp(recordingType, 'Multi')
         % load experimentStructure
         load([currentRecordingFolder '\' currentSubFolders(preproFolder2Open).name '\experimentStructure.mat'], 'experimentStructure');
         
-        experimentStructure.cellCount = ROInumber;
+        % feeds in data into experiement structure
+        experimentStructure.cellCount = ROInumber; % cell number
+        
+        % sets ROI image for both cells and surround neuropil ROIs
         ROIobjects = RC.getRoisAsArray;
         cellROIs = ROIobjects(1:ROInumber);
         neuropilROIs = ROIobjects(ROInumber+1:end);
         experimentStructure.labeledCellROI = createLabeledROIFromImageJPixels([experimentStructure.pixelsPerLine experimentStructure.pixelsPerLine], cellROIs);
-        experimentStructure. labeledNeuropilROI = createLabeledROIFromImageJPixels([experimentStructure.pixelsPerLine experimentStructure.pixelsPerLine], neuropilROIs);
+        experimentStructure.labeledNeuropilROI = createLabeledROIFromImageJPixels([experimentStructure.pixelsPerLine experimentStructure.pixelsPerLine], neuropilROIs);
+        experimentStructure.averageROIRadius = averageROIRadius;
         
-        experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, prestimTime, behaviouralResponseFlag, RC);
+        % does main analysis
+        experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, prestimTime, behaviouralResponseFlag);
         
         % feeds into grand structure for all recordings
         % This is very likely to break.... FYI
         if strcmp(recordingType, 'Multi')
-            if ~exist('grandArray', 'var')
+            if ~exist('grandStructure', 'var')
                 grandStructure = [];
             end
-            
-            grandStructure = [grandStructure experimentStructure.dFperCnd];
-            
+            grandStructure = combineExperimentStructure(grandStructure, experimentStructure); % combine experimentStruct for each run
         end
+        
+        openImages = MIJ.getListImages;
+          % closes all MIJI windows
+        for x = 1:length(openImages)
+           ij.IJ.selectWindow(openImages(x)); 
+           MIJ.run("Close")
+        end
+        
     end % end of loop for each subfolder
     
-else
+else % for single video FOVs
+    
+    % load experimentStructure
     load([recordingDirProcessed 'experimentStructure.mat']);
     
+    
+    % feeds in data into experiement structure
     experimentStructure.cellCount = ROInumber;
+    
+    % sets ROI image for both cells and surround neuropil ROIs
     ROIobjects = RC.getRoisAsArray;
     cellROIs = ROIobjects(1:ROInumber);
     neuropilROIs = ROIobjects(ROInumber+1:end);
     experimentStructure.labeledCellROI = createLabeledROIFromImageJPixels([experimentStructure.pixelsPerLine experimentStructure.pixelsPerLine], cellROIs);
-    experimentStructure. labeledNeuropilROI = createLabeledROIFromImageJPixels([experimentStructure.pixelsPerLine experimentStructure.pixelsPerLine], neuropilROIs);
+    experimentStructure.labeledNeuropilROI = createLabeledROIFromImageJPixels([experimentStructure.pixelsPerLine experimentStructure.pixelsPerLine], neuropilROIs);
+    experimentStructure.averageROIRadius = averageROIRadius;
     
-    
-    experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, prestimTime, behaviouralResponseFlag, RC);
+    % does main analysis
+    experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, prestimTime, behaviouralResponseFlag);
     
 end
 
 
-%% Save the grandStructure
+%% Save the grandStructure if multi FOV folder
 if strcmp(recordingType, 'Multi')
-    save([currentRecordingFolder '\grandStructure.mat'], 'grandStructure');
+    save([recordingDirProcessed 'grandStructure.mat'], 'grandStructure');
 end
 
 % Clean up windows
- MIJ.closeAllWindows;
- 
+MIJ.closeAllWindows;
+
 end
