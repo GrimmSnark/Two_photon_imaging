@@ -146,9 +146,11 @@ phaseincrement = (cyclespersecond * 360) * ifi;
 HideCursor(windowPtr, []);
 
 if doNotSendEvents ==0
-    % trigger image scan start
-    DaqDConfigPort(daq,0,0);
+    % trigger image scan start with digital port A
+    DaqDConfigPort(daq,0,0); % configure port A for output
     err = DigiOut(daq, 0, 255, 0.1);
+    
+    DaqDConfigPort(daq,1,1) % configure port B for input
 end
 
 while ~KbCheck
@@ -197,6 +199,11 @@ while ~KbCheck
             
             % blank screen flips for prestimulus time period
             if doNotSendEvents ==0
+                
+                triggerDigi = 0 ;
+                while triggerDigi ==0
+                   triggerDigi =  
+                end
                 AnalogueOutEvent(daq, 'PRESTIM_ON');
                 stimCmpEvents(end+1,:)= addCmpEvents('PRESTIM_ON');
             end

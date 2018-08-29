@@ -1,16 +1,17 @@
-function prepDataMultiSingle(dir)
+function prepDataMultiSingle(directory)
 % Wrapper to run through a folder containing multiple single files for
 % prepData
 
- dir = 'D:\Data\2P_Data\Raw\Mouse\OGB\OGB_M3\';
+ directory = 'D:\Data\2P_Data\Raw\Mouse\OGB\OGB_M4\';
 
-subFolders = returnSubFolderList(dir);
+subFolders = returnSubFolderList(directory);
 
-for i =4:length(subFolders)
+for i =1 :length(subFolders)-1
     
-    subSubFolders = returnSubFolderList([dir subFolders(i).name]);
+%     subSubFolders = returnSubFolderList([directory subFolders(i).name]);
+    subSubFolders = dir([directory subFolders(i).name '\TSeries*']);
     for x = 1:length(subSubFolders)
-        stdVol =  prepData([dir subFolders(i).name '\' subSubFolders(x).name],1 ,1,0, 'orientation', []);
+        stdVol =  prepData([directory subFolders(i).name '\' subSubFolders(x).name],1 ,1,0, 'orientation', []);
     end
     
 end

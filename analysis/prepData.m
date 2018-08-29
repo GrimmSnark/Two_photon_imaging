@@ -80,6 +80,7 @@ end
 saveastiff(stdVol, [savePath 'STD_Average.tif']);
 
 %Create normal average image and save
+volTall = tall(vol);
 meanVolTall = mean(volTall,3);
 meanVol = gather(meanVolTall);
 meanVol = uint16(meanVol);

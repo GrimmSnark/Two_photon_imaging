@@ -158,12 +158,27 @@ if isempty(behaviouralResponseFlag) % if no behaviour, ie trials are the same le
                     currentTrial = experimentStructure.cndTrials{x}(y); % gets current trial number for that cnd
                     
                     if exist('noPrestim_Flag', 'var') % deals with chunk type, ie from PRESTIM_ON or STIM_ON minus prestimTime
-                        currentTrialFrameStart = experimentStructure.EventFrameIndx.STIM_ON(currentTrial);
+                        currentTrialFrameStart = experimentStructure.EventFrameIndx.STIM_ON(currentTrial)- prestimFrameTime;
                     else
                         currentTrialFrameStart = experimentStructure.EventFrameIndx.PRESTIM_ON(currentTrial);
                     end
-                    %cell cnd trial
+                    %full trial prestimON-trialEND cell cnd trial
                     experimentStructure.dFperCnd{p}{x}(:,y) = experimentStructure.dF(p,currentTrialFrameStart:currentTrialFrameStart+ (analysisFrameLength-1)); %chunks data and sorts into structure
+                
+                    % prestim response and average response per cell x cnd x trial
+                    
+                    if exist('noPrestim_Flag', 'var') % deals with chunk type, ie from PRESTIM_ON or STIM_ON minus prestimTime
+                        experimentStructure.dFpreStimWindow{p}{y,x} = experimentStructure.dF(p,currentTrialFrameStart:experimentStructure.EventFrameIndx.STIM_ON(currentTrial)-1);
+                    else
+                        experimentStructure.dFpreStimWindow{p}{y,x} = experimentStructure.dF(p,currentTrialFrameStart:experimentStructure.EventFrameIndx.PRESTIM_OFF(currentTrial));
+                    end
+                    
+                    experimentStructure.dFpreStimWindowAverage{p}{y,x} = mean(experimentStructure.dFpreStimWindow{p}{y,x});
+                    
+                    % stim response and average response per cell x cnd x trial
+                   
+                    experimentStructure.dFstimWindow{p}{y,x} = experimentStructure.dF(p,experimentStructure.EventFrameIndx.STIM_ON(currentTrial):experimentStructure.EventFrameIndx.STIM_OFF(currentTrial));
+                    experimentStructure.dFstimWindowAverage{p}{y,x} = mean(experimentStructure.dFstimWindow{p}{y,x});
                 end
             end
         end
