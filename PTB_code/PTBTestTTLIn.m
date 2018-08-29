@@ -22,16 +22,16 @@ grey = white / 2;
 rectColorBlack = [0 0 0];
 rectColorWhite = [1 1 1];
 
-PsychImaging('PrepareConfiguration');
-[windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, black); %opens screen and sets background to grey
-
-% Get frame rate fro moving patch
-frameRate=Screen('FrameRate',screenNumber);
+% PsychImaging('PrepareConfiguration');
+% [windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, black); %opens screen and sets background to grey
+% 
+% % Get frame rate fro moving patch
+% frameRate=Screen('FrameRate',screenNumber);
 
 % Get the number of frames stim needs to be on for
-totalNumFrames = frameRate * stimTime;
+% totalNumFrames = frameRate * stimTime;
 
-
+totalNumFrames = 10000;
 % % Set trigger stuff
 % options.FirstChannel=0;
 % options.LastChannel=0;
@@ -52,14 +52,21 @@ while ~KbCheck
     
     triggerDigi = 0 ;
     while triggerDigi ==0
-        triggerDigi = DaqDIn(daq, 1, 1);
+        triggerDigi = DaqDIn(daq, 1, 2);
+        disp(num2str(triggerDigi));
+          % Abort requested? Test for keypress:
+        if KbCheck
+            break;
+        end
     end
+    
+    disp('Out');
     
     
     for i = totalNumFrames
-        Screen('FillRect', windowPtr, rectColorBlack, [] );
-        Screen('Flip', windowPtr);
-        
+%         Screen('FillRect', windowPtr, rectColorWhite, [] );
+%         Screen('Flip', windowPtr);
+%         
         % Abort requested? Test for keypress:
         if KbCheck
             break;
@@ -67,7 +74,7 @@ while ~KbCheck
     end
     
     for i = totalNumFrames
-        Screen('Flip', windowPtr);
+%         Screen('Flip', windowPtr);
         
         % Abort requested? Test for keypress:
         if KbCheck
@@ -86,47 +93,47 @@ end
 
 
 
-
-
-
-DeviceIndex = DaqFind;
-options.FirstChannel=0;
-options.LastChannel=0;
-options.f=100;
-options.count=options.f*tmax;
-options.secs = 0.0001;
-options.immediate = 1;
-options.trigger = 1;
-
-err=DaqSetTrigger(DeviceIndex,1)
-
-params = DaqAInScanBegin(DeviceIndex,options)
-start_time = GetSecs;
-DI = DaqFind; % DeviceIndex
-port = 0; %"port" 0 = port A, 1 = port B
-direction = 0; % "direction" 0 = output, 1 = input
-
-err = DaqDConfigPort(DI,port,direction)
-
-current_time = GetSecs - start_time;
-
-while currentTime < tmax;
-    
-    ind = find(t>currentTime, 1, 'first');
-    Screen('FillRect', wPtr, [255 0 0], [square_pos(ind)+565 275 square_pos(ind)+715 425]);
-    Screen('DrawingFinished', wPtr);
-    params = DaqAInScanContinue(DeviceIndex,options);
-    
-    
-    DaqDOut(DeviceIndex, 0, 255);
-    [vbl visual_onset t1] = Screen(wPtr, 'Flip', vbl1 + (waitframes -0.5) * ifi);
-    DaqDOut(DeviceIndex, 0, 0);
-    current_time = GetSecs - start_time;
-end
-
-
-params = DaqAInScanContinue(DeviceIndex,options);
-[pendulum_data,params] = DaqAInScanEnd(DeviceIndex,options);
+% 
+% 
+% 
+% DeviceIndex = DaqFind;
+% options.FirstChannel=0;
+% options.LastChannel=0;
+% options.f=100;
+% options.count=options.f*tmax;
+% options.secs = 0.0001;
+% options.immediate = 1;
+% options.trigger = 1;
+% 
+% err=DaqSetTrigger(DeviceIndex,1)
+% 
+% params = DaqAInScanBegin(DeviceIndex,options)
+% start_time = GetSecs;
+% DI = DaqFind; % DeviceIndex
+% port = 0; %"port" 0 = port A, 1 = port B
+% direction = 0; % "direction" 0 = output, 1 = input
+% 
+% err = DaqDConfigPort(DI,port,direction)
+% 
+% current_time = GetSecs - start_time;
+% 
+% while currentTime < tmax;
+%     
+%     ind = find(t>currentTime, 1, 'first');
+%     Screen('FillRect', wPtr, [255 0 0], [square_pos(ind)+565 275 square_pos(ind)+715 425]);
+%     Screen('DrawingFinished', wPtr);
+%     params = DaqAInScanContinue(DeviceIndex,options);
+%     
+%     
+%     DaqDOut(DeviceIndex, 0, 255);
+%     [vbl visual_onset t1] = Screen(wPtr, 'Flip', vbl1 + (waitframes -0.5) * ifi);
+%     DaqDOut(DeviceIndex, 0, 0);
+%     current_time = GetSecs - start_time;
+% end
+% 
+% 
+% params = DaqAInScanContinue(DeviceIndex,options);
+% [pendulum_data,params] = DaqAInScanEnd(DeviceIndex,options);
 
 
 
