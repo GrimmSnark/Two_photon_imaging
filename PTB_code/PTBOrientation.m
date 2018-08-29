@@ -60,15 +60,15 @@ heightInPix =widthInPix;
 radius=widthInPix/2; % circlar apature in pixels
 
 %spatial frequency
-freq = 0.5 ; % in cycles per degree
+freq = 0.05 ; % in cycles per degree
 freq = 1/freq; % hack hack hack
 freqPix = degreeVisualAngle2Pixels(2,freq);
 freqPix =1/freqPix; % use the inverse as the function below takes bloody cycles/pixel...
 
-cyclespersecond =2; % temporal frequency to stimulate all cells (in Hz)
+cyclespersecond =1; % temporal frequency to stimulate all cells (in Hz)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-contrast =  0.5 ; % should already be set by the sine grating creation??
+contrast =  0.9 ; % should already be set by the sine grating creation??
 Angle =[0    45    90   135   180   225   270   315]; % angle in degrees
 
 numCnd = length(Angle);
