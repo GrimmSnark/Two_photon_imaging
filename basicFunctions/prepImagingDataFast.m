@@ -11,7 +11,7 @@ if loadMetaData ==1 %  if metal exsists from praire xml file
     frameFilepath = [experimentStructure.prairiePath experimentStructure.filenamesFrame{1,1}]; %builds fullfile location for images
 else
     file = dir([experimentStructure.prairiePath '*.tif']);
-    frameFilepath = [experimentStructure.prairiePath file.name ];
+    frameFilepath = [experimentStructure.prairiePath file(1).name ];
 end
 
 experimentStructure.fullfile = frameFilepath;
