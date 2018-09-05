@@ -200,11 +200,7 @@ while ~KbCheck
             % blank screen flips for prestimulus time period
             if doNotSendEvents ==0
                 
-                triggerDigi = 0 ;
-                while triggerDigi ==0
-                   triggerDigi =  
-                end
-                AnalogueOutEvent(daq, 'PRESTIM_ON');
+                 AnalogueOutEvent(daq, 'PRESTIM_ON');
                 stimCmpEvents(end+1,:)= addCmpEvents('PRESTIM_ON');
             end
             
