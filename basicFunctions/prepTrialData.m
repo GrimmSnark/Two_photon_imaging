@@ -51,6 +51,32 @@ if isempty(check) % if no disputes
         numOfEvents(k) = recursiveSum((rawTrials{k}(:,2) == essentialEventsNum));
     end
     
+    %if there are any duplicates in the essential events conditions
+    if any(numOfEvents > length(essentialEventsNum))
+        trialsToFix = find(numOfEvents > length(essentialEventsNum));
+        
+        for v = 1:length(trialsToFix) % for each trial to fix find the number of occurances of each event (Should only be 1)
+            for u = 1:length(essentialEventsNum)
+                numOccurance(u) = sum(rawTrials{trialsToFix(v),1}(:,2)==essentialEventsNum(u));
+            end
+            
+            % if there are duplicates of single occurnace events, deletes the
+            % latest
+            eventsDuplicated = essentialEventsNum(numOccurance>1);
+            
+            for o =1:length(eventsDuplicated)
+                ind2Delete =  find(rawTrials{trialsToFix(v),1}(:,2) == eventsDuplicated(o),1,'last');
+                rawTrials{trialsToFix(v),1}(ind2Delete,:) = [];
+            end
+        end
+        
+        % recheck the number of essential events in each trial
+        for k = 1:numel(rawTrials)
+            numOfEvents(k) = recursiveSum((rawTrials{k}(:,2) == essentialEventsNum));
+        end
+    end
+    
+    
     validTrial = numOfEvents==length(essentialEventsNum); % indx of valid trial by event inclusion
     disp([num2str(sum(validTrial)) ' / '  num2str(length(validTrial)) ' trials have valid condition codes!!!']);
     
@@ -93,14 +119,65 @@ if isempty(check) % if no disputes
     nonEssentialCodes= nonEssentialCodes(1:sizeIndMax,:,:);
     nonEssentialEventNumbers = unique(nonEssentialCodes(:,2,:));
     
+    % remove zeros and any not used events.... this may cause errors if you
+    % do not keep prairieCodes.m updated  with any changes in event usage
+    nonEssentialEventNumbers(nonEssentialEventNumbers ==0) = [];
+    
+    checkEventUsage = false(length(nonEssentialEventNumbers),1);
+    for x = 1:length(nonEssentialEventNumbers)
+        if ~isempty(codes{nonEssentialEventNumbers(x)})
+            checkEventUsage(x) = true;
+        end
+    end
+    nonEssentialEventNumbers = nonEssentialEventNumbers(checkEventUsage);
+    
+    
     for i =1:length(nonEssentialEventNumbers)
         nonEssentialEvent{1,i}= codes{nonEssentialEventNumbers(i)};
         
         indexOfCodes = nonEssentialCodes == (nonEssentialEventNumbers(i));
         indexOfTimes = circshift(indexOfCodes,-1,2);
         indexOfBoth= logical(indexOfCodes+indexOfTimes);
-        nonEssentialEvent{2,i}= reshape(nonEssentialCodes(indexOfBoth),[],2,size(nonEssentialCodes,3));
         
+        try
+            nonEssentialEvent{2,i}= reshape(nonEssentialCodes(indexOfBoth),[],2,size(nonEssentialCodes,3)); % if all goes well reshapes array
+        catch % if there has been some weirdness, not all the same number of events in each trial
+            
+            % finds the trials that have non matching number of events
+            for q = 1:size(indexOfBoth,3) % for each trial
+                trialSumEvents(q) = sum(indexOfBoth(:,1,q));
+            end
+            
+            trialEventAverage = floor(mean(trialSumEvents));
+            indexOfMismatchedTrials = find(trialSumEvents~=trialEventAverage);
+            
+            % for each mismatched trial tries to find the out of place
+            % event by running through the timings
+            for z = 1:length(indexOfMismatchedTrials)
+                % gets mismatched trial
+                currentTrial= nonEssentialCodes(:,:,indexOfMismatchedTrials(z));
+                
+                % gets index of events of interest and  corresponding
+                % timestamps
+                currentIndexOfCodes = currentTrial == (nonEssentialEventNumbers(i));
+                currentIndexOfTimes = circshift(currentIndexOfCodes,-1,2);
+                
+                % gets the timestamps and works out if any are duplicated
+                % and irrational timescale
+                currentTrialEventTimes = currentTrial(currentIndexOfTimes);
+                timeBetweenEvents = currentTrialEventTimes(2:end) - currentTrialEventTimes(1:end-1);
+                meanTimeBetweenEvents = mean(timeBetweenEvents);
+                stdTimeBetweenEvents = std2(timeBetweenEvents);
+                indexOfOddTimesOut = find(timeBetweenEvents < (meanTimeBetweenEvents - 10*stdTimeBetweenEvents));
+                indexOfOddTimesOut = indexOfOddTimesOut+1;
+                
+                % deletes these irrational events from the array
+                for b =1:length(indexOfOddTimesOut)
+                    indexOfBoth(indexOfOddTimesOut(b),:,indexOfMismatchedTrials(z)) = [0 0];
+                end
+            end
+            nonEssentialEvent{2,i}= reshape(nonEssentialCodes(indexOfBoth),[],2,size(nonEssentialCodes,3)); % if all goes well reshapes array
+        end
     end
     
 else % if any disputes

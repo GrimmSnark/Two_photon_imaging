@@ -83,9 +83,9 @@ saveastiff(stdVol, [savePath 'STD_Average.tif']);
 volTall = tall(vol);
 meanVolTall = mean(volTall,3);
 meanVol = gather(meanVolTall);
+meanVol = mean(vol,3);
 meanVol = uint16(meanVol);
 
-meanVol = mean(vol,3);
 saveastiff(meanVol, [savePath 'Average.tif']);
 
 end
