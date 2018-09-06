@@ -51,6 +51,8 @@ H.im.ButtonDownFcn = @(src,evnt)plotMouseClick(experimentStructure,src,evnt,cmap
 H.fig.KeyPressFcn = @(src,evnt)plotButtonControl(experimentStructure,src,evnt,cmap);
 
 figData.plotChoice = 'dF/F';
+figData.experimentStructure = experimentStructure;
+figData.cmap = cmap;
 set(H.ax,'UserData', figData);
 
 traceMenu = uimenu('Text', 'Type of Trace Plotted');

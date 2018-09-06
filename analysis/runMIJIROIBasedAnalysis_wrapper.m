@@ -10,4 +10,4 @@ end
 
 
 
-% runMijiROIBasedAnalysis('D:\Data\2P_Data\Raw\Mouse\OGB\OGB_M2\5on_5off_2\', 'Multi', 0, [], 'adaptive', [])
+ runMijiROIBasedAnalysis('D:\Data\2P_Data\Raw\Mouse\gCamp6s\M1\5on_5off_6\TSeries-09042018-0830-013\', 'Single', 0, [], 'fixed', [])
