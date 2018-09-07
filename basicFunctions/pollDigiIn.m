@@ -22,7 +22,7 @@ PsychHID('ReceiveReportsStop',daq);
 PsychHID('GiveMeReports',daq);
 PsychHID('ReceiveReports',daq, options);
 
-while 1
+% while 1
     % Emit query to device:
     PsychHID('SetReport',daq,2,reportId, TheReport);
     
@@ -41,6 +41,8 @@ while 1
         disp('Wrong Port Number');
         return
     end
-    %     disp(inreport(3));
+    %     disp(dataOut);
+    
+% end
     
 end

@@ -23,4 +23,7 @@ while slopeDiff ~= TTLTrigger % will poll continuously until TTL edge is dectect
     valueBuffer(2) =  pollDigiIn(daq, portOutNum); % gets new value
     slopeDiff = valueBuffer(2)- valueBuffer(1); % calculates if there is any difference
 end
+
+disp('TTL Detected');
+
 end
