@@ -46,11 +46,11 @@ stimCmpEvents = [1 1] ;
 
 phase = 0;
 if dropRed ==1
-    backgroundColorOffset = [0 0.5 0.5 0]; %RGBA offset color
-    modulateCol = [];
+    backgroundColorOffset = [0 0 0 0]; %RGBA offset color
+    modulateCol = [0 0.5  0.5];
 else
-    backgroundColorOffset = [0.5 0.5 0.5 0]; %RGBA offset color
-    modulateCol = [];
+    backgroundColorOffset = [0 0 0 0]; %RGBA offset color
+    modulateCol = [0.5 0.5 0.5];
 end
 
 %Stimulus
