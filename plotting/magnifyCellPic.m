@@ -24,7 +24,7 @@ FrameSize = experimentStructure.pixelsPerLine; % gets image size original
 newBoundary = round(FrameSize/zoomfactor); % sets new frame size
 
 % gets image axis limits/ resizes image
-patchFigAx.YLim = [(patchCenter(1)-newBoundary) (patchCenter(1)+newBoundary)];
-patchFigAx.XLim =[(patchCenter(2)-newBoundary) (patchCenter(2)+newBoundary)];
+patchFigAx.YLim = [(patchCenter(2)-newBoundary) (patchCenter(2)+newBoundary)];
+patchFigAx.XLim =[(patchCenter(1)-newBoundary) (patchCenter(1)+newBoundary)];
 
 end

@@ -16,7 +16,8 @@ catch ME
     
     % Add ImageJ to working directory
     javaaddpath([matlabroot '\java\jar\mij.jar']);
-    javaaddpath([matlabroot '\java\jar\ij.jar']);
+        javaaddpath([matlabroot '\java\jar\ij-1.52f.jar']);
+%      javaaddpath([matlabroot '\java\jar\ij.jar']);
     
     % Add ImageJ plugins to the current path
     fijiPath = 'C:\PostDoc Docs\Fiji.app\';

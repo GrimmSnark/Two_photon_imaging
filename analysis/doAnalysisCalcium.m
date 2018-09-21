@@ -2,7 +2,7 @@ function experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCo
 % Function enacts main Ca trace analysis for movie files, applys motion
 % correction shifts which were previously calculated, exacts rawF for cells
 % and neuropil, does neuropil correction, calculates dF/F and segements out
-% traces into cell x cnd x trace and makes averages & STDs per cnd 
+% traces into cell x cnd x trace and makes averages & STDs per cnd
 %
 % Inputs - experimentStructure (structure containing all experimental data)
 %
@@ -14,7 +14,7 @@ function experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCo
 %          behaviouralResponseFlag (NOT used, future proofing for awake
 %                                   animals)
 %
-% Outputs - experimentStructure (updated structure) 
+% Outputs - experimentStructure (updated structure)
 
 %% Clear previously calculated stuff
 
@@ -22,14 +22,14 @@ function experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCo
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % IF YOU ADD ANY MORE ANALYSIS FIELDS THEY NEED TO BE ADDED TO REMOVEFIELDS
 % OTHERWISE OVERWRITE ERRROS CAN OCCUR
- removeFields = { 'rawF', 'rawF_neuropil', 'xPos', 'yPos', 'subtractionFactor', ...
-                  'correctedF', 'rate', 'baseline', 'dF', 'dFperCnd', ...
-                  'dFperCndMean','dFperCndSTD', 'meanFrameLength'};
-                
- removeFieldLogical = isfield(experimentStructure, removeFields);
-                
-if any(removeFieldLogical)  
-    experimentStructure = rmfield(experimentStructure, removeFields(removeFieldLogical));   
+removeFields = { 'rawF', 'rawF_neuropil', 'xPos', 'yPos', 'subtractionFactor', ...
+    'correctedF', 'rate', 'baseline', 'dF', 'dFperCnd', ...
+    'dFperCndMean','dFperCndSTD', 'meanFrameLength'};
+
+removeFieldLogical = isfield(experimentStructure, removeFields);
+
+if any(removeFieldLogical)
+    experimentStructure = rmfield(experimentStructure, removeFields(removeFieldLogical));
 end
 
 %% Basic setup of tif stack
@@ -47,7 +47,7 @@ end
 registeredVol = shiftImageStack(vol,experimentStructure.xyShifts([2 1],:)'); % Apply actual shifts to tif stack
 
 % transfers to FIJI
-MIJ.createImage(registeredVol);
+registeredVolMIJI = MIJ.createImage( 'Registered Volume', registeredVol,true);
 
 %% start running actual trace extraction
 
@@ -62,18 +62,26 @@ for x = 1:experimentStructure.cellCount
     % Get cell ROI name and parse out (X,Y) coordinates
     RC.select(x-1); % Select current cell
     [tempLoc1,tempLoc2] = strtok(char(RC.getName(x-1)),'-');
-    experimentStructure.xPos(x) =  str2double(tempLoc1);
-    experimentStructure.yPos(x) = -str2double(tempLoc2);
+    experimentStructure.yPos(x) =  str2double(tempLoc1);
+    experimentStructure.xPos(x) = -str2double(tempLoc2);
     
     % Get the fluorescence timecourse for the cell and neuropol ROI by
     % using ImageJ's "z-axis profile" function. We can also rename the
     % ROIs for easier identification.
     for isNeuropilROI = 0:1
         ij.IJ.getInstance().toFront();
-        MIJ.run('Plot Z-axis Profile'); % For each image, this outputs four summary metrics: number of pixels (in roi), mean ROI value, min ROI value, and max ROI value
-        RT = MIJ.getResultsTable();
-        MIJ.run('Clear Results');
-        MIJ.run('Close','');
+        
+        % for imagej 1.50c
+        %         MIJ.run('Plot Z-axis Profile'); % For each image, this outputs four summary metrics: number of pixels (in roi), mean ROI value, min ROI value, and max ROI value
+        %         RT = MIJ.getResultsTable();
+        %         MIJ.run('Clear Results');
+        %                 MIJ.run('Close','');
+        
+        %   for imagej >1.50c
+        plot = ij.plugin.ZAxisProfiler.getPlot(registeredVolMIJI);
+        RT(:,1) = plot.getXValues();
+        RT(:,2) = plot.getYValues();
+        
         if isNeuropilROI
             %RC.setName(sprintf('Neuropil ROI %d',i));
             experimentStructure.rawF_neuropil(x,:) = RT(:,2);
@@ -138,11 +146,11 @@ if isempty(behaviouralResponseFlag) % if no behaviour, ie trials are the same le
     if isfield(experimentStructure.EventFrameIndx, 'PRESTIM_ON')
         analysisFrameLength = ceil(mean(experimentStructure.EventFrameIndx.TRIAL_END - experimentStructure.EventFrameIndx.PRESTIM_ON));
         stimOnFrames = [ceil(mean(experimentStructure.EventFrameIndx.STIM_ON - experimentStructure.EventFrameIndx.PRESTIM_ON))-1 ...
-                        ceil(mean(experimentStructure.EventFrameIndx.STIM_OFF - experimentStructure.EventFrameIndx.PRESTIM_ON))-1];
+            ceil(mean(experimentStructure.EventFrameIndx.STIM_OFF - experimentStructure.EventFrameIndx.PRESTIM_ON))-1];
     else
         analysisFrameLength = ceil(mean(experimentStructure.EventFrameIndx.TRIAL_END - (experimentStructure.EventFrameIndx.STIM_ON- prestimFrameTime)));
         stimOnFrames = [ceil(mean(experimentStructure.EventFrameIndx.STIM_ON -(experimentStructure.EventFrameIndx.STIM_ON- prestimFrameTime)))-1 ...
-                        ceil(mean(experimentStructure.EventFrameIndx.STIM_OFF - (experimentStructure.EventFrameIndx.STIM_ON- prestimFrameTime)))-1];
+            ceil(mean(experimentStructure.EventFrameIndx.STIM_OFF - (experimentStructure.EventFrameIndx.STIM_ON- prestimFrameTime)))-1];
         noPrestim_Flag =1; %#ok<NASGU> supressed warning as no need to worry about it
     end
     
@@ -164,7 +172,7 @@ if isempty(behaviouralResponseFlag) % if no behaviour, ie trials are the same le
                     end
                     %full trial prestimON-trialEND cell cnd trial
                     experimentStructure.dFperCnd{p}{x}(:,y) = experimentStructure.dF(p,currentTrialFrameStart:currentTrialFrameStart+ (analysisFrameLength-1)); %chunks data and sorts into structure
-                
+                    
                     % prestim response and average response per cell x cnd x trial
                     
                     if exist('noPrestim_Flag', 'var') % deals with chunk type, ie from PRESTIM_ON or STIM_ON minus prestimTime
@@ -176,7 +184,7 @@ if isempty(behaviouralResponseFlag) % if no behaviour, ie trials are the same le
                     experimentStructure.dFpreStimWindowAverage{p}{y,x} = mean(experimentStructure.dFpreStimWindow{p}{y,x});
                     
                     % stim response and average response per cell x cnd x trial
-                   
+                    
                     experimentStructure.dFstimWindow{p}{y,x} = experimentStructure.dF(p,experimentStructure.EventFrameIndx.STIM_ON(currentTrial):experimentStructure.EventFrameIndx.STIM_OFF(currentTrial));
                     experimentStructure.dFstimWindowAverage{p}{y,x} = mean(experimentStructure.dFstimWindow{p}{y,x});
                 end
@@ -202,11 +210,11 @@ end
 
 % % do other processing specfic to the experiment ie OSIs etc
 % switch experimentStructure.experimentType
-%     
+%
 %     case 'RFmap'
-%         
+%
 %     otherwise %'Orientation'
-%         
+%
 % end
 
 %% Save the updated experimentStructure
