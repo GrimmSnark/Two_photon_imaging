@@ -3,6 +3,8 @@ function eventArray = readEventFilePrairie(dataFilepath, keyFilepath)
 % of stimcode. Inputs are the filepath of excel file and .mat file
 % containing the voltage level key calculated in previous work, should not
 % need to change file.
+%
+% NB See updated better function readEventPrairieV2
 
 % dataFilepath = 'C:\PostDoc Docs\Ca Imaging Project\Voltage Recording Test 3\Voltage Test 2ms-002\Voltage Test 2ms-002_Cycle00001_VoltageRecording_001.csv';
 % dataFilepath = 'C:\PostDoc Docs\Ca Imaging Project\Voltage Recording Test 3\Voltage Test 2ms-002\Voltage Test 2ms-002_Cycle00001_VoltageRecording_001.csv';
@@ -55,6 +57,9 @@ for i=1:length(eventArrayVoltage)
 
     counter =1;
     while isempty(tempLevel)
+        
+%         [~,tempLevel] = min(abs(Prairie.VoltageLevels - eventArrayVoltage(i,2)));
+        
         tempLevel=Prairie.VoltageLevels((eventArrayVoltage(i,2)>= Prairie.VoltageLevels(:,2)-(errorLimit+ counter*Prairie.std) &  eventArrayVoltage(i,2) <=Prairie.VoltageLevels(:,2)+(errorLimit+counter*Prairie.std)),1);
         counter = counter +1;
     end

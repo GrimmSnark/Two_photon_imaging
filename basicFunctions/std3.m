@@ -21,16 +21,6 @@ if size(varargin, 1) == 1
     dim = varargin{1,1};
 end
 
-% validate that our input is valid for the IMHIST optimization
-fast_data_type = isa(a,'logical') || isa(a,'int8') || isa(a,'uint8') || ...
-    isa(a,'uint16') || isa(a,'int16');
-
-% only use IMHIST for images of sufficient size
-big_enough = containers.Map( ...
-    {'logical','int8','uint8','int16','uint16'}, ...
-    numel(a) > [2e4 2e5 2e5 5e5 4e5]);
-
-if fast_data_type && ~issparse(a) && big_enough(class(a))
     
     % compute histogram
     if islogical(a)
@@ -60,13 +50,5 @@ if fast_data_type && ~issparse(a) && big_enough(class(a))
         s = gpuStd(a, num_bins, dim);
         
     end
-    
-else
-    
-    % use simple implementation
-    if ~isa(a,'single')
-        a = double(a);
-    end
-    s = std(a(:));
     
 end

@@ -37,7 +37,7 @@ else
 end
 
 if ~isempty(experimentType)
-    experimentStructure = prepTrialData(experimentStructure, experimentStructure.prairiePathVoltage, 0, [], experimentType);
+    experimentStructure = prepTrialDataV2(experimentStructure, experimentStructure.prairiePathVoltage, 0, [], experimentType);
 end
 
 % Register imaging data and save registered image stack
@@ -58,7 +58,15 @@ end
 % save experimentStructure
 save([savePath 'experimentStructure.mat'], 'experimentStructure');
 
+% Create and save STD sums
+[stimSTDSum, preStimSTDSum,experimentStructure] = createStimSTDAverage(vol, experimentStructure);
 
+%ave images
+saveastiff(stimSTDSum, [savePath 'STD_Stim_Sum.tif']);
+saveastiff(preStimSTDSum, [savePath 'STD_Prestim_Sum.tif']);
+
+% save experimentStructure
+save([savePath 'experimentStructure.mat'], 'experimentStructure');
 
 % Create STD average image and save
 

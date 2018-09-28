@@ -1,112 +1,58 @@
-function experimentStructure = prepTrialData(experimentStructure, dataFilepathPrairie, dataFilepathPTB, experimentType)
-% loads and preprocesses the prairie event data into the experiment
-% structure, will all check consistency between the prairie file and the
-% PTB event file
-% Filepaths are self explanatory, only include PTB path if the checkFile
-% flag is set to 1
-% isRFmap flag should only be set to 1 if the experiment to be loaded is a
-% RFmapping (processes conditions differently
-% code outputs experiment structure with all the data in it
+function experimentStructure = prepTrialDataV2(experimentStructure, dataFilepathPrairie, dataFilepathPTB, experimentType)
+
+
 
 %% initalise stuff
 
-check =[];
 codes = prairieCodes();
 sizeIndMax =0;
 
-essentialEvents ={'TRIAL_START', 'PARAM_START', 'PARAM_END', 'TRIAL_END'};
+essentialEvents ={'TRIAL_START', 'PARAM_START', 'PARAM_END', 'TRIAL_END'}; %list of essential events for valid trial
 essentialEventsNum = stringEvent2Num(essentialEvents, codes);
 
 
-eventArray = readEventFilePrairie(dataFilepathPrairie, []); % read in events file
+eventArray = readEventFilePrairieV2(dataFilepathPrairie, []); % read in events file
 
-% first check and balance, fix any events not reading as ones used in
-% experiement
-
-currentUsedCodes = find(~cellfun(@isempty,codes));
-counter = 1;
-for q = 1:length(eventArray)
-    if eventArray(q,2) == 1 % if 1 event
-        if q>3
-            if eventArray(q-1, 2) == 223  || eventArray(q-2, 2) == 223 % if in the trial setup
-                correctedEventArray(counter,:) = eventArray(q,:); % pass along
-                counter = counter +1;
-            end
-        end
-    else
-        if any(eventArray(q,2) == currentUsedCodes) % if matches any used code
-            correctedEventArray(counter,:) = eventArray(q,:); % pass along
-            counter = counter +1;
-        else
-            [~,indxInCurrentCodes] = min(abs(currentUsedCodes - eventArray(q,2)));
-            
-                correctedEventArray(counter,:) =  [eventArray(q,1) currentUsedCodes(indxInCurrentCodes)];
-                counter = counter +1;
-           
-        end
-        
-    end
-end
-
-eventArray = correctedEventArray;
-
-%% if flag is set check consistency between set and recorded events
+%% if path to PTB file is set check consistency between set and recorded events
 if ~isempty(dataFilepathPTB)
     eventArray = checkConsistency(eventArray, dataFilepathPTB);
 end
 
 %% Proceed with trial event segementation
     eventStream = eventArray;
-    %eventStream(:,1) = eventStream(:,1)-eventStream(1,1); % zero all timestamps
     
     % use trial end events to chunk up into individual trials
-    endIndx = findEvents('TRIAL_END', eventStream, codes); % get trial start event times
+    endIndx = findEvents('TRIAL_END', eventStream, codes); % get trial end event times
     endArray = eventStream(endIndx,:);
     endIndxNum = find(endIndx);
     rawTrials  = cell([length(endIndxNum),1]);
     
+    % splits up raw trial events
     for i =1:length(endIndxNum)
         if i==1
-            rawTrials{i,1} =   eventStream(1:endIndxNum(i),:);
+            rawTrials{i,1} = eventStream(1:endIndxNum(i),:);
         else
-            rawTrials{i,1} =   eventStream(endIndxNum(i-1)+1:endIndxNum(i),:);
+            rawTrials{i,1} = eventStream(endIndxNum(i-1)+1:endIndxNum(i),:);
         end
+    end
+    
+    % check event numbers the same size
+    numEventsPerTrial = arrayfun(@(I) size(rawTrials{I,1},1), 1:length(rawTrials));
+    diffRange = range(numEventsPerTrial); 
+    
+    if diffRange ~= 0
+       disp('Event numbers do not match across trials, please check in debug mode'); 
+       return 
     end
     
     %check trial has all the codes for a valid trial
     
-    numOfEvents = zeros(length(rawTrials),1);
-    for k = 1:numel(rawTrials)
-        numOfEvents(k) = recursiveSum((rawTrials{k}(:,2) == essentialEventsNum));
-    end
-    
-    %if there are any duplicates in the essential events conditions
-    if any(numOfEvents > length(essentialEventsNum))
-        trialsToFix = find(numOfEvents > length(essentialEventsNum));
-        
-        for v = 1:length(trialsToFix) % for each trial to fix find the number of occurances of each event (Should only be 1)
-            for u = 1:length(essentialEventsNum)
-                numOccurance(u) = sum(rawTrials{trialsToFix(v),1}(:,2)==essentialEventsNum(u));
-            end
-            
-            % if there are duplicates of single occurnace events, deletes the
-            % latest
-            eventsDuplicated = essentialEventsNum(numOccurance>1);
-            
-            for o =1:length(eventsDuplicated)
-                ind2Delete =  find(rawTrials{trialsToFix(v),1}(:,2) == eventsDuplicated(o),1,'last');
-                rawTrials{trialsToFix(v),1}(ind2Delete,:) = [];
-            end
-        end
-        
-        % recheck the number of essential events in each trial
         for k = 1:numel(rawTrials)
-            numOfEvents(k) = recursiveSum((rawTrials{k}(:,2) == essentialEventsNum));
+            numOfEssentialEvents(k) = recursiveSum((rawTrials{k}(:,2) == essentialEventsNum));
         end
-    end
     
     
-    validTrial = numOfEvents==length(essentialEventsNum); % indx of valid trial by event inclusion
+    validTrial = numOfEssentialEvents==length(essentialEventsNum); % indx of valid trial by event inclusion
     disp([num2str(sum(validTrial)) ' / '  num2str(length(validTrial)) ' trials have valid condition codes!!!']);
     
     % extract stimulus conditions for each valid trial
@@ -210,8 +156,6 @@ end
     end
 
 %% build trial condition structure
-% experimentStructure.prairiePath = dataFilepathPrairie(1:find(dataFilepathPrairie=='\',1,'last'));
-% experimentStructure.prairieEventPath = dataFilepathPrairie;
 experimentStructure.rawTrials = rawTrials;
 experimentStructure.validTrial = validTrial;
 experimentStructure.cndTotal = cndTotal;
@@ -238,4 +182,7 @@ experimentStructure.nonEssentialEvent= nonEssentialEvent;
 for i =1:length(experimentStructure.nonEssentialEvent)
     experimentStructure = alignEvents2Frames(experimentStructure.nonEssentialEvent{1,i}, experimentStructure);
 end
+
+
+
 end

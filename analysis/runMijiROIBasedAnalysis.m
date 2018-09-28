@@ -49,8 +49,11 @@ switch recordingType % decides if the requested folder for analysis is a single 
     
     case 'Single'
         
-        if exist([recordingDirProcessed 'STD_Average.tif'], 'file')
-            imageROI = read_Tiffs([recordingDirProcessed 'STD_Average.tif'],1);
+        %         if exist([recordingDirProcessed 'STD_Average.tif'], 'file')
+        %             imageROI = read_Tiffs([recordingDirProcessed 'STD_Average.tif'],1);
+        
+        if exist([recordingDirProcessed 'STD_Stim_Sum.tif'], 'file')
+            imageROI = read_Tiffs([recordingDirProcessed 'STD_Stim_Sum.tif'],1);
         else
             
             firstSubFolder = returnSubFolderList(recordingDirProcessed);
@@ -72,9 +75,9 @@ switch recordingType % decides if the requested folder for analysis is a single 
         
     case 'Multi'
         
-         firstSubFolder = returnSubFolderList(recordingDirProcessed);
-         recordingDirProcessed = [recordingDirProcessed firstSubFolder(1).name '\'];
-         
+        firstSubFolder = returnSubFolderList(recordingDirProcessed);
+        recordingDirProcessed = [recordingDirProcessed firstSubFolder(1).name '\'];
+        
         if exist([recordingDirProcessed 'Recording_Average_ROI_Image.tif'], 'file')
             imageROI = read_Tiffs([ recordingDirProcessed 'Recording_Average_ROI_Image.tif'],1); % reads in average image
         else
@@ -189,10 +192,10 @@ if strcmp(recordingType, 'Multi') % for multi video FOVs
         end
         
         openImages = MIJ.getListImages;
-          % closes all MIJI windows
+        % closes all MIJI windows
         for x = 1:length(openImages)
-           ij.IJ.selectWindow(openImages(x)); 
-           MIJ.run("Close")
+            ij.IJ.selectWindow(openImages(x));
+            MIJ.run("Close")
         end
         
     end % end of loop for each subfolder
