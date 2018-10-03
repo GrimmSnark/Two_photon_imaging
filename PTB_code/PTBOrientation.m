@@ -68,6 +68,7 @@ freqPix =1/freqPix; % use the inverse as the function below takes bloody cycles/
 cyclespersecond =1; % temporal frequency to stimulate all cells (in Hz)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+constrast_rampTime = 1; % contrast ramp time in seconds
 contrast =  0.9 ; % should already be set by the sine grating creation??
 Angle =[0    45    90   135   180   225   270   315]; % angle in degrees
 
@@ -138,6 +139,10 @@ totalNumFrames = frameRate * stimTime;
 % Get number of frames for prestimulus time
 preStimFrames = frameRate * preStimTime;
 
+% Get frame number to interate over contrast ramp
+contrast_rampFrames = frameRate *  constrast_rampTime;
+contrastLevels = linspace(0, contrast, frameRate);
+
 % Compute increment of phase shift per redraw:
 phaseincrement = (cyclespersecond * 360) * ifi;
 
@@ -200,7 +205,7 @@ while ~KbCheck
             % blank screen flips for prestimulus time period
             if doNotSendEvents ==0
                 
-                 AnalogueOutEvent(daq, 'PRESTIM_ON');
+                AnalogueOutEvent(daq, 'PRESTIM_ON');
                 stimCmpEvents(end+1,:)= addCmpEvents('PRESTIM_ON');
             end
             
@@ -213,6 +218,22 @@ while ~KbCheck
                 stimCmpEvents(end+1,:)= addCmpEvents('PRESTIM_OFF');
             end
             
+            % start constrast ramp on
+            for frameNo =2:contrast_rampFrames-1
+                % Increment phase by cycles/s:
+                phase = phase + phaseincrement;
+                %create auxParameters matrix
+                propertiesMat = [phase, freqPix
+                    
+                contrastLevels(frameNo), 0];
+                % draw grating on screen
+                %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
+                Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                if frameNo <30
+                Screen('FillRect', windowPtr, [], [modulateCol round(contrastLevels(contrast_rampFrames-frameNo),1)], []);
+                end
+                Screen('Flip', windowPtr);
+            end
             
             stimOnFlag =1;
             for frameNo =1:totalNumFrames % stim presentation loop
@@ -257,7 +278,27 @@ while ~KbCheck
                 AnalogueOutEvent(daq, 'STIM_OFF');
                 stimCmpEvents(end+1,:)= addCmpEvents('STIM_OFF');
             end
+%             Screen('Flip', windowPtr);
+            
+            % start constrast ramp off
+            for frameNo =contrast_rampFrames:-1:2
+                % Increment phase by cycles/s:
+                phase = phase + phaseincrement;
+                %create auxParameters matrix
+                propertiesMat = [phase, freqPix, contrastLevels(frameNo), 0];
+                % draw grating on screen
+                %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
+                Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                
+                if frameNo <29
+                    Screen('FillRect', windowPtr, [], [modulateCol round(contrastLevels(frameNo+30),1)], []);
+                end
+                
+                Screen('Flip', windowPtr);
+            end
+            
             Screen('Flip', windowPtr);
+            
             WaitSecs(ITItime);
             
             if doNotSendEvents ==0
@@ -269,7 +310,7 @@ while ~KbCheck
         if KbCheck
             break;
         end
-    end % end number of blocks 
+    end % end number of blocks
     toc;
     break % breaks when reaches requested number of blocks
 end

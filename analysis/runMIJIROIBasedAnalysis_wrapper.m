@@ -1,10 +1,10 @@
 
 subFolders = returnSubFolderList('D:\Data\2P_Data\Processed\Mouse\gCamp6s\M3\');
 
-for i = 1:length(subFolders) -1
+for i = 1%:length(subFolders) -1
    subSubFolder =  returnSubFolderList([subFolders(i).folder '\' subFolders(i).name '\TSeries*' ]);
 
-runMijiROIBasedAnalysis([subSubFolder.folder '\' subSubFolder.name], 'Single', 0, [], 'adaptive', [])
+runMijiROIBasedAnalysis([subSubFolder.folder '\' subSubFolder.name], 'Single', 0, [], 'fixed', [])
 
 end
 

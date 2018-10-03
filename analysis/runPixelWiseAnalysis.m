@@ -1,4 +1,4 @@
-function runPixelWiseAnalysis(recordingDir, analysisType, roiChosen, padSize, analysisFrames)
+function runPixelWiseAnalysis(recordingDir, analysisType, roiChosen, padSize, analysisFrames, pixelChosen)
 
 %% creates the appropriate filepaths
 if contains(recordingDir, 'Raw') % if you specfy the raw folder then it finds the appropriate processed folder
@@ -78,8 +78,11 @@ switch analysisType
     case 'Stim_STDwindow'
         
         processPixelsSTD(MIJImageROI, registeredVolMIJI, registeredVol, experimentStructure, analysisFrames);
+        
+    case 'Cnd_Trial_Average'
+        
+        processPixelCndTrialAverage(pixelChosen, registeredVol, experimentStructure);
 end
-
 
 
 end
