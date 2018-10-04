@@ -220,6 +220,7 @@ while ~KbCheck
                 stimCmpEvents(end+1,:)= addCmpEvents('PRESTIM_OFF');
             end
             
+            stimOnFlag =1;
             % start constrast ramp on
             if rampTime > 0
                 for frameNo =1:contrast_rampFrames
@@ -229,12 +230,20 @@ while ~KbCheck
                     propertiesMat = [phase, freqPix, contrastLevels(frameNo), 0];
                     % draw grating on screen
                     %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
+                    
+                    if doNotSendEvents ==0
+                        if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
+                            AnalogueOutEvent(daq, 'STIM_ON');
+                            stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
+                            stimOnFlag = 0;
+                        end
+                    end
+                    
                     Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
                     Screen('Flip', windowPtr);
                 end
             end
             
-            stimOnFlag =1;
             for frameNo =1:totalNumFrames % stim presentation loop
                 % Increment phase by cycles/s:
                 phase = phase + phaseincrement;
@@ -246,10 +255,12 @@ while ~KbCheck
                 Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
                 
                 if doNotSendEvents ==0
-                    if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
-                        AnalogueOutEvent(daq, 'STIM_ON');
-                        stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
-                        stimOnFlag = 0;
+                    if rampTime == 0
+                        if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
+                            AnalogueOutEvent(daq, 'STIM_ON');
+                            stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
+                            stimOnFlag = 0;
+                        end
                     end
                 end
                 
@@ -274,8 +285,10 @@ while ~KbCheck
                 break;
             end
             if doNotSendEvents ==0
-                AnalogueOutEvent(daq, 'STIM_OFF');
-                stimCmpEvents(end+1,:)= addCmpEvents('STIM_OFF');
+                if rampTime == 0
+                    AnalogueOutEvent(daq, 'STIM_OFF');
+                    stimCmpEvents(end+1,:)= addCmpEvents('STIM_OFF');
+                end
             end
             %             Screen('Flip', windowPtr);
             
@@ -291,6 +304,12 @@ while ~KbCheck
                     Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
                     Screen('Flip', windowPtr);
                 end
+                
+                if doNotSendEvents ==0
+                    AnalogueOutEvent(daq, 'STIM_OFF');
+                    stimCmpEvents(end+1,:)= addCmpEvents('STIM_OFF');
+                end
+                
             end
             
             Screen('Flip', windowPtr);
