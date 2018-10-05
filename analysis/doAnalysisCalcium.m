@@ -1,4 +1,4 @@
-function experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, prestimTime, behaviouralResponseFlag)
+function experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, runFISSA, prestimTime, behaviouralResponseFlag)
 % Function enacts main Ca trace analysis for movie files, applys motion
 % correction shifts which were previously calculated, exacts rawF for cells
 % and neuropil, does neuropil correction, calculates dF/F and segements out
@@ -7,6 +7,8 @@ function experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCo
 % Inputs - experimentStructure (structure containing all experimental data)
 %
 %          neuropilCorrectionType ('adaptive', 'fixed', 'none')
+%
+%          runFISSA - flag 0/1 to run FISSA analysis through python
 %
 %          prestimTime ( [], fixed prestim time for analysis before stim on,
 %                      curretly not need as we have prestim events)
@@ -45,6 +47,23 @@ if ndims(vol) ~=3
 end
 % apply imageregistration shifts
 registeredVol = shiftImageStack(vol,experimentStructure.xyShifts([2 1],:)'); % Apply actual shifts to tif stack
+
+% save registered image stack if you want to run FISSA toolbox
+if runFISSA ==1
+    if ~exist([experimentStructure.savePath 'FISSA\'], 7)
+        mkdir([experimentStructure.savePath 'FISSA\']);
+    end
+    
+    disp('Saving registered image stack')
+    saveastiff(registeredVol, [experimentStructure.savePath 'FISSA\registered.tif']);
+    disp('Finished saving registered image stack');
+    
+    % create FISSA run file
+    createFISSARunFile(experimentStructure);
+    
+    % call to system to run python file
+    system(['python "' experimentStructure.savePath 'FISSA\FISSA_run.py"']);
+end
 
 % transfers to FIJI
 registeredVolMIJI = MIJ.createImage( 'Registered Volume', registeredVol,true);

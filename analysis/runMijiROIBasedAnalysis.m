@@ -180,7 +180,7 @@ if strcmp(recordingType, 'Multi') % for multi video FOVs
         experimentStructure.averageROIRadius = averageROIRadius;
         
         % does main analysis
-        experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, prestimTime, behaviouralResponseFlag);
+        experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, runFISSA, prestimTime, behaviouralResponseFlag);
         
         % feeds into grand structure for all recordings
         % This is very likely to break.... FYI
@@ -218,7 +218,7 @@ else % for single video FOVs
     experimentStructure.averageROIRadius = averageROIRadius;
     
     % does main analysis
-    experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, prestimTime, behaviouralResponseFlag);
+    experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, runFISSA, prestimTime, behaviouralResponseFlag);
     
 end
 

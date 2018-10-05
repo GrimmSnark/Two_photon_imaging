@@ -1,4 +1,4 @@
-function [imageROI, imageLoc, objectiveMag] =  getFOVInfo(recordingDir)
+function [imageROI, imageLoc, micronsPerPixel , objectiveMag] =  getFOVInfo(recordingDir)
 % retrives average recording image, location and magnification for future
 % analysis
 
@@ -44,5 +44,6 @@ end
 
 imageLoc = experimentStructure.currentPostion;
 objectiveMag = experimentStructure.lensMag;
+micronsPerPixel = experimentStructure.micronsPerPixel;
 
 end
