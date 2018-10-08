@@ -20,7 +20,7 @@ function tifStack = read_Tiffs(filePath,imgScaling,updateFrequency,dataType,useW
 % David.Whitney@mpfi.org
 % Max Planck Florida Institude
 
-if(nargin<2), imgScaling      = 0.5;      end
+if(nargin<2), imgScaling      = 1;      end
 if(nargin<3), updateFrequency = 100;      end
 if(nargin<4), dataType        = 'uint16'; end
 if(nargin<5), useWaitBar      = false;    end

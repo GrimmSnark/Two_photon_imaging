@@ -1,4 +1,4 @@
-function runMijiROIBasedAnalysis(recordingDir, recordingType, overwriteROIFile, preproFolder2Open, neuropilCorrectionType, prestimTime, behaviouralResponseFlag)
+function runMijiROIBasedAnalysis(recordingDir, recordingType, overwriteROIFile, preproFolder2Open, neuropilCorrectionType, runFISSA, prestimTime, behaviouralResponseFlag)
 % function which runs main analysis on calcium imaging data recorded on
 % prairie bruker system. This function requires user input to define cell
 % ROIs and calculates dF/F with neuropil subtraction. Also splits dF traces
@@ -20,6 +20,8 @@ function runMijiROIBasedAnalysis(recordingDir, recordingType, overwriteROIFile, 
 %
 %          neuropilCorrectionType ('adaptive', 'fixed', 'none')
 %
+%          runFISSA ( 0/1 flag to run FISSA toolbox for data extraction)
+%
 %          prestimTime ( [], fixed prestim time for analysis before stim on,
 %                      curretly not need as we have prestim events)
 %
@@ -28,7 +30,7 @@ function runMijiROIBasedAnalysis(recordingDir, recordingType, overwriteROIFile, 
 
 %%
 % Sets behavioural data flag to empty as not currently used
-if nargin<7
+if nargin<8
     behaviouralResponseFlag =[];
 end
 %% Deals with ROI zip file creation and loading and makes neuropil surround ROIs
@@ -49,8 +51,11 @@ switch recordingType % decides if the requested folder for analysis is a single 
     
     case 'Single'
         
-        if exist([recordingDirProcessed 'STD_Average.tif'], 'file')
-            imageROI = read_Tiffs([recordingDirProcessed 'STD_Average.tif'],1);
+        %         if exist([recordingDirProcessed 'STD_Average.tif'], 'file')
+        %             imageROI = read_Tiffs([recordingDirProcessed 'STD_Average.tif'],1);
+        
+        if exist([recordingDirProcessed 'STD_Stim_Sum.tif'], 'file')
+            imageROI = read_Tiffs([recordingDirProcessed 'STD_Stim_Sum.tif'],1);
         else
             
             firstSubFolder = returnSubFolderList(recordingDirProcessed);
@@ -62,7 +67,7 @@ switch recordingType % decides if the requested folder for analysis is a single 
             recordingDirProcessed = [firstSubFolder(preproFolder2Open).folder '\' firstSubFolder(preproFolder2Open).name '\']; % gets analysis subfolder
             
             try
-                imageROI = read_Tiffs([recordingDirProcessed 'STD_Average.tif'],1); % reads in average image
+                imageROI = read_Tiffs([recordingDirProcessed 'STD_Stim_Sum.tif'],1); % reads in average image
                 
             catch
                 disp('Average image not found, check filepath or run prepData.m  or prepDataMultiSingle.m on the recording folder')
@@ -72,9 +77,9 @@ switch recordingType % decides if the requested folder for analysis is a single 
         
     case 'Multi'
         
-         firstSubFolder = returnSubFolderList(recordingDirProcessed);
-         recordingDirProcessed = [recordingDirProcessed firstSubFolder(1).name '\'];
-         
+        firstSubFolder = returnSubFolderList(recordingDirProcessed);
+        recordingDirProcessed = [recordingDirProcessed firstSubFolder(1).name '\'];
+        
         if exist([recordingDirProcessed 'Recording_Average_ROI_Image.tif'], 'file')
             imageROI = read_Tiffs([ recordingDirProcessed 'Recording_Average_ROI_Image.tif'],1); % reads in average image
         else
@@ -177,7 +182,7 @@ if strcmp(recordingType, 'Multi') % for multi video FOVs
         experimentStructure.averageROIRadius = averageROIRadius;
         
         % does main analysis
-        experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, prestimTime, behaviouralResponseFlag);
+        experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, runFISSA, prestimTime, behaviouralResponseFlag);
         
         % feeds into grand structure for all recordings
         % This is very likely to break.... FYI
@@ -189,10 +194,10 @@ if strcmp(recordingType, 'Multi') % for multi video FOVs
         end
         
         openImages = MIJ.getListImages;
-          % closes all MIJI windows
+        % closes all MIJI windows
         for x = 1:length(openImages)
-           ij.IJ.selectWindow(openImages(x)); 
-           MIJ.run("Close")
+            ij.IJ.selectWindow(openImages(x));
+            MIJ.run("Close")
         end
         
     end % end of loop for each subfolder
@@ -215,7 +220,7 @@ else % for single video FOVs
     experimentStructure.averageROIRadius = averageROIRadius;
     
     % does main analysis
-    experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, prestimTime, behaviouralResponseFlag);
+    experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, runFISSA, prestimTime, behaviouralResponseFlag);
     
 end
 

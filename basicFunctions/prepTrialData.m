@@ -1,4 +1,4 @@
-function experimentStructure = prepTrialData(experimentStructure, dataFilepathPrairie, checkFile, dataFilepathPTB, experimentType)
+function experimentStructure = prepTrialData(experimentStructure, dataFilepathPrairie, dataFilepathPTB, experimentType)
 % loads and preprocesses the prairie event data into the experiment
 % structure, will all check consistency between the prairie file and the
 % PTB event file
@@ -20,13 +20,42 @@ essentialEventsNum = stringEvent2Num(essentialEvents, codes);
 
 eventArray = readEventFilePrairie(dataFilepathPrairie, []); % read in events file
 
+% first check and balance, fix any events not reading as ones used in
+% experiement
+
+currentUsedCodes = find(~cellfun(@isempty,codes));
+counter = 1;
+for q = 1:length(eventArray)
+    if eventArray(q,2) == 1 % if 1 event
+        if q>3
+            if eventArray(q-1, 2) == 223  || eventArray(q-2, 2) == 223 % if in the trial setup
+                correctedEventArray(counter,:) = eventArray(q,:); % pass along
+                counter = counter +1;
+            end
+        end
+    else
+        if any(eventArray(q,2) == currentUsedCodes) % if matches any used code
+            correctedEventArray(counter,:) = eventArray(q,:); % pass along
+            counter = counter +1;
+        else
+            [~,indxInCurrentCodes] = min(abs(currentUsedCodes - eventArray(q,2)));
+            
+                correctedEventArray(counter,:) =  [eventArray(q,1) currentUsedCodes(indxInCurrentCodes)];
+                counter = counter +1;
+           
+        end
+        
+    end
+end
+
+eventArray = correctedEventArray;
+
 %% if flag is set check consistency between set and recorded events
-if checkFile ==1
-    check = checkConsistency(eventArray, dataFilepathPTB);
+if ~isempty(dataFilepathPTB)
+    eventArray = checkConsistency(eventArray, dataFilepathPTB);
 end
 
 %% Proceed with trial event segementation
-if isempty(check) % if no disputes
     eventStream = eventArray;
     %eventStream(:,1) = eventStream(:,1)-eventStream(1,1); % zero all timestamps
     
@@ -179,10 +208,6 @@ if isempty(check) % if no disputes
             nonEssentialEvent{2,i}= reshape(nonEssentialCodes(indexOfBoth),[],2,size(nonEssentialCodes,3)); % if all goes well reshapes array
         end
     end
-    
-else % if any disputes
-    exit;
-end
 
 %% build trial condition structure
 % experimentStructure.prairiePath = dataFilepathPrairie(1:find(dataFilepathPrairie=='\',1,'last'));

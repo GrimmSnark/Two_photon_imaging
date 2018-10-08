@@ -1,4 +1,4 @@
-function PTBOrientation(width, stimCenter, preStimTime, stimTime, dropRed, numReps, varargin)
+function PTBOrientation(width, stimCenter, preStimTime, stimTime, dropRed, rampTime, numReps, varargin)
 % Experiment which displays moving gratings at 2Hz
 %
 % options width (degrees) for full screen leave blank
@@ -32,6 +32,9 @@ if isempty(width)
     width = 0;
 end
 
+if isempty(rampTime)
+    rampTime = 0;
+end
 
 % Should not change %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 dataDir = 'C:\PostDoc Docs\Ca Imaging Project\PTB_Timing_Files\'; % save dir for timing files
@@ -46,11 +49,11 @@ stimCmpEvents = [1 1] ;
 
 phase = 0;
 if dropRed ==1
-    backgroundColorOffset = [0 0 0 0]; %RGBA offset color
-    modulateCol = [0 0.5  0.5];
+    backgroundColorOffset = [0 0.5 0.5 0]; %RGBA offset color
+    modulateCol = [0 1  1];
 else
-    backgroundColorOffset = [0 0 0 0]; %RGBA offset color
-    modulateCol = [0.5 0.5 0.5];
+    backgroundColorOffset = [0.5 0.5 0.5 0]; %RGBA offset color
+    modulateCol = [1 1 1];
 end
 
 %Stimulus
@@ -66,9 +69,9 @@ freqPix = degreeVisualAngle2Pixels(2,freq);
 freqPix =1/freqPix; % use the inverse as the function below takes bloody cycles/pixel...
 
 cyclespersecond =1; % temporal frequency to stimulate all cells (in Hz)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-contrast =  0.9 ; % should already be set by the sine grating creation??
+contrast =  1 ; % contrast for grating
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Angle =[0    45    90   135   180   225   270   315]; % angle in degrees
 
 numCnd = length(Angle);
@@ -138,6 +141,10 @@ totalNumFrames = frameRate * stimTime;
 % Get number of frames for prestimulus time
 preStimFrames = frameRate * preStimTime;
 
+% Get frame number to interate over contrast ramp
+contrast_rampFrames = frameRate *  rampTime;
+contrastLevels = linspace(0, contrast, contrast_rampFrames);
+
 % Compute increment of phase shift per redraw:
 phaseincrement = (cyclespersecond * 360) * ifi;
 
@@ -200,7 +207,7 @@ while ~KbCheck
             % blank screen flips for prestimulus time period
             if doNotSendEvents ==0
                 
-                 AnalogueOutEvent(daq, 'PRESTIM_ON');
+                AnalogueOutEvent(daq, 'PRESTIM_ON');
                 stimCmpEvents(end+1,:)= addCmpEvents('PRESTIM_ON');
             end
             
@@ -213,8 +220,30 @@ while ~KbCheck
                 stimCmpEvents(end+1,:)= addCmpEvents('PRESTIM_OFF');
             end
             
-            
             stimOnFlag =1;
+            % start constrast ramp on
+            if rampTime > 0
+                for frameNo =1:contrast_rampFrames
+                    % Increment phase by cycles/s:
+                    phase = phase + phaseincrement;
+                    %create auxParameters matrix
+                    propertiesMat = [phase, freqPix, contrastLevels(frameNo), 0];
+                    % draw grating on screen
+                    %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
+                    
+                    if doNotSendEvents ==0
+                        if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
+                            AnalogueOutEvent(daq, 'STIM_ON');
+                            stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
+                            stimOnFlag = 0;
+                        end
+                    end
+                    
+                    Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                    Screen('Flip', windowPtr);
+                end
+            end
+            
             for frameNo =1:totalNumFrames % stim presentation loop
                 % Increment phase by cycles/s:
                 phase = phase + phaseincrement;
@@ -226,10 +255,12 @@ while ~KbCheck
                 Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
                 
                 if doNotSendEvents ==0
-                    if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
-                        AnalogueOutEvent(daq, 'STIM_ON');
-                        stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
-                        stimOnFlag = 0;
+                    if rampTime == 0
+                        if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
+                            AnalogueOutEvent(daq, 'STIM_ON');
+                            stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
+                            stimOnFlag = 0;
+                        end
                     end
                 end
                 
@@ -254,10 +285,35 @@ while ~KbCheck
                 break;
             end
             if doNotSendEvents ==0
-                AnalogueOutEvent(daq, 'STIM_OFF');
-                stimCmpEvents(end+1,:)= addCmpEvents('STIM_OFF');
+                if rampTime == 0
+                    AnalogueOutEvent(daq, 'STIM_OFF');
+                    stimCmpEvents(end+1,:)= addCmpEvents('STIM_OFF');
+                end
             end
+            %             Screen('Flip', windowPtr);
+            
+            if rampTime > 0
+                % start constrast ramp off
+                for frameNo =contrast_rampFrames:-1:1
+                    % Increment phase by cycles/s:
+                    phase = phase + phaseincrement;
+                    %create auxParameters matrix
+                    propertiesMat = [phase, freqPix, contrastLevels(frameNo), 0];
+                    % draw grating on screen
+                    %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
+                    Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                    Screen('Flip', windowPtr);
+                end
+                
+                if doNotSendEvents ==0
+                    AnalogueOutEvent(daq, 'STIM_OFF');
+                    stimCmpEvents(end+1,:)= addCmpEvents('STIM_OFF');
+                end
+                
+            end
+            
             Screen('Flip', windowPtr);
+            
             WaitSecs(ITItime);
             
             if doNotSendEvents ==0
@@ -269,7 +325,7 @@ while ~KbCheck
         if KbCheck
             break;
         end
-    end % end number of blocks 
+    end % end number of blocks
     toc;
     break % breaks when reaches requested number of blocks
 end

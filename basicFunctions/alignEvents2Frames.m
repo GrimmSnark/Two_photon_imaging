@@ -24,7 +24,11 @@ events2Match = experimentStructure.nonEssentialEvent{subLocationI, subLocatation
 % runs through each occurance of the event and finds closest frame
 for i =1:size(events2Match,1) % for each occurance per trial
     for x = 1:size(events2Match,3) % for each trial
-        [~,frameIndex(i,x)] = min(abs(experimentStructure.relativeFrameTimes - events2Match(i,1,x)));
+        [~,closetIndx] = min(abs(experimentStructure.relativeFrameTimes - events2Match(i,1,x))); % finds closest match (may be negative)
+        
+        if experimentStructure.relativeFrameTimes(closetIndx)< events2Match(i,1,x) % makes adjustment if the cloest frame is before event onset
+            frameIndex(i,x) = closetIndx+1;
+        end
     end
 end
 

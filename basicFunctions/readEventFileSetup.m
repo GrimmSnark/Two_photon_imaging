@@ -11,9 +11,11 @@ function readEventFileSetup(filepathData)
 
 %% hard codes from inital writing
 % filepathData = 'C:\PostDoc Docs\Ca Imaging Project\Voltage Recording Test 3\Voltage Test 2ms-001\Voltage Test 2ms-001_Cycle00001_VoltageRecording_001.csv';
- 
+%  
 % filepathData{1,1}= 'C:\PostDoc Docs\Ca Imaging Project\Voltage Recording Test 3\Voltage Test 2ms-001\Voltage Test 2ms-001_Cycle00001_VoltageRecording_001.csv';
 % filepathData{2,1}= 'C:\PostDoc Docs\Ca Imaging Project\Voltage Recording Test 3\Voltage Test 2ms-002\Voltage Test 2ms-002_Cycle00001_VoltageRecording_001.csv';
+% % 
+ filepathData = 'C:\PostDoc Docs\Ca Imaging Project\Voltage Recording Test 4\TSeries-09262018-1149-015\TSeries-09262018-1149-015_Cycle00001_VoltageRecording_001.csv';
 
 
 %% basic setup info
