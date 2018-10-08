@@ -143,7 +143,7 @@ phaseincrement = (cyclespersecond * 360) * ifi;
 
 %% START STIM PRESENTATION
 
-HideCursor(windowPtr, []);
+% HideCursor(windowPtr, []);
 
 if doNotSendEvents ==0
     % trigger image scan start with digital port A
@@ -279,7 +279,7 @@ if doNotSendEvents ==0
     saveCmpEventFile(stimCmpEvents, dataDir, indentString, timeSave);
 end
 
-ShowCursor([],[windowPtr],[]);
+% ShowCursor([],[windowPtr],[]);
 
 % Clear screen
 sca;
