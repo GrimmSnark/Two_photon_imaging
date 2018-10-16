@@ -273,6 +273,8 @@ for i = 1:length(experimentStructure.dFperCnd) % for each cell
     end
 end
 
+experimentStructure = calculateDFOnFrameBeforeStimOn(experimentStructure);
+
 
 % % do other processing specfic to the experiment ie OSIs etc
 % switch experimentStructure.experimentType

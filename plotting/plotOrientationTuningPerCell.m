@@ -15,8 +15,8 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     %     blankResponseMean = mean(mean(cell2mat(experimentStructure.extractedDFpreStimWindowAverageFISSA{1,i})));
     %     blackResponseStd = mean(std(cell2mat(experimentStructure.extractedDFpreStimWindowAverageFISSA{1,i})));
     
-    blankResponseMean = mean(mean(cell2mat(experimentStructure.dFpreStimWindowAverageLS{1,i})));
-    blackResponseStd = mean(std(cell2mat(experimentStructure.dFpreStimWindowAverageLS{1,i})));
+    blankResponseMean = mean(mean(cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i})));
+    blackResponseStd = mean(std(cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i})));
     
     
     
@@ -35,9 +35,9 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     %     yResponseMean = experimentStructure.extractedDFperCndMeanFISSA{1,i}(:,preferredStimulus);
     %     yResponseSTD  = experimentStructure.extractedDFperSTDMeanFISSA{1,i}(:,preferredStimulus);
     
-    yResponse     = experimentStructure.dFperCndLS{1,i}{1, preferredStimulus};
-    yResponseMean = experimentStructure.dFperCndMeanLS{1,i}(:,preferredStimulus);
-    yResponseSTD  = experimentStructure.dFperCndSTDLS{1,i}(:,preferredStimulus);
+    yResponse     = experimentStructure.dFperCndFBS{1,i}{1, preferredStimulus};
+    yResponseMean = experimentStructure.dFperCndMeanFBS{1,i}(:,preferredStimulus);
+    yResponseSTD  = experimentStructure.dFperCndSTDFBS{1,i}(:,preferredStimulus);
     
     % Show response timcourse for preferred response
     subplot(1,2,1);
@@ -68,7 +68,7 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     %     xlabel(sprintf('Stimulus direction (%s)', char(176)))
     %     axis square;
     hold on
-    for x =1:size(experimentStructure.dFperCndMeanLS{1,i},2)
+    for x =1:size(experimentStructure.dFperCndMeanFBS{1,i},2)
         lengthOfData = experimentStructure.meanFrameLength;
         if x >1
             spacing = 5;
@@ -80,12 +80,12 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
             xlocationMid(x) = xlocations(lengthOfData/2);
         end
         
-%         errorbar(xlocations, experimentStructure.dFperCndMeanLS{1,i}(:,x), experimentStructure.dFperCndSTDLS{1,i}(:,x), 'Color' , 'k');
-           shadedErrorBar(xlocations, experimentStructure.dFperCndMeanLS{1,i}(:,x), experimentStructure.dFperCndSTDLS{1,i}(:,x), 'lineprops' , 'k');
+%         errorbar(xlocations, experimentStructure.dFperCndMeanFBS{1,i}(:,x), experimentStructure.dFperCndSTDFBS{1,i}(:,x), 'Color' , 'k');
+           shadedErrorBar(xlocations, experimentStructure.dFperCndMeanFBS{1,i}(:,x), experimentStructure.dFperCndSTDFBS{1,i}(:,x), 'lineprops' , 'k');
     end
     
     xticks(xlocationMid);
-    xticklabels(0:45:315);
+    xticklabeFBS(0:45:315);
     title('Tuning curve');
     ylabel('\DeltaF/F')
     xlabel(sprintf('Stimulus direction (%s)', char(176)));
