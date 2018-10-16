@@ -84,6 +84,8 @@ for i=1:length(eventArrayVoltage)
         
     end
     
+    % if tempLevel is single number..
+    eventArray(i,2)= tempLevel;
 end
 
 

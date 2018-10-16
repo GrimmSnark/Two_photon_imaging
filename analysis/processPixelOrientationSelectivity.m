@@ -1,7 +1,7 @@
 function processPixelOrientationSelectivity(recordingDir)
 % Function which plots orientation selectivty maps from STD stim images
 
-recordingDir = 'D:\Data\2P_Data\Processed\Mouse\gCamp6s\M3\5on_5off_8\TSeries-09242018-1042-010\20180927124421\';
+% recordingDir = 'D:\Data\2P_Data\Processed\Mouse\gCamp6s\M3\5on_5off_8\TSeries-09242018-1042-010\20180927124421\';
 angles = (0:45:315)*2;
 angles_rad = circ_ang2rad(angles);
 
@@ -53,6 +53,9 @@ end
 % calculate vector mean per pixel per cnd
 for pixelNo = 1:length(pixelVectorAngles)
    pixelWeightedMeanVector(pixelNo,:) = [circ_mean(pixelVectorAngles(pixelNo,:,1)', pixelVectorAngles(pixelNo,:,2)') mean(pixelVectorAngles(pixelNo,:,2)) mean(pixelVectorAngles(pixelNo,:,3))];
+   
+   angleStruct = mean_vector_direction_magnitude([circ_rad2ang(pixelVectorAngles(pixelNo,:,1))' pixelVectorAngles(pixelNo,:,2)']) ;
+   pixelWeightedMeanVectorV2(pixelNo,:) = [angleStruct.mean_angle_degrees angleStruct.mean_magnitude mean(pixelVectorAngles(pixelNo,:,3))];
 end
 
 pixelWeightedMeanVector = [circ_rad2ang(pixelWeightedMeanVector(:,1)) pixelWeightedMeanVector(:,2) pixelWeightedMeanVector(:,3)];
@@ -68,27 +71,34 @@ for pixelNo = 1:length(pixelWeightedMeanVector)
 end
 
 % reconstruct array
- pixelWeightedMeanVectorCorrected =  [ pixelWeightedMeanVectorCorrected' pixelWeightedMeanVector(:,2) pixelWeightedMeanVector(:,2)];
+ pixelWeightedMeanVectorCorrected =  [ pixelWeightedMeanVectorCorrected' pixelWeightedMeanVector(:,2) pixelWeightedMeanVector(:,3)];
 
 % reshape into orientation image 
  orientationSelectivityImage = reshape(pixelWeightedMeanVectorCorrected(:,1), 512, 512);
+ 
+ orientationSelectivityImage2 = reshape(pixelWeightedMeanVectorV2(:,1), 512, 512);
+ 
+ 
  orientationAmplitudeImage = reshape(pixelWeightedMeanVectorCorrected(:,2), 512, 512);
  
  % rescale into colormap
  orientationSelectivityImageConverted = orientationSelectivityImage *(256/180);
+  orientationSelectivityImageConverted2 = orientationSelectivityImage2 *(256/180);
+ 
  
  % plot color image
- 
+ figure
  imHandle = imagesc(orientationSelectivityImageConverted);
  figHandle = imgcf;
  colormap(ggb1)
  clbar = colorbar;
- clbar.Ticks = linspace(0,255, 5)
+ clbar.Ticks = linspace(0,255, 5);
  clbar.TickLabels = 0:45:180;
  set(figHandle, 'Position' ,[3841,417,1280,951.333333333333]);
  axis square
  saveas(figHandle, [experimentStructure.savePath 'Pixel Orientation Pref.tif']);
  
+ close;
  
 %  figure
 %  imagesc(orientationAmplitudeImage)

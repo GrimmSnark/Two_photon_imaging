@@ -26,8 +26,10 @@ for i =1:size(events2Match,1) % for each occurance per trial
     for x = 1:size(events2Match,3) % for each trial
         [~,closetIndx] = min(abs(experimentStructure.relativeFrameTimes - events2Match(i,1,x))); % finds closest match (may be negative)
         
-        if experimentStructure.relativeFrameTimes(closetIndx)< events2Match(i,1,x) % makes adjustment if the cloest frame is before event onset
+        if experimentStructure.relativeFrameTimes(closetIndx)< events2Match(i,1,x) % makes adjustment if the closest frame is before event onset
             frameIndex(i,x) = closetIndx+1;
+        else
+            frameIndex(i,x) = closetIndx;
         end
     end
 end

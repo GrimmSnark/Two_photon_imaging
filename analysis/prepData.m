@@ -37,7 +37,7 @@ else
 end
 
 if ~isempty(experimentType)
-    experimentStructure = prepTrialDataV2(experimentStructure, experimentStructure.prairiePathVoltage, 0, [], experimentType);
+    experimentStructure = prepTrialDataV2(experimentStructure, experimentStructure.prairiePathVoltage, experimentType);
 end
 
 % Register imaging data and save registered image stack

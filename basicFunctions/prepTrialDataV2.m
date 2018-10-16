@@ -1,4 +1,4 @@
-function experimentStructure = prepTrialDataV2(experimentStructure, dataFilepathPrairie, dataFilepathPTB, experimentType)
+function experimentStructure = prepTrialDataV2(experimentStructure, dataFilepathPrairie, experimentType)
 
 
 
@@ -14,8 +14,10 @@ essentialEventsNum = stringEvent2Num(essentialEvents, codes);
 eventArray = readEventFilePrairieV2(dataFilepathPrairie, []); % read in events file
 
 %% if path to PTB file is set check consistency between set and recorded events
-if ~isempty(dataFilepathPTB)
-    eventArray = checkConsistency(eventArray, dataFilepathPTB);
+PTBPath = dir([experimentStructure.prairiePath '*.mat']);
+if ~isempty(PTBPath)
+    experimentStructure.PTB_TimingFilePath = [PTBPath.folder '\' PTBPath.name ];
+    eventArray = checkConsistency(eventArray, experimentStructure.PTB_TimingFilePath);
 end
 
 %% Proceed with trial event segementation
