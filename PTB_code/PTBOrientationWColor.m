@@ -42,14 +42,15 @@ timeSave = datestr(now,'yyyymmddHHMMSS');
 indentString = 'OrientationWColor_';
 
 % stimTime = 1; %in s
-ITItime = 2; % intertrial interval in seconds
+ITItime = 10; % intertrial interval in seconds
 % firstTime =1;
 blockNum = 0;
 stimCmpEvents = [1 1] ;
 
 phase = 0;
 
-backgroundColorOffsetCy = [0 0.5 0.5 0]; %RGBA offset color
+backgroundGreen = 0.5*0.7255; 
+backgroundColorOffsetCy = [0 backgroundGreen 0.5 1]; %RGBA offset color
 blueMax = 1;
 greenMax = 0.7255;
 
@@ -67,9 +68,9 @@ freqPix =1/freqPix; % use the inverse as the function below takes bloody cycles/
 
 cyclespersecond =1; % temporal frequency to stimulate all cells (in Hz)
 
-contrast =  1 ; % contrast for grating
+contrast =  0.7 ; % contrast for grating
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Angle =[0    45    90   135  0    45    90   135]; % angle in degrees
+Angle =[0    45    90   135   180   225   270   315  0    45    90   135   180   225   270   315]; % angle in degrees
 
 numCnd = length(Angle); % conditions = angle x colors
 
@@ -103,7 +104,7 @@ screenStimCentreOffset(2) = degreeVisualAngle2Pixels(2,stimCenter(2));
 screenStimCentre = screenCentre + screenStimCentreOffset;
 
 % Define grey
-grey = [0 0.5 0.5];
+grey = [0 backgroundGreen 0.5];
 
 PsychImaging('PrepareConfiguration');
 
@@ -114,31 +115,21 @@ PsychImaging('AddTask','General', 'FloatingPoint32Bit'); % sets accuracy of fram
 [windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, [ grey ] ); %opens screen and sets background to grey
 
 
-% Get frame rate fro moving patch
-frameRate=Screen('FrameRate',screenNumber);
-
-% Get frame number to interate over contrast ramp
-contrast_rampFrames = frameRate *  rampTime;
-contrastLevels = linspace(0, contrast, contrast_rampFrames);
-backgroundColLevels = linspace(0.5, 0, contrast_rampFrames);
-
 %create all gratings on GPU.....should be very fast
 if fullfieldStim ==0
     [gratingidG, gratingrectG] = CreateProceduralSineGrating(windowPtr, widthInPix, heightInPix, backgroundColorOffsetCy, radius, contrast);
     [gratingidB, gratingrectB] = CreateProceduralSineGrating(windowPtr, widthInPix, heightInPix, backgroundColorOffsetCy, radius, contrast);
 else
-    %     [gratingidG, gratingrectG] = CreateProceduralSineGrating(windowPtr, screenXpixels*1.5, screenXpixels*1.5, backgroundColorOffsetCy, [], contrast);
-    %     [gratingidB, gratingrectB] = CreateProceduralSineGrating(windowPtr, screenXpixels*1.5, screenXpixels*1.5, backgroundColorOffsetCy, [], contrast);
-    
-    for i = 1:length(backgroundColLevels)
-        [gratingidG(i), gratingrectG] = CreateProceduralSineGrating(windowPtr, screenXpixels*1.5, screenXpixels*1.5, [0 backgroundColLevels(i) backgroundColLevels(i) 0], [], contrast);
-        [gratingidB(i), gratingrectB] = CreateProceduralSineGrating(windowPtr, screenXpixels*1.5, screenXpixels*1.5, [0 backgroundColLevels(i) backgroundColLevels(i) 0], [], contrast);
-    end
-    
+    [gratingidG, gratingrectG] = CreateProceduralSineGrating(windowPtr, screenXpixels*1.5, screenXpixels*1.5, backgroundColorOffsetCy, [], contrast);
+    [gratingidB, gratingrectB] = CreateProceduralSineGrating(windowPtr, screenXpixels*1.5, screenXpixels*1.5, backgroundColorOffsetCy, [], contrast);
 end
+
 
 % Retrieve video redraw interval for later control of our animation timing:
 ifi = Screen('GetFlipInterval', windowPtr);
+
+% Get frame rate fro moving patch
+frameRate=Screen('FrameRate',screenNumber);
 
 % Get the number of frames stim needs to be on for
 totalNumFrames = frameRate * stimTime;
@@ -148,6 +139,11 @@ preStimFrames = frameRate * preStimTime;
 
 % Compute increment of phase shift per redraw:
 phaseincrement = (cyclespersecond * 360) * ifi;
+
+% Get frame number to interate over contrast ramp
+contrast_rampFrames = frameRate *  rampTime;
+contrastLevels = linspace(0, contrast, contrast_rampFrames);
+
 
 %% START STIM PRESENTATION
 
@@ -171,12 +167,13 @@ while ~KbCheck
         for trialCnd = 1:length(cndOrder)
             
             
-            if cndOrder(trialCnd) <5
+            if cndOrder(trialCnd) <9
                 colorThisTrial = 'Green';
                 modulateCol = [0 greenMax  0.5];
+                modualteColRamp = linspace(backgroundGreen, greenMax, contrast_rampFrames);
             else
                 colorThisTrial = 'Blue';
-                modulateCol = [0 0.5 blueMax];
+                modulateCol = [0 backgroundGreen blueMax];
             end
             
             if doNotSendEvents ==0
@@ -250,10 +247,10 @@ while ~KbCheck
                         end
                     end
                     
-                    if cndOrder(trialCnd) <5
-                        Screen('DrawTexture', windowPtr, gratingidG(frameNo), [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                    if cndOrder(trialCnd) <9
+                        Screen('DrawTexture', windowPtr, gratingidG, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
                     else
-                        Screen('DrawTexture', windowPtr, gratingidB(frameNo), [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                        Screen('DrawTexture', windowPtr, gratingidB, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
                     end
                     Screen('Flip', windowPtr);
                 end
@@ -268,10 +265,10 @@ while ~KbCheck
                 % draw grating on screen
                 %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
                 
-                if cndOrder(trialCnd) <5
-                    Screen('DrawTexture', windowPtr, gratingidG(end), [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                if cndOrder(trialCnd) <9
+                    Screen('DrawTexture', windowPtr, gratingidG, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
                 else
-                    Screen('DrawTexture', windowPtr, gratingidB(end), [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                    Screen('DrawTexture', windowPtr, gratingidB, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
                 end
                 
                 if doNotSendEvents ==0
@@ -293,11 +290,11 @@ while ~KbCheck
                 end
                 Screen('Flip', windowPtr);
                 
-                % Abort requested? Test for keypress:
+%                 % Abort requested? Test for keypress:
                 if KbCheck
                     break;
                 end
-                
+%                 
             end % end stim presentation loop
             
             % Abort requested? Test for keypress:
@@ -322,10 +319,10 @@ while ~KbCheck
                     % draw grating on screen
                     %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
                     
-                    if cndOrder(trialCnd) <5
-                        Screen('DrawTexture', windowPtr, gratingidG(frameNo), [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                    if cndOrder(trialCnd) <9
+                        Screen('DrawTexture', windowPtr, gratingidG, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
                     else
-                        Screen('DrawTexture', windowPtr, gratingidB(frameNo), [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                        Screen('DrawTexture', windowPtr, gratingidB, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
                     end
                     Screen('Flip', windowPtr);
                 end

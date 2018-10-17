@@ -8,8 +8,8 @@ analysisFrameLength = experimentStructure.meanFrameLength;
 % chunks up dF into cell x cnd x trial
 for p = 1:experimentStructure.cellCount % for each cell
     for  x =1:length(experimentStructure.cndTotal) % for each condition
-        for y =1:length(experimentStructure.cndTriaFBS{x}) % for each trial of that type
-            currentTrial = experimentStructure.cndTriaFBS{x}(y); % gets current trial number for that cnd
+        for y =1:length(experimentStructure.cndTrials{x}) % for each trial of that type
+            currentTrial = experimentStructure.cndTrials{x}(y); % gets current trial number for that cnd
             
             currentTrialFrameStart = experimentStructure.EventFrameIndx.PRESTIM_ON(currentTrial);
             
