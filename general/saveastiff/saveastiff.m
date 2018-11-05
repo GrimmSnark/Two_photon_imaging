@@ -29,7 +29,7 @@ function res = saveastiff(data, path, options)
 %     options.compress  = 'no';
 %     options.message   = true;
 %     options.append    = false;
-%     options.overwrite = false;
+%     options.overwrite = true;
 %     options.big       = false;
 % 
 % res : Return value. It is 0 when the function is finished with no error.
@@ -79,7 +79,7 @@ if ~isfield(options, 'message'),   options.message   = true; end
 if ~isfield(options, 'append'),    options.append    = false; end
 if ~isfield(options, 'compress'),  options.compress  = 'no';  end
 if ~isfield(options, 'color'),     options.color     = false; end
-if ~isfield(options, 'overwrite'), options.overwrite = false; end
+if ~isfield(options, 'overwrite'), options.overwrite = true; end
 if  isfield(options, 'big') == 0,  options.big       = false; end
 
 if isempty(data), errcode = 1; assert(false); end

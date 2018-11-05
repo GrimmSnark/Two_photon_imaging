@@ -38,9 +38,11 @@ end
 
 stimSTDImage = reshape(stimSTDImageCND,  experimentStructure.pixelsPerLine, experimentStructure.pixelsPerLine,[]);
 stimSTDSum = rescale(sum(stimSTDImage, 3))*65535; % rescales to 16 bit image without clipping or loss...
+stimSTDSum = uint16(stimSTDSum);
 
 preStimSTDImage = reshape(preStimSTDImageCND,  experimentStructure.pixelsPerLine, experimentStructure.pixelsPerLine,[]);
 preStimSTDSum = rescale(sum(preStimSTDImage, 3))*65535;
+preStimSTDSum = uint16(preStimSTDSum);
 
 % add to experimentStructure
 experimentStructure.stimSTDImageCND = stimSTDImageCND;
