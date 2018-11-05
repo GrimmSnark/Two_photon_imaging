@@ -43,7 +43,7 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     % Get preferred color
     
     if preferredStimulus <9
-       colorText = 'Green'; 
+        colorText = 'Green';
     else
         colorText = 'Blue';
     end
@@ -90,12 +90,12 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
         end
         
         if x < 9
-           lineCol = 'g'; 
+            lineCol = 'g';
         else
             lineCol ='b';
         end
-%         errorbar(xlocations, experimentStructure.dFperCndMeanFBS{1,i}(:,x), experimentStructure.dFperCndSTDFBS{1,i}(:,x), 'Color' , 'k');
-           shadedErrorBar(xlocations, experimentStructure.dFperCndMeanFBS{1,i}(:,x), experimentStructure.dFperCndSTDFBS{1,i}(:,x), 'lineprops' , lineCol);
+        %         errorbar(xlocations, experimentStructure.dFperCndMeanFBS{1,i}(:,x), experimentStructure.dFperCndSTDFBS{1,i}(:,x), 'Color' , 'k');
+        shadedErrorBar(xlocations, experimentStructure.dFperCndMeanFBS{1,i}(:,x), experimentStructure.dFperCndSTDFBS{1,i}(:,x), 'lineprops' , lineCol);
     end
     
     xticks(xlocationMid);
@@ -107,7 +107,7 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     figHandle = gcf;
     tightfig;
     
-%     saveas(figHandle, [experimentStructure.savePath ' Orientation Tuning Cell ' num2str(i) '_v2.tif']);
+        saveas(figHandle, [experimentStructure.savePath ' Orientation Tuning Cell ' num2str(i) '_v2.tif']);
     
 end
 

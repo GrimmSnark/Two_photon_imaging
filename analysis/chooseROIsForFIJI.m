@@ -130,6 +130,7 @@ else % if not overwrite, then tries to find already saved ROI file
         
         RC.runCommand('Save', [recordingDirProcessed 'ROIcells.zip']); % saves zip file
     end
+end
     
     
     % Clean up windows

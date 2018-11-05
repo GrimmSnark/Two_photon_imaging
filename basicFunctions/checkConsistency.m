@@ -8,8 +8,6 @@ function eventArray = checkConsistency(dataPrairie, dataPTB)
 % dataFilepathPrairie = 'C:\PostDoc Docs\Ca Imaging Project\Praire\contrast1\Contrast-000_Cycle00001_VoltageRecording_001.csv';
 % dataFilepathPTB = 'C:\PostDoc Docs\Ca Imaging Project\PTB_Timing_Files\ContrstOrient_20171128151040.mat';
 
-disputes = [];
-
 if ischar(dataPrairie)
     eventArray = readEventFilePrairie(dataPrairie, []);
 else
@@ -31,9 +29,9 @@ if length(eventCodes) == length(PTBcodes)
         disp('Awesome, the event codes are exactly the same!!!')
     else
         indx = eventCodes ~= PTBcodes;
-        disputes = [indx eventCodes(indx) PTBcodes(indx)];
         
-        disp(['Oh no, there are ' num2str(sum(indx)) 'disputed codes, please review!!!'])
+        disp(['Oh no, there are ' num2str(sum(indx)) 'disputed codes, fixing from PTB timing file...'])
+        eventArray(indx,2) = PTBcodes(indx);
     end
     
 else

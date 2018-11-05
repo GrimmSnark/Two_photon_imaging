@@ -23,13 +23,13 @@ for  cnd =1:length(experimentStructure.cndTrials) % for each condition
         reshapedVol = reshape(vol(:,:,currentStimChunk), [], length(currentStimChunk));
         stdArray = arrayfun(@(I) std2(reshapedVol(I,:)), [ 1, 1:size(reshapedVol, 1)]);
         stdArray = reshape(stdArray(1:end-1), experimentStructure.pixelsPerLine, experimentStructure.pixelsPerLine);
-        stimSTDImageCND(:,:, cnd, iter) = uint16(stdArray);
+        stimSTDImageCND(:,:, cnd, iter) = stdArray;
         
         
         reshapedVol = reshape(vol(:,:,currentPreStimChunk), [], length(currentPreStimChunk));
         stdArray = arrayfun(@(I) std2(reshapedVol(I,:)), [ 1, 1:size(reshapedVol, 1)]);
         stdArray = reshape(stdArray(1:end-1), experimentStructure.pixelsPerLine, experimentStructure.pixelsPerLine);
-        preStimSTDImageCND(:,:, cnd, iter) = uint16(stdArray);
+        preStimSTDImageCND(:,:, cnd, iter) = stdArray;
     end
     
 end
@@ -37,10 +37,10 @@ end
 % reshape arrays to 2D images
 
 stimSTDImage = reshape(stimSTDImageCND,  experimentStructure.pixelsPerLine, experimentStructure.pixelsPerLine,[]);
-stimSTDSum = uint16(sum(stimSTDImage, 3));
+stimSTDSum = rescale(sum(stimSTDImage, 3))*65535; % rescales to 16 bit image without clipping or loss...
 
 preStimSTDImage = reshape(preStimSTDImageCND,  experimentStructure.pixelsPerLine, experimentStructure.pixelsPerLine,[]);
-preStimSTDSum = uint16(sum(preStimSTDImage, 3));
+preStimSTDSum = rescale(sum(preStimSTDImage, 3))*65535;
 
 % add to experimentStructure
 experimentStructure.stimSTDImageCND = stimSTDImageCND;

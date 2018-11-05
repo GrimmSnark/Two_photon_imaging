@@ -2,11 +2,11 @@ function prepDataMultiSingle(directory)
 % Wrapper to run through a folder containing multiple single files for
 % prepData
 
- directory = 'D:\Data\2P_Data\Raw\Mouse\gCamp6s\M4\';
+ directory = 'D:\Data\2P_Data\Raw\Mouse\gCamp6s\M6\';
 
 subFolders = returnSubFolderList(directory);
 
-for i =1:length(subFolders)
+for i =7:length(subFolders)
     
 %     subSubFolders = returnSubFolderList([directory subFolders(i).name]);
     subSubFolders = dir([directory subFolders(i).name '\TSeries*']);
