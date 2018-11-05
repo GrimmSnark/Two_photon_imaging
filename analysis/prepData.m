@@ -61,7 +61,7 @@ save([savePath 'experimentStructure.mat'], 'experimentStructure');
 % Create and save STD sums
 [stimSTDSum, preStimSTDSum,experimentStructure] = createStimSTDAverage(vol, experimentStructure);
 
-%ave images
+%save images
 saveastiff(stimSTDSum, [savePath 'STD_Stim_Sum.tif']);
 saveastiff(preStimSTDSum, [savePath 'STD_Prestim_Sum.tif']);
 

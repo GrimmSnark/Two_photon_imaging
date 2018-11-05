@@ -6,7 +6,7 @@ startFolderNo = 1;
 overwriteROIFile =1;
 
 %choose all ROIs
-for i = 3:length(subFolders)
+for i = 7:length(subFolders)
     subSubFolder =  returnSubFolderList([subFolders(i).folder '\' subFolders(i).name '\TSeries*' ]);
     
     chooseROIsForFIJI([subSubFolder.folder '\' subSubFolder.name], overwriteROIFile, []);
@@ -14,7 +14,7 @@ for i = 3:length(subFolders)
 end
 
 % Do actual analysis
-for x = startFolderNo:length(subFolders)
+for x = [startFolderNo:5 7:length(subFolders)]
     subSubFolder =  returnSubFolderList([subFolders(x).folder '\' subFolders(x).name '\TSeries*' ]);
     
     runMijiROIBasedAnalysisBatch([subSubFolder.folder '\' subSubFolder.name '\'], 'Single', [], 'adaptive', 1, [])

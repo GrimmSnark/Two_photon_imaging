@@ -52,13 +52,13 @@ reshapedImageNorm = reshape(stimSTDImagesMeanNorm, [],length(experimentStructure
 reshapedImage = reshape(stimSTDImagesMean, [], length(experimentStructure.cndTotal));
 pixelVectorAngles = zeros(length(reshapedImageNorm), length(experimentStructure.cndTotal), 3);
 
-for pixelNo = 1:length(reshapedImageNorm)
+parfor pixelNo = 1:length(reshapedImageNorm)
     pixelVectorAngles(pixelNo,:,:) = [angles_rad ;reshapedImageNorm(pixelNo,:) ;reshapedImage(pixelNo,:)]';
 end
 
 % calculate vector mean per pixel per cnd
 if isColorOrientation ==1
-    for pixelNo = 1:length(pixelVectorAngles)
+    parfor pixelNo = 1:length(pixelVectorAngles)
         pixelWeightedMeanVectorG(pixelNo,:) = [circ_mean(pixelVectorAngles(pixelNo,1:8,1)', pixelVectorAngles(pixelNo,1:8,2)') mean(pixelVectorAngles(pixelNo,1:8,2)) mean(pixelVectorAngles(pixelNo,1:8,3))];
         
         pixelWeightedMeanVectorB(pixelNo,:) = [circ_mean(pixelVectorAngles(pixelNo,9:16,1)', pixelVectorAngles(pixelNo,9:16,2)') mean(pixelVectorAngles(pixelNo,9:16,2)) mean(pixelVectorAngles(pixelNo,9:16,3))];
@@ -74,7 +74,7 @@ if isColorOrientation ==1
     pixelWeightedMeanVectorB = [circ_rad2ang(pixelWeightedMeanVectorB(:,1)) pixelWeightedMeanVectorB(:,2) pixelWeightedMeanVectorB(:,3)];
     
 % deal with negative average angles
-for pixelNo = 1:length(pixelWeightedMeanVectorG)
+parfor pixelNo = 1:length(pixelWeightedMeanVectorG)
     
     if pixelWeightedMeanVectorG(pixelNo,1) <0
         pixelWeightedMeanVectorCorrectedG(pixelNo) = ( pixelWeightedMeanVectorG(pixelNo,1) + 360)/2;
