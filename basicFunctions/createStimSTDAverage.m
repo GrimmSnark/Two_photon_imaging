@@ -9,20 +9,24 @@ function [stimSTDSum, preStimSTDSum,experimentStructure] = createStimSTDAverage(
 
 
 disp('Starting stim STD image calculation');
-for  cnd =1:length(experimentStructure.cndTrials) % for each condition
+cndLength = length(experimentStructure.cndTrials);
+for  cnd =1:cndLength % for each condition
     
-    disp(['On Condition ' num2str(cnd) ' of ' num2str(length(experimentStructure.cndTrials))]);
-    
-    parfor iter =1:length(experimentStructure.cndTrials{cnd}) % for each trial of that type
+     disp(['On Condition ' num2str(cnd) ' of ' num2str(length(experimentStructure.cndTrials))]);
+    trialNo = length(experimentStructure.cndTrials{cnd}); % for each trial of that type
+    parfor iter =1:trialNo
         
         currentTrial = experimentStructure.cndTrials{cnd}(iter); % gets current trial number for that cnd
         currentStimChunk = experimentStructure.EventFrameIndx.STIM_ON(currentTrial):experimentStructure.EventFrameIndx.STIM_OFF(currentTrial);
+        stimChunkLength = length(currentStimChunk);
         currentPreStimChunk = experimentStructure.EventFrameIndx.PRESTIM_ON(currentTrial):experimentStructure.EventFrameIndx.PRESTIM_OFF(currentTrial);
         
         %cpu
-        reshapedVol = reshape(vol(:,:,currentStimChunk), [], length(currentStimChunk));
-        stdArray = arrayfun(@(I) std2(reshapedVol(I,:)), [ 1, 1:size(reshapedVol, 1)]);
-        stdArray = reshape(stdArray(1:end-1), experimentStructure.pixelsPerLine, experimentStructure.pixelsPerLine);
+        reshapedVol = reshape(vol(:,:,currentStimChunk), [], stimChunkLength);
+        sizeReshapedVol = size(reshapedVol, 1);
+        stdArray = arrayfun(@(I) std2(reshapedVol(I,:)), [ 1, 1:sizeReshapedVol]);
+        stdArray = stdArray(1:end-1);
+        stdArray = reshape(stdArray, experimentStructure.pixelsPerLine, experimentStructure.pixelsPerLine);
         stimSTDImageCND(:,:, cnd, iter) = stdArray;
         
         

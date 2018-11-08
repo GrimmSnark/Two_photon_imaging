@@ -73,13 +73,16 @@ save([savePath 'experimentStructure.mat'], 'experimentStructure');
 % deals with issues of stack size
 stdVol = zeros(size(vol,1), size(vol,2));
 
-if size(vol,3)< 2000 
+if size(vol,3)< 2000
     stdVol = std(double(vol), [], 3);
     stdVol = uint16(stdVol);
 else
-    for yy = 1:size(vol,1)
-        for xx = 1:size(vol,2)
-            stdVol(yy,xx) = std2(vol(yy,xx,:));
+    yyLim = size(vol,1);
+    xxLim = size(vol,2);
+    parfor yy = 1:yyLim
+        for xx = 1:xxLim
+            tempData = std2(vol(yy,xx,:));
+            stdVol(yy,xx) = tempData;
         end
     end
     stdVol = uint16(stdVol);

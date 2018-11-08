@@ -157,7 +157,7 @@ else
     pixelWeightedMeanVector = [circ_rad2ang(pixelWeightedMeanVector(:,1)) pixelWeightedMeanVector(:,2) pixelWeightedMeanVector(:,3)];
     
     % deal with negative average angles
-    for pixelNo = 1:length(pixelWeightedMeanVector)
+    parfor pixelNo = 1:length(pixelWeightedMeanVector)
         
         if pixelWeightedMeanVector(pixelNo,1) <0
             pixelWeightedMeanVectorCorrected(pixelNo) = ( pixelWeightedMeanVector(pixelNo,1) + 360)/2;

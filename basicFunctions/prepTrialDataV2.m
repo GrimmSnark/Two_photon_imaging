@@ -43,8 +43,10 @@ end
     diffRange = range(numEventsPerTrial); 
     
     if diffRange ~= 0
-       disp('Event numbers do not match across trials, please check in debug mode'); 
-       return 
+       disp('Event numbers do not match across trials.....');
+       misfitTrials = find(numEventsPerTrial ~= median(numEventsPerTrial));
+       
+       disp(['Trial(s) no. ' num2str(misfitTrials) ' not the correct size, attempting to fix...']);
     end
     
     %check trial has all the codes for a valid trial
