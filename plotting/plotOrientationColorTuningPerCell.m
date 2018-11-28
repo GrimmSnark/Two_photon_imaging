@@ -1,7 +1,9 @@
-function plotOrientationColorTuningPerCell(experimentStructure, cellNo)
+function plotOrientationColorTuningPerCell(experimentStructure, cellNo, useSTDorSEM)
 
-figure('units','normalized','outerposition',[0 0 1 1])
+useSTDorSEM = 2;
+
 for i =cellNo %[2 38 69 86] %1:cellNumber
+    figure('units','normalized','outerposition',[0 0 1 1])
     % Compute summary stats for responses
     cndRepitions     = round(mean(experimentStructure.cndTotal(:)));
     angles     = linspace(0,315,length(experimentStructure.cndTotal)/2);
@@ -90,12 +92,18 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
         end
         
         if x < 9
-            lineCol = 'g';
+            lineCol = 'k';
         else
             lineCol ='b';
         end
         %         errorbar(xlocations, experimentStructure.dFperCndMeanFBS{1,i}(:,x), experimentStructure.dFperCndSTDFBS{1,i}(:,x), 'Color' , 'k');
-        shadedErrorBar(xlocations, experimentStructure.dFperCndMeanFBS{1,i}(:,x), experimentStructure.dFperCndSTDFBS{1,i}(:,x), 'lineprops' , lineCol);
+        if useSTDorSEM == 1
+            errorBars = experimentStructure.dFperCndSTDFBS{1,i}(:,x);
+        elseif useSTDorSEM ==2
+            errorBars = experimentStructure.dFperCndSTDFBS{1,i}(:,x)/ (sqrt(experimentStructure.cndTotal(x)));
+        end
+        
+        shadedErrorBar(xlocations, experimentStructure.dFperCndMeanFBS{1,i}(:,x), errorBars, 'lineprops' , lineCol);
     end
     
     xticks(xlocationMid);
@@ -107,8 +115,17 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     figHandle = gcf;
     tightfig;
     
-        saveas(figHandle, [experimentStructure.savePath ' Orientation Tuning Cell ' num2str(i) '_v2.tif']);
-    
+    if useSTDorSEM == 1
+        saveas(figHandle, [experimentStructure.savePath ' Orientation Tuning Cell ' num2str(i) '.tif']);
+        saveas(figHandle, [experimentStructure.savePath ' Orientation Tuning Cell ' num2str(i) '.svg']);
+    elseif useSTDorSEM == 2
+        if ~exist([experimentStructure.savePath 'SEMs\'], 'dir')
+            mkdir([experimentStructure.savePath 'SEMs\']);
+        end
+        saveas(figHandle, [experimentStructure.savePath 'SEMs\Orientation Tuning Cell ' num2str(i) '.tif']);
+        saveas(figHandle, [experimentStructure.savePath 'SEMs\Orientation Tuning Cell ' num2str(i) '.svg']);
+    end
+  close;  
 end
 
 end
