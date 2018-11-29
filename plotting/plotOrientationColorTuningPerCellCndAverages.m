@@ -1,33 +1,33 @@
 function plotOrientationColorTuningPerCellCndAverages(experimentStructure, cellNo, useSTDorSEM, hardYLim)
-% plots overlayed color orientation tuning averages for cells
+% plots overlayed color orientation tuning averages for cells responses for
+% each condition. Written for ORIENTATION/COLOR stimulus, used to create
+% figures for papers/presentation 
+%
+% Inputs:   experimentStucture- experiment processed data from
+%                               experimentStrucure.mat
+%           cellNo- number or vector of numbers for cells to plot
+%           useSTDorSEM- 1= STD errrobars, 2 = SEM errorbars
+%           hardYLim - two number vector for setting Y axis limits for all
+%                      cells in cellNo (matches axes)
 
 useSTDorSEM = 2;
 
 for i =cellNo %[2 38 69 86] %1:cellNumber
     figure('units','normalized','outerposition',[0 0 1 1])
     % Compute summary stats for responses
-    cndRepitions     = round(mean(experimentStructure.cndTotal(:)));
-    angles     = linspace(0,315,length(experimentStructure.cndTotal)/2);
-    angles    = [angles angles];
-%     yData     = cell2mat(experimentStructure.dFstimWindowAverageFBS{1,i});
-%     yMean = mean(yData,1);
-%     yStd  = std(yData,[],1);
-%     ySEM  = yStd/sqrt(cndRepitions);
-    
-    
-    
+   angles     = linspace(0,315,length(experimentStructure.cndTotal)/2);
     % Show tuning curve
     hold on
     for x =1:size(experimentStructure.dFperCndMeanFBS{1,i},2)
-        lengthOfData = experimentStructure.meanFrameLength -6;
+        lengthOfData = experimentStructure.meanFrameLength;
         if x >1 && x < 9
             spacing = 5;
             xlocations(x,:) = ((lengthOfData +lengthOfData* (x-1))- (lengthOfData-1) :lengthOfData + lengthOfData* (x-1)) + spacing*(x-1);
-            xlocationMid(x) = xlocations(x,lengthOfData/2);
+            xlocationMid(x) = xlocations(x,round(lengthOfData/2));
         elseif x == 1
             spacing = 0;
             xlocations(x,:) = 0:lengthOfData-1;
-            xlocationMid(x) = xlocations(x,lengthOfData/2);
+            xlocationMid(x) = xlocations(x,round(lengthOfData/2));
         elseif x > 8
             xlocations(x,:) = xlocations(x-8,:);
         end
@@ -45,14 +45,14 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
         if useSTDorSEM == 1
             errorBars = experimentStructure.dFperCndSTDFBS{1,i}(:,x);
         elseif useSTDorSEM ==2
-            errorBars = experimentStructure.dFperCndSTDFBS{1,i}(1:end-6,x)/ (sqrt(experimentStructure.cndTotal(x)));
+            errorBars = experimentStructure.dFperCndSTDFBS{1,i}(1:end,x)/ (sqrt(experimentStructure.cndTotal(x)));
         end
         
-        shadedErrorBar(xlocations(x,:), experimentStructure.dFperCndMeanFBS{1,i}(1:end-6,x), errorBars, 'lineprops' , lineCol);
+        shadedErrorBar(xlocations(x,:), experimentStructure.dFperCndMeanFBS{1,i}(1:end,x), errorBars, 'lineprops' , lineCol);
     end
     
     xticks(xlocationMid);
-    xticklabels([0:45:315 0:45:315]);
+    xticklabels(angles);
     title('Tuning curve');
     ylabel('\DeltaF/F')
     
@@ -66,14 +66,14 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     tightfig;
     
     if useSTDorSEM == 1
-        saveas(figHandle, [experimentStructure.savePath ' Orientation Tuning Cell ' num2str(i) '_v2.tif']);
-        saveas(figHandle, [experimentStructure.savePath ' Orientation Tuning Cell ' num2str(i) '_v2.svg']);
+        saveas(figHandle, [experimentStructure.savePath ' Orientation Tuning Cell ' num2str(i) '.tif']);
+        saveas(figHandle, [experimentStructure.savePath ' Orientation Tuning Cell ' num2str(i) '.svg']);
     elseif useSTDorSEM == 2
         if ~exist([experimentStructure.savePath 'SEMs_tuning\'], 'dir')
             mkdir([experimentStructure.savePath 'SEMs_tuning\']);
         end
-        saveas(figHandle, [experimentStructure.savePath 'SEMs_tuning\Orientation Tuning Cell ' num2str(i) '_v2.tif']);
-        saveas(figHandle, [experimentStructure.savePath 'SEMs_tuning\Orientation Tuning Cell ' num2str(i) '_v2.svg']);
+        saveas(figHandle, [experimentStructure.savePath 'SEMs_tuning\Orientation Tuning Cell ' num2str(i) '.tif']);
+        saveas(figHandle, [experimentStructure.savePath 'SEMs_tuning\Orientation Tuning Cell ' num2str(i) '.svg']);
     end
   close;  
 end

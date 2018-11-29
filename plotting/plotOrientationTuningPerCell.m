@@ -1,9 +1,16 @@
 function plotOrientationTuningPerCell(experimentStructure, cellNo, useSTDorSEM )
+% plots and saves figure for cells with preferred stimulus average (with
+% individual trial and the average responses for each condition. Written
+% for ORIENTATION stimulus
+% Inputs:   experimentStucture- experiment processed data from
+%                               experimentStrucure.mat
+%           cellNo- number or vector of numbers for cells to plot
+%           useSTDorSEM- 1= STD errrobars, 2 = SEM errorbars
 
-figure('units','normalized','outerposition',[0 0 1 1])
 for i =cellNo %[2 38 69 86] %1:cellNumber
+    figure('units','normalized','outerposition',[0 0 1 1])
     % Compute summary stats for responses
-    cndRepitions     = round(mean(experimentStructure.cndTotal(:)));
+%     cndRepitions     = round(mean(experimentStructure.cndTotal(:)));
     angles     = linspace(0,315,length(experimentStructure.cndTotal));
     yData     = cell2mat(experimentStructure.dFstimWindowAverageFBS{1,i});
     yMean = mean(yData,1);
@@ -26,7 +33,7 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     end
     
     % Compute stats for preferred response
-    timeFrame = ([1: experimentStructure.meanFrameLength] - experimentStructure.stimOnFrames(1)) * experimentStructure.framePeriod;
+    timeFrame = (1: experimentStructure.meanFrameLength - experimentStructure.stimOnFrames(1)) * experimentStructure.framePeriod;
     
     yResponse     = experimentStructure.dFperCndFBS{1,i}{1, preferredStimulus};
     yResponseMean = experimentStructure.dFperCndMeanFBS{1,i}(:,preferredStimulus);
@@ -56,11 +63,11 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
         if x >1
             spacing = 5;
             xlocations = ((lengthOfData +lengthOfData* (x-1))- (lengthOfData-1) :lengthOfData + lengthOfData* (x-1)) + spacing*(x-1);
-            xlocationMid(x) = xlocations(lengthOfData/2);
+            xlocationMid(x) = xlocations(round(lengthOfData/2));
         else
             spacing = 0;
             xlocations = 0:lengthOfData-1;
-            xlocationMid(x) = xlocations(lengthOfData/2);
+            xlocationMid(x) = xlocations(round(lengthOfData/2));
         end
         
         lineCol = 'k';
@@ -84,7 +91,7 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     tightfig;
     
     saveas(figHandle, [experimentStructure.savePath ' Orientation Tuning Cell ' num2str(i) '.tif']);
-    
+    close;
 end
 
 end

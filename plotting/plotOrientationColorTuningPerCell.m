@@ -1,23 +1,23 @@
 function plotOrientationColorTuningPerCell(experimentStructure, cellNo, useSTDorSEM)
+% plots and saves figure for cells with preferred stimulus average (with
+% individual trial and the average responses for each condition. Written
+% for ORIENTATION/COLOR stimulus
+% Inputs:   experimentStucture- experiment processed data from
+%                               experimentStrucure.mat
+%           cellNo- number or vector of numbers for cells to plot
+%           useSTDorSEM- 1= STD errrobars, 2 = SEM errorbars
 
-useSTDorSEM = 2;
 
 for i =cellNo %[2 38 69 86] %1:cellNumber
     figure('units','normalized','outerposition',[0 0 1 1])
     % Compute summary stats for responses
-    cndRepitions     = round(mean(experimentStructure.cndTotal(:)));
     angles     = linspace(0,315,length(experimentStructure.cndTotal)/2);
-    angles    = [angles angles];
     yData     = cell2mat(experimentStructure.dFstimWindowAverageFBS{1,i});
     yMean = mean(yData,1);
-    yStd  = std(yData,[],1);
-    ySEM  = yStd/sqrt(cndRepitions);
     preferredStimulus = find(yMean(1:(end-1)) == max(yMean(1:(end-1))));
     
     % get mean of prestim response (blank screen)
-    %     blankResponseMean = mean(mean(cell2mat(experimentStructure.extractedDFpreStimWindowAverageFISSA{1,i})));
-    %     blackResponseStd = mean(std(cell2mat(experimentStructure.extractedDFpreStimWindowAverageFISSA{1,i})));
-    
+ 
     blankResponseMean = mean(mean(cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i})));
     blackResponseStd = mean(std(cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i})));
     
@@ -33,21 +33,18 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     end
     
     % Compute stats for preferred response
-    timeFrame = ([1: experimentStructure.meanFrameLength] - experimentStructure.stimOnFrames(1)) * experimentStructure.framePeriod;
-    %     yResponse     = experimentStructure.extractedDFperCndFISSA{1,i}{1, preferredStimulus};
-    %     yResponseMean = experimentStructure.extractedDFperCndMeanFISSA{1,i}(:,preferredStimulus);
-    %     yResponseSTD  = experimentStructure.extractedDFperSTDMeanFISSA{1,i}(:,preferredStimulus);
-    
+    timeFrame = (1: experimentStructure.meanFrameLength - experimentStructure.stimOnFrames(1)) * experimentStructure.framePeriod;
     yResponse     = experimentStructure.dFperCndFBS{1,i}{1, preferredStimulus};
     yResponseMean = experimentStructure.dFperCndMeanFBS{1,i}(:,preferredStimulus);
-    yResponseSTD  = experimentStructure.dFperCndSTDFBS{1,i}(:,preferredStimulus);
     
     % Get preferred color
     
     if preferredStimulus <9
         colorText = 'Green';
+        labelStim = preferredStimulus;
     else
         colorText = 'Blue';
+        labelStim = preferredStimulus-8;
     end
     
     % Show response timcourse for preferred response
@@ -60,7 +57,7 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     xlim([min(timeFrame) max(timeFrame)]);
     set(gca,'Box','off');
     xticks([0 5, 10]);
-    title(sprintf('Preferred response at %d%s %s for cell %d: %s',angles(preferredStimulus),char(176),colorText,i, sigText));
+    title(sprintf('Preferred response at %d%s %s for cell %d: %s',angles(labelStim),char(176),colorText,i, sigText));
     ylabel('\DeltaF/F')
     xlabel('Time (seconds)')
     axis square;
@@ -68,35 +65,27 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     
     % Show tuning curve
     subFighandle = subplot(1,2,2);
-    %     plot(angles,yMean,'-ok');
-    %     hold on;
-    %     errorbar(angles(1:(end-1)),yMean(1:(end-1)),ySEM(1:(end-1)),'ok');
-    %     for j = 1:length(angles), plot(angles(j),yData(:,j),'o','Color',0.5*[1,1,1]); end
-    %     set(gca,'Box','off','XTick',0:45:315);
-    %     xlim([0,315]);
-    %     title('Tuning curve');
-    %     ylabel('\DeltaF/F')
-    %     xlabel(sprintf('Stimulus direction (%s)', char(176)))
-    %     axis square;
     hold on
     for x =1:size(experimentStructure.dFperCndMeanFBS{1,i},2)
         lengthOfData = experimentStructure.meanFrameLength;
-        if x >1
+        if x >1 && x < 9
             spacing = 5;
-            xlocations = ((lengthOfData +lengthOfData* (x-1))- (lengthOfData-1) :lengthOfData + lengthOfData* (x-1)) + spacing*(x-1);
-            xlocationMid(x) = xlocations(lengthOfData/2);
-        else
+            xlocations(x,:) = ((lengthOfData +lengthOfData* (x-1))- (lengthOfData-1) :lengthOfData + lengthOfData* (x-1)) + spacing*(x-1);
+            xlocationMid(x) = xlocations(x,round(lengthOfData/2));
+        elseif x == 1
             spacing = 0;
-            xlocations = 0:lengthOfData-1;
-            xlocationMid(x) = xlocations(lengthOfData/2);
+            xlocations(x,:) = 0:lengthOfData-1;
+            xlocationMid(x) = xlocations(x,round(lengthOfData/2));
+        elseif x > 8
+            xlocations(x,:) = xlocations(x-8,:);
         end
         
         if x < 9
-            lineCol = 'k';
+            lineCol = 'g';
         else
-            lineCol ='b';
+            lineCol ='k';
         end
-        %         errorbar(xlocations, experimentStructure.dFperCndMeanFBS{1,i}(:,x), experimentStructure.dFperCndSTDFBS{1,i}(:,x), 'Color' , 'k');
+        
         if useSTDorSEM == 1
             errorBars = experimentStructure.dFperCndSTDFBS{1,i}(:,x);
         elseif useSTDorSEM ==2
@@ -107,7 +96,7 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     end
     
     xticks(xlocationMid);
-    xticklabels([0:45:315 0:45:315]);
+    xticklabels([angles]);
     title('Tuning curve');
     ylabel('\DeltaF/F')
     xlabel(sprintf('Stimulus direction (%s)', char(176)));
@@ -125,7 +114,7 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
         saveas(figHandle, [experimentStructure.savePath 'SEMs\Orientation Tuning Cell ' num2str(i) '.tif']);
         saveas(figHandle, [experimentStructure.savePath 'SEMs\Orientation Tuning Cell ' num2str(i) '.svg']);
     end
-  close;  
+    close;
 end
 
 end
