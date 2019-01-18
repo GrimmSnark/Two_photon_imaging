@@ -79,13 +79,10 @@ for i=1:length(eventArrayVoltage)
     if length(tempLevel)>1
         
         eventArray(i,2) = tempLevel(1);
-    else
+    else % if tempLevel is single number..
         eventArray(i,2)= tempLevel;
         
     end
-    
-    % if tempLevel is single number..
-    eventArray(i,2)= tempLevel;
 end
 
 

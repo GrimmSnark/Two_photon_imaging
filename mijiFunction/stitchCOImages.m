@@ -1,4 +1,5 @@
 function stitchCOImages(folder)
+% Function which stitches mutiple 2D images together using FIJI
 
 % folder = 'D:\Data\Histology\CO Staining\gCamp6s_M4\S2\';
 images2Stitch = dir([folder '\*tif' ]);

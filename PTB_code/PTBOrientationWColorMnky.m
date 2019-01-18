@@ -1,4 +1,4 @@
-function PTBOrientation(width, stimCenter, preStimTime, stimTime, dropRed, rampTime, numReps, varargin)
+function PTBOrientationWColorMnky(width, stimCenter, preStimTime, stimTime, rampTime, numReps, varargin)
 % Experiment which displays moving gratings at 2Hz
 %
 % options width (degrees) for full screen leave blank
@@ -39,7 +39,7 @@ end
 % Should not change %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 dataDir = 'C:\PostDoc Docs\Ca Imaging Project\PTB_Timing_Files\'; % save dir for timing files
 timeSave = datestr(now,'yyyymmddHHMMSS');
-indentString = 'Orientation_';
+indentString = 'OrientationWColorMnky_';
 
 % stimTime = 1; %in s
 ITItime = 2; % intertrial interval in seconds
@@ -48,14 +48,18 @@ blockNum = 0;
 stimCmpEvents = [1 1] ;
 
 phase = 0;
-if dropRed ==1
-    backgroundColorOffset = [0 0.5 0.5 0]; %RGBA offset color
-    modulateCol = [0 1  1];
-else
-    backgroundColorOffset = [0.5 0.5 0.5 0]; %RGBA offset color
-    modulateCol = [1 1 1];
-end
 
+% Color offsets for similar energy (specific for screen)
+redMax = 1;
+% greenMax = 0.7255;
+greenMax = 1;
+blueMax = 1;
+
+backgroundRed = redMax/2;
+backgroundGreen = greenMax/2;
+backgroundBlue = blueMax/2;
+
+backgroundColorOffsetCy = [backgroundRed backgroundGreen backgroundBlue 1]; %RGBA offset color
 %Stimulus
 %width = 10; % in degrees visual angle
 widthInPix = degreeVisualAngle2Pixels(2,width);
@@ -70,11 +74,11 @@ freqPix =1/freqPix; % use the inverse as the function below takes bloody cycles/
 
 cyclespersecond =1; % temporal frequency to stimulate all cells (in Hz)
 
-contrast =  1 ; % contrast for grating
+contrast =  0.7 ; % contrast for grating
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Angle =[0    45    90   135   180   225   270   315]; % angle in degrees
+Angle =repmat([0    45    90   135   180   225   270   315],[1 3]); % angle in degrees x number of colors
 
-numCnd = length(Angle);
+numCnd = length(Angle); % conditions = angle x colors
 
 %% intial set up of experiment
 Screen('Preference', 'VisualDebugLevel', 1); % removes welcome screen
@@ -105,29 +109,24 @@ screenStimCentreOffset(2) = degreeVisualAngle2Pixels(2,stimCenter(2));
 
 screenStimCentre = screenCentre + screenStimCentreOffset;
 
-% Define black, white and grey
-white = WhiteIndex(screenNumber);
-
-if dropRed == 1
-    grey = [0 0.5 0.5];
-else
-    grey = white / 2;
-end
-
 PsychImaging('PrepareConfiguration');
 
 % look into PsychImaging('AddTask', 'General', 'UseGPGPUCompute', apitype [, flags]);???
 
 PsychImaging('AddTask','General', 'FloatingPoint32Bit'); % sets accuracy of frame buffer to 32bit floating point
 
-[windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, [ grey ] ); %opens screen and sets background to grey
+[windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, [ backgroundColorOffsetCy(1:3) ] ); %opens screen and sets background to grey
+
 
 %create all gratings on GPU.....should be very fast
 if fullfieldStim ==0
-    [gratingid, gratingrect] = CreateProceduralSineGrating(windowPtr, widthInPix, heightInPix, backgroundColorOffset, radius, contrast);
+    [gratingidG, gratingrectG] = CreateProceduralSineGrating(windowPtr, widthInPix, heightInPix, backgroundColorOffsetCy, radius, contrast);
+    [gratingidB, gratingrectB] = CreateProceduralSineGrating(windowPtr, widthInPix, heightInPix, backgroundColorOffsetCy, radius, contrast);
 else
-    [gratingid, gratingrect] = CreateProceduralSineGrating(windowPtr, screenXpixels*1.5, screenXpixels*1.5, backgroundColorOffset, [], contrast);
+    [gratingidG, gratingrectG] = CreateProceduralSineGrating(windowPtr, screenXpixels*1.5, screenXpixels*1.5, backgroundColorOffsetCy, [], contrast);
+    [gratingidB, gratingrectB] = CreateProceduralSineGrating(windowPtr, screenXpixels*1.5, screenXpixels*1.5, backgroundColorOffsetCy, [], contrast);
 end
+
 
 % Retrieve video redraw interval for later control of our animation timing:
 ifi = Screen('GetFlipInterval', windowPtr);
@@ -141,16 +140,17 @@ totalNumFrames = frameRate * stimTime;
 % Get number of frames for prestimulus time
 preStimFrames = frameRate * preStimTime;
 
+% Compute increment of phase shift per redraw:
+phaseincrement = (cyclespersecond * 360) * ifi;
+
 % Get frame number to interate over contrast ramp
 contrast_rampFrames = frameRate *  rampTime;
 contrastLevels = linspace(0, contrast, contrast_rampFrames);
 
-% Compute increment of phase shift per redraw:
-phaseincrement = (cyclespersecond * 360) * ifi;
 
 %% START STIM PRESENTATION
 
-% HideCursor(windowPtr, []);
+HideCursor(windowPtr, []);
 
 if doNotSendEvents ==0
     % trigger image scan start with digital port A
@@ -163,12 +163,25 @@ end
 while ~KbCheck
     tic;
     for currentBlkNum = 1:numReps
-        
         % randomizes the order of the conditions for this block
         cndOrder = datasample(1:numCnd,numCnd,'Replace', false);
         blockNum = blockNum+1;
         
         for trialCnd = 1:length(cndOrder)
+            
+            %divides the condition into colors
+            if cndOrder(trialCnd) > 16 && cndOrder(trialCnd) < 25 % red
+                 colorThisTrial = 'Red';
+                modulateCol = [redMax backgroundGreen  backgroundBlue];
+            elseif cndOrder(trialCnd) > 8 && cndOrder(trialCnd) < 17 % green
+                colorThisTrial = 'Green';
+                modulateCol = [backgroundRed greenMax  backgroundBlue];
+
+            elseif cndOrder(trialCnd) > 0 && cndOrder(trialCnd) < 9 % blue
+                colorThisTrial = 'Blue';
+                modulateCol = [backgroundRed backgroundGreen blueMax];
+                
+            end
             
             if doNotSendEvents ==0
                 AnalogueOutEvent(daq, 'TRIAL_START');
@@ -189,8 +202,9 @@ while ~KbCheck
                 'Condition No: %i \n'...
                 'Trial No: %i of %i \n' ...
                 'Orientation: %i degrees \n'...
+                'Color: %s \n'...
                 '############################################## \n'] ...
-                ,blockNum,cndOrder(trialCnd), trialCnd, length(cndOrder), trialParams(1));
+                ,blockNum,cndOrder(trialCnd), trialCnd, length(cndOrder) , trialParams(1), colorThisTrial);
             
             if doNotSendEvents ==0
                 % send out cnds to imaging comp
@@ -241,7 +255,11 @@ while ~KbCheck
                         end
                     end
                     
-                    Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                    if cndOrder(trialCnd) <9
+                        Screen('DrawTexture', windowPtr, gratingidG, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                    else
+                        Screen('DrawTexture', windowPtr, gratingidB, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                    end
                     Screen('Flip', windowPtr);
                 end
             end
@@ -254,7 +272,12 @@ while ~KbCheck
                 
                 % draw grating on screen
                 %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
-                Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                
+                if cndOrder(trialCnd) <9
+                    Screen('DrawTexture', windowPtr, gratingidG, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                else
+                    Screen('DrawTexture', windowPtr, gratingidB, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                end
                 
                 if doNotSendEvents ==0
                     if rampTime == 0
@@ -275,11 +298,11 @@ while ~KbCheck
                 end
                 Screen('Flip', windowPtr);
                 
-                % Abort requested? Test for keypress:
+%                 % Abort requested? Test for keypress:
                 if KbCheck
                     break;
                 end
-                
+%                 
             end % end stim presentation loop
             
             % Abort requested? Test for keypress:
@@ -303,7 +326,12 @@ while ~KbCheck
                     propertiesMat = [phase, freqPix, contrastLevels(frameNo), 0];
                     % draw grating on screen
                     %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
-                    Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                    
+                    if cndOrder(trialCnd) <9
+                        Screen('DrawTexture', windowPtr, gratingidG, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                    else
+                        Screen('DrawTexture', windowPtr, gratingidB, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                    end
                     Screen('Flip', windowPtr);
                 end
                 
@@ -337,7 +365,7 @@ if doNotSendEvents ==0
     saveCmpEventFile(stimCmpEvents, dataDir, indentString, timeSave);
 end
 
-% ShowCursor([],[windowPtr],[]);
+ShowCursor([],[windowPtr],[]);
 
 % Clear screen
 sca;

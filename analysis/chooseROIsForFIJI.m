@@ -10,6 +10,8 @@ function chooseROIsForFIJI(recordingDir, overwriteROIFile, preproFolder2Open)
 %                             specify the preprocessed folder number 1,2
 %                             etc to use)
 %
+
+magSize = 300; % magnification for image viewing
 %% Deals with ROI zip file creation and loading and makes neuropil surround ROIs
 
 if contains(recordingDir, 'Raw') % if you specfy the raw folder then it finds the appropriate processed folder
@@ -24,9 +26,19 @@ elseif  contains(recordingDir, 'Processed')
     recordingDirRAW = createRawFromSavePath(recordingDir); % sets raw data path
 end
 
-
+% open all the relevant images for ROI chosing
 if exist([recordingDirProcessed 'STD_Stim_Sum.tif'], 'file')
     imageROI = read_Tiffs([recordingDirProcessed 'STD_Stim_Sum.tif'],1);
+    
+    if exist([recordingDirProcessed 'Pixel Orientation Pref_native_Blue.tif'], 'file')
+        pixelPrefBlue = read_Tiffs([recordingDirProcessed 'Pixel Orientation Pref_native_Blue.tif'],1);
+    end
+    if exist([recordingDirProcessed 'Pixel Orientation Pref_native_Green.tif'], 'file')
+        pixelPrefGreen = read_Tiffs([recordingDirProcessed 'Pixel Orientation Pref_native_Green.tif'],1);
+    end
+    if exist([recordingDirProcessed 'Pixel Orientation Pref_native.tif'], 'file')
+        pixelPref = read_Tiffs([recordingDirProcessed 'Pixel Orientation Pref_native.tif'],1);
+    end
 else
     
     firstSubFolder = returnSubFolderList(recordingDirProcessed);
@@ -39,6 +51,16 @@ else
     
     try
         imageROI = read_Tiffs([recordingDirProcessed 'STD_Stim_Sum.tif'],1); % reads in average image
+        
+        if exist([recordingDirProcessed 'Pixel Orientation Pref_native_Blue.tif'], 'file')
+            pixelPrefBlue = read_Tiffs([recordingDirProcessed 'Pixel Orientation Pref_native_Blue.tif'],1);
+        end
+        if exist([recordingDirProcessed 'Pixel Orientation Pref_native_Green.tif'], 'file')
+            pixelPrefGreen = read_Tiffs([recordingDirProcessed 'Pixel Orientation Pref_native_Green.tif'],1);
+        end
+        if exist([recordingDirProcessed 'Pixel Orientation Pref_native.tif'], 'file')
+            pixelPref = read_Tiffs([recordingDirProcessed 'Pixel Orientation Pref_native.tif'],1);
+        end
         
     catch
         disp('Average image not found, check filepath or run prepData.m  or prepDataMultiSingle.m on the recording folder')
@@ -55,7 +77,35 @@ MIJ.run("Cell Magic Wand Tool");
 
 
 % get image to FIJI
-MIJImageROI = MIJ.createImage('ROI_image',imageROI,true); %#ok<NASGU> supressed warning as no need to worry about it
+MIJImageROI = MIJ.createImage('ROI_image',imageROI,true); %#ok<NASGU> supressed warning as no need to worry about
+WaitSecs(0.2);
+ij.IJ.run('Set... ', ['zoom=' num2str(magSize) ' x=10 y=50']);
+
+
+%create stack for pixel pref stuff
+if exist('pixelPrefGreen', 'var')
+    
+    greenImp = ij.IJ.openImage([recordingDirProcessed 'Pixel Orientation Pref_native_Green.tif']);
+    greenImpProcess = greenImp.getProcessor();
+    blueImp = ij.IJ.openImage([recordingDirProcessed 'Pixel Orientation Pref_native_Blue.tif']);
+    blueImpProcess = blueImp.getProcessor();
+    
+    pixelPrefStack = ij.ImageStack(greenImp.getWidth, greenImp.getHeight);
+    pixelPrefStack.addSlice(greenImp.getTitle, greenImpProcess);
+    pixelPrefStack.addSlice(blueImp.getTitle, blueImpProcess);
+    
+    stackImagePlusObj = ij.ImagePlus('Pixel Orientation Stack.tif', pixelPrefStack);
+    stackImagePlusObj.show;
+    WaitSecs(0.2);
+    ij.IJ.run('Set... ', ['zoom=' num2str(magSize) ' x=1000 y=50']);
+    
+elseif exist('pixelPref', 'var')
+    Imp = ij.IJ.openImage([recordingDirProcessed 'Pixel Orientation Pref_native.tif']);
+    Imp.show;
+    WaitSecs(0.2);
+    ij.IJ.run('Set... ', ['zoom=' num2str(magSize) ' x=1000 y=50']);
+end
+
 
 if overwriteROIFile
     % Sets up diolg box to allow for user input to choose cell ROIs
@@ -130,9 +180,10 @@ else % if not overwrite, then tries to find already saved ROI file
         
         RC.runCommand('Save', [recordingDirProcessed 'ROIcells.zip']); % saves zip file
     end
-    
-    
-    % Clean up windows
-    MIJ.closeAllWindows;
-    
+end
+
+
+% Clean up windows
+MIJ.closeAllWindows;
+
 end

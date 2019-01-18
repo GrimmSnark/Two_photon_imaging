@@ -52,7 +52,7 @@ parfor(ii = 1:numberOfImages)
             [xyShifts(:,ii)] = downsampleReg_singleImage(sourceImg,templateImg);
     end
 end
-parfor_progress(0)
+parfor_progress(0);
 
 disp('Finished calculating frame shifts');
 disp('Starting to apply frame shifts');
