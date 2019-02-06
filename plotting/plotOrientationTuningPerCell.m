@@ -33,7 +33,7 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     end
     
     % Compute stats for preferred response
-    timeFrame = (1: experimentStructure.meanFrameLength - experimentStructure.stimOnFrames(1)) * experimentStructure.framePeriod;
+    timeFrame = [1:experimentStructure.meanFrameLength] * experimentStructure.framePeriod;
     
     yResponse     = experimentStructure.dFperCndFBS{1,i}{1, preferredStimulus};
     yResponseMean = experimentStructure.dFperCndMeanFBS{1,i}(:,preferredStimulus);

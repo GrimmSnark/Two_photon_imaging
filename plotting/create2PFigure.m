@@ -50,7 +50,7 @@ set(H.ax,...
 H.im.ButtonDownFcn = @(src,evnt)plotMouseClick(experimentStructure,src,evnt,cmap);
 H.fig.KeyPressFcn = @(src,evnt)plotButtonControl(experimentStructure,src,evnt,cmap);
 
-figData.plotChoice = 'dF/F';
+figData.plotChoice = 'mean Cnd dF/F_FBS';
 figData.experimentStructure = experimentStructure;
 figData.cmap = cmap;
 set(H.ax,'UserData', figData);
@@ -62,10 +62,12 @@ H.traceButtonHandles(2) = uimenu(traceMenu, 'Text', 'dF/F', 'Checked', 'on', 'ca
 H.traceButtonHandles(3) = uimenu(traceMenu, 'Text', 'mean Cnd dF/F', 'callback', @(src,evnt)tracePlotChoice(src, evnt));
 H.traceButtonHandles(4) = uimenu(traceMenu, 'Text', 'mean dF/F', 'callback', @(src,evnt)tracePlotChoice(src, evnt));
 
-H.traceButtonHandles(5) = uimenu(traceMenu, 'Text', 'rawF_FISSA', 'callback', @(src,evnt)tracePlotChoice(src,evnt));
-H.traceButtonHandles(6) = uimenu(traceMenu, 'Text', 'dF/F_FISSA', 'callback', @(src,evnt)tracePlotChoice(src,evnt));
-H.traceButtonHandles(7) = uimenu(traceMenu, 'Text', 'mean Cnd dF/F_FISSA', 'callback', @(src,evnt)tracePlotChoice(src, evnt));
-H.traceButtonHandles(8) = uimenu(traceMenu, 'Text', 'mean dF/F_FISSA', 'callback', @(src,evnt)tracePlotChoice(src, evnt));
+H.traceButtonHandles(5) = uimenu(traceMenu, 'Text', 'mean Cnd dF/F_FBS', 'callback', @(src,evnt)tracePlotChoice(src, evnt));
+
+% H.traceButtonHandles(5) = uimenu(traceMenu, 'Text', 'rawF_FISSA', 'callback', @(src,evnt)tracePlotChoice(src,evnt));
+% H.traceButtonHandles(6) = uimenu(traceMenu, 'Text', 'dF/F_FISSA', 'callback', @(src,evnt)tracePlotChoice(src,evnt));
+% H.traceButtonHandles(7) = uimenu(traceMenu, 'Text', 'mean Cnd dF/F_FISSA', 'callback', @(src,evnt)tracePlotChoice(src, evnt));
+% H.traceButtonHandles(8) = uimenu(traceMenu, 'Text', 'mean dF/F_FISSA', 'callback', @(src,evnt)tracePlotChoice(src, evnt));
 
 
 
