@@ -59,11 +59,14 @@ end
 save([savePath 'experimentStructure.mat'], 'experimentStructure');
 
 % Create and save STD sums
-[stimSTDSum, preStimSTDSum,experimentStructure] = createStimSTDAverage(vol, experimentStructure);
+ [stimSTDSum, preStimSTDSum, stimMeanSum , preStimMeanSum ,experimentStructure] = createStimSTDAverageGPU(vol, experimentStructure);
+% [stimSTDSum, preStimSTDSum,experimentStructure] = createStimSTDAverage(vol, experimentStructure);
 
 %save images
 saveastiff(stimSTDSum, [savePath 'STD_Stim_Sum.tif']);
 saveastiff(preStimSTDSum, [savePath 'STD_Prestim_Sum.tif']);
+saveastiff(stimMeanSum, [savePath 'Mean_Stim_Sum.tif']);
+saveastiff(preStimMeanSum, [savePath 'Mean_Prestim_Sum.tif']);
 
 % save experimentStructure
 save([savePath 'experimentStructure.mat'], 'experimentStructure');

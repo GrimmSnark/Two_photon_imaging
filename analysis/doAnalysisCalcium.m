@@ -127,7 +127,7 @@ for y = 1:experimentStructure.cellCount
         case 'adaptive'
             X = cat(1,experimentStructure.rawF_neuropil(y,:),experimentStructure.rawF(y,:));
             coeffs=robustfit(X(1,:),X(2,:));
-            coeffs(coeffs>1)=1;
+            coeffs(coeffs>1)=0.7;
             coeffs(coeffs<-1)=-1;
             experimentStructure.subtractionFactor(y) = coeffs(2);
         case 'fixed'

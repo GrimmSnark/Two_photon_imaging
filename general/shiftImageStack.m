@@ -4,7 +4,7 @@ function imgStack = shiftImageStack(imgStack,regOffsetsYX)
 %
 % by David Whitney (david.whitney@mpfi.org), Max Planck Florida Institute, 2016.
 
-for(d = 1:size(imgStack,3))   
+parfor(d = 1:size(imgStack,3))   
     try
         imgStack(:,:,d) = imtranslate(imgStack(:,:,d),regOffsetsYX(d,:));
     catch

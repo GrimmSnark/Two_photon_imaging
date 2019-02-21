@@ -65,17 +65,17 @@ heightInPix =widthInPix;
 radius=widthInPix/2; % circlar apature in pixels
 
 %spatial frequency
-freq = 0.05 ; % in cycles per degree
+freq = 2 ; % in cycles per degree
 freq = 1/freq; % hack hack hack
 freqPix = degreeVisualAngle2Pixels(2,freq);
 freqPix =1/freqPix; % use the inverse as the function below takes bloody cycles/pixel...
 
-% cyclespersecond =1; % temporal frequency to stimulate all cells (in Hz)
+cyclespersecond =4; % temporal frequency to stimulate all cells (in Hz)
 
-contrast =  0.7 ; % contrast for grating
+contrast =  1; % contrast for grating
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 colorLevels = rand(10 ,3);
-orientations = [0   22.5   45.   67.5   90  112.5  135  157.5];
+orientations = [0 :15:165];
 Angle =repmat(orientations,[1 size(colorLevels, 1)]); % angle in degrees x number of colors
 
 
@@ -99,10 +99,7 @@ screenNumber = max(Screen('Screens')); % makes display screen the secondary one
 % Get the size of the on screen window
 [screenXpixels, screenYpixels] = Screen('WindowSize', screenNumber); % uncomment for your setup
 
-% screenXpixels = 1915; % hard coded cause reasons.. weird screens % comment out for your setup
-% screenYpixels = 1535;
-
-screenCentre = [0.5 * screenXpixels , 0.5 * screenYpixels]; % screen centre of Shel 1170 WEIRD, calcualted by physical measurement...
+screenCentre = [0.5 * screenXpixels , 0.5 * screenYpixels]; 
 % Set up relative stim centre based on degree visual angle
 
 screenStimCentreOffset(1) = degreeVisualAngle2Pixels(2,stimCenter(1));
@@ -121,16 +118,19 @@ PsychImaging('AddTask','General', 'FloatingPoint32Bit'); % sets accuracy of fram
 
 %create all gratings on GPU.....should be very fast
 if fullfieldStim ==0
-    [gratingidG, gratingrectG] = CreateProceduralSineGrating(windowPtr, widthInPix, heightInPix, backgroundColorOffsetCy, radius, contrast);
-    [gratingidB, gratingrectB] = CreateProceduralSineGrating(windowPtr, widthInPix, heightInPix, backgroundColorOffsetCy, radius, contrast);
+    [gratingid, gratingrect] = CreateProceduralSquareWaveGrating(windowPtr, widthInPix, heightInPix, backgroundColorOffsetCy, radius, contrast);
 else
-    [gratingidG, gratingrectG] = CreateProceduralSineGrating(windowPtr, screenXpixels*1.5, screenXpixels*1.5, backgroundColorOffsetCy, [], contrast);
-    [gratingidB, gratingrectB] = CreateProceduralSineGrating(windowPtr, screenXpixels*1.5, screenXpixels*1.5, backgroundColorOffsetCy, [], contrast);
+    [gratingid, gratingrect] = CreateProceduralSquareWaveGrating(windowPtr, screenXpixels*1.5, screenXpixels*1.5, backgroundColorOffsetCy, [], contrast);
 end
 
 
 % Retrieve video redraw interval for later control of our animation timing:
 ifi = Screen('GetFlipInterval', windowPtr);
+
+
+% Compute increment of phase shift per redraw:
+phaseincrement = (cyclespersecond * 360) * ifi;
+
 
 % Get frame rate fro moving patch
 frameRate=Screen('FrameRate',screenNumber);
@@ -167,9 +167,10 @@ while ~KbCheck
         
         for trialCnd = 1:length(cndOrder)
             
-                currentColLevel = ceil(cndOrder(trialCnd)/length(orientations));
-                modulateCol = colorLevels(currentColLevel, :);
-       
+            phase = 0;
+            currentColLevel = ceil(cndOrder(trialCnd)/length(orientations));
+            modulateCol = colorLevels(currentColLevel, :);
+            
             
             if doNotSendEvents ==0
                 AnalogueOutEvent(daq, 'TRIAL_START');
@@ -228,8 +229,10 @@ while ~KbCheck
             % start constrast ramp on
             if rampTime > 0
                 for frameNo =1:contrast_rampFrames
+                    % Increment phase by cycles/s:
+                    phase = phase + phaseincrement;
                     %create auxParameters matrix
-                    propertiesMat = [0, freqPix, contrastLevels(frameNo), 0];
+                    propertiesMat = [phase, freqPix, contrastLevels(frameNo), 0];
                     % draw grating on screen
                     %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
                     
@@ -240,28 +243,20 @@ while ~KbCheck
                             stimOnFlag = 0;
                         end
                     end
-                    
-                    if cndOrder(trialCnd) <9
-                        Screen('DrawTexture', windowPtr, gratingidG, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
-                    else
-                        Screen('DrawTexture', windowPtr, gratingidB, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
-                    end
+                    Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
                     Screen('Flip', windowPtr);
                 end
             end
             
             for frameNo =1:totalNumFrames % stim presentation loop
+                phase = phase + phaseincrement;
                 %create auxParameters matrix
-                propertiesMat = [0, freqPix, contrast, 0];
+                propertiesMat = [phase, freqPix, contrast, 0];
                 
                 % draw grating on screen
                 %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
                 
-                if cndOrder(trialCnd) <9
-                    Screen('DrawTexture', windowPtr, gratingidG, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
-                else
-                    Screen('DrawTexture', windowPtr, gratingidB, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
-                end
+                Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
                 
                 if doNotSendEvents ==0
                     if rampTime == 0
@@ -282,11 +277,11 @@ while ~KbCheck
                 end
                 Screen('Flip', windowPtr);
                 
-%                 % Abort requested? Test for keypress:
+                % Abort requested? Test for keypress:
                 if KbCheck
                     break;
                 end
-%                 
+                
             end % end stim presentation loop
             
             % Abort requested? Test for keypress:
@@ -304,16 +299,15 @@ while ~KbCheck
             if rampTime > 0
                 % start constrast ramp off
                 for frameNo =contrast_rampFrames:-1:1
+                    % Increment phase by cycles/s:
+                    phase = phase + phaseincrement;
                     %create auxParameters matrix
-                    propertiesMat = [0, freqPix, contrastLevels(frameNo), 0];
+                    propertiesMat = [phase, freqPix, contrastLevels(frameNo), 0];
                     % draw grating on screen
                     %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
                     
-                    if cndOrder(trialCnd) <9
-                        Screen('DrawTexture', windowPtr, gratingidG, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
-                    else
-                        Screen('DrawTexture', windowPtr, gratingidB, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
-                    end
+                    Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                    
                     Screen('Flip', windowPtr);
                 end
                 
@@ -338,7 +332,7 @@ while ~KbCheck
             break;
         end
     end % end number of blocks
-    toc; 
+    toc;
     break % breaks when reaches requested number of blocks
 end
 
