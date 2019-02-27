@@ -1,20 +1,27 @@
-function [stimSTDSum, preStimSTDSum, stimMeanSum , preStimMeanSum ,experimentStructure] = createStimSTDAverageGPU(vol, experimentStructure)
+function [stimSTDSum, preStimSTDSum, stimMeanSum , preStimMeanSum ,experimentStructure] = createStimSTDAverageGPU(vol, experimentStructure, channelIdentifier)
 % Function to create STD sum images for prestim and stim times
 % Input: vol- registered 3D image stack
 %        experimentStructure- structure for this experiement
-%        
-% Output: stimSTDSum- 2D image of summed STDs for stim trial window period 
-%         preStimSTDSum- 2D image of summed STDs for prestim trial window period 
-%         stimMeanSum- 2D image of summed Means for stim trial window period 
+%        channelIdentifier- OPTIONAL, string for identifying channel if
+%        multiple exist
+%
+% Output: stimSTDSum- 2D image of summed STDs for stim trial window period
+%         preStimSTDSum- 2D image of summed STDs for prestim trial window period
+%         stimMeanSum- 2D image of summed Means for stim trial window period
 %         preStimMeanSum- 2D image of summed Means for prestim trial window period
 %         experimentStructure - modified experimentStructure
+
+if nargin<3
+    channelIdentifier =[];
+end
+
 
 volGPU = gpuArray(vol);
 disp('Starting stim STD image calculation');
 
 for  cnd =1:length(experimentStructure.cndTrials) % for each condition
     
-     disp(['On Condition ' num2str(cnd) ' of ' num2str(length(experimentStructure.cndTrials))]);
+    disp(['On Condition ' num2str(cnd) ' of ' num2str(length(experimentStructure.cndTrials))]);
     
     for iter =1:length(experimentStructure.cndTrials{cnd}) % for each trial of that type
         
@@ -46,7 +53,7 @@ for  cnd =1:length(experimentStructure.cndTrials) % for each condition
         
         meanArrayGPU = reshape(mean_x(1:end), experimentStructure.pixelsPerLine, experimentStructure.pixelsPerLine); % reshapes into mean image 512 x 512
         preStimMeanImageCND(:,:, cnd, iter) = meanArrayGPU; % adds the image to the grand array
-    
+        
     end
 end
 % reshape arrays to 2D images
@@ -71,11 +78,23 @@ preStimMeanSum = uint16(gather(preStimMeanSum));
 
 
 %% add to experimentStructure
-experimentStructure.stimSTDImageCND = uint16(gather(stimSTDImageCND));
-experimentStructure.preStimSTDImageCND = uint16(gather(preStimSTDImageCND));
 
-experimentStructure.stimMeanImageCND = uint16(gather(stimMeanImageCND));
-experimentStructure.preStimMeanImageCND = uint16(gather(preStimMeanImageCND));
-
+if ~isempty(channelIdentifier) % if multiple channels in recording
+    
+    % uses eval code to address the experimentStructure variables
+    % properly, sorry I know this is messy but it will work....
+    eval(['experimentStructure.stimSTDImageCND' channelIdentifier ' = uint16(gather(stimSTDImageCND));'])
+    eval(['experimentStructure.preStimSTDImageCND' channelIdentifier ' = uint16(gather(preStimSTDImageCND));' ])
+    
+    eval(['experimentStructure.stimMeanImageCND' channelIdentifier ' = uint16(gather(stimMeanImageCND));' ])
+    eval(['experimentStructure.preStimMeanImageCND' channelIdentifier ' = uint16(gather(preStimMeanImageCND));']) 
+    
+else
+    experimentStructure.stimSTDImageCND = uint16(gather(stimSTDImageCND));
+    experimentStructure.preStimSTDImageCND = uint16(gather(preStimSTDImageCND));
+    
+    experimentStructure.stimMeanImageCND = uint16(gather(stimMeanImageCND));
+    experimentStructure.preStimMeanImageCND = uint16(gather(preStimMeanImageCND));
+end
 
 end

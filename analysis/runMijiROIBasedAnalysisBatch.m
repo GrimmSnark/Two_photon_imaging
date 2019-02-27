@@ -1,4 +1,4 @@
-function runMijiROIBasedAnalysisBatch(recordingDir, recordingType, preproFolder2Open, neuropilCorrectionType, runFISSA, prestimTime)
+function runMijiROIBasedAnalysisBatch(recordingDir, recordingType, preproFolder2Open, neuropilCorrectionType, runFISSA, prestimTime, channel2Use)
 % function which runs main analysis on calcium imaging data recorded on
 % prairie bruker system. This function requires user input to define cell
 % ROIs and calculates dF/F with neuropil subtraction. Also splits dF traces
@@ -22,6 +22,9 @@ function runMijiROIBasedAnalysisBatch(recordingDir, recordingType, preproFolder2
 %
 %          prestimTime ( [], fixed prestim time for analysis before stim on,
 %                      curretly not need as we have prestim events)
+%          channel2Use - specify channel to use for Ca analysis (ie 1/2) if
+%                        multichannel file, if single channel recording can
+%                        be left blank 
 %
 %          behaviouralResponseFlag (NOT used, future proofing for awake
 %                                   animals)
@@ -29,7 +32,7 @@ function runMijiROIBasedAnalysisBatch(recordingDir, recordingType, preproFolder2
 
 %%
 % Sets behavioural data flag to empty as not currently used
-if nargin<7
+if nargin<8
     behaviouralResponseFlag =[];
 end
 
@@ -152,7 +155,7 @@ else % for single video FOVs
     experimentStructure.averageROIRadius = averageROIRadius;
     
     % does main analysis
-    experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, runFISSA, prestimTime, behaviouralResponseFlag);
+    experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, runFISSA, prestimTime, channel2Use, behaviouralResponseFlag);
     
 end
 

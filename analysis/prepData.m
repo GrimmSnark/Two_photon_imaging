@@ -1,4 +1,4 @@
-function [stdVol] = prepData(dataDir, loadMeta, regOrNot, saveRegMovie, experimentType, templateImageForReg)
+function prepData(dataDir, loadMeta, regOrNot, saveRegMovie, experimentType, channel2register, templateImageForReg)
 % This function does basic preprocessing of t series imaging data including
 % meta data, trial data extraction and image registration
 % Input- dataDir: image data directory for the t series
@@ -8,16 +8,16 @@ function [stdVol] = prepData(dataDir, loadMeta, regOrNot, saveRegMovie, experime
 %        and takes up time/space
 %        experimentType: String of experiment type, ie 'orientation' etc
 %        decides whether to load trial data and in what format
+%        channel2register: can speicfy channel to register the stack with
+%        if there are more than one recorded channel
 %        templateImageForReg: 2D image array which is used for registering
 %        tif stack (used for multiple tif stacks in the same recording
 %        session), leave blank ([]), if not in use
-%
-% Output- stdVol: standard deviation average of the movie file after motion
-%         correction
 
 
 % dataDir = 'D:\Data\2P_Data\Raw\Mouse\Vascular\vasc_mouse1\';
 experimentStructure = [];
+defaultRegChannel = 1;
 
 experimentStructure.experimentType = experimentType;
 
@@ -30,6 +30,18 @@ experimentStructure.savePath = savePath;
 [experimentStructure, vol]= prepImagingDataFast(experimentStructure, dataDir, loadMeta); % faster version
 % [experimentStructure, vol]= prepImagingData(experimentStructure, dataDir, Z_or_TStack, 1);
 
+% check number of channels in imaging stack
+channelIndxStart = strfind(experimentStructure.filenamesFrame{1}, '_Ch');
+for i =1:length(experimentStructure.filenamesFrame)
+    channelIdentity{i} = experimentStructure.filenamesFrame{i}(channelIndxStart:channelIndxStart+3);
+end
+channelNo = unique(channelIdentity);
+
+if length(channelNo)>1
+   volSplit =  reshape(vol,size(vol,1),size(vol,2),[], length(channelNo));
+end
+
+
 if isfield( experimentStructure, 'micronsPerPixel')
     micronsPerPix = experimentStructure.micronsPerPixel(1,1);
 else
@@ -40,66 +52,45 @@ if ~isempty(experimentType)
     experimentStructure = prepTrialDataV2(experimentStructure, experimentStructure.prairiePathVoltage, experimentType);
 end
 
-% Register imaging data and save registered image stack
-if regOrNot ==1
-    disp('Starting image registration');
-    [vol,xyShifts] = imageRegistration(vol, [], micronsPerPix, [], templateImageForReg);
-    experimentStructure.xyShifts = xyShifts;
+
+if length(channelNo)> 1 % choose one channel to register if multiple exist
     
-    if saveRegMovie ==1
-        %         savePath = createSavePath(dataDir, 1);
-        disp('Saving registered image stack')
-        saveastiff(vol, [savePath 'registered.tif']);
-        disp('Finished saving registered image stack');
-        %     saveImagingData(vol,savePath,1,size(vol,3));
-    end
-end
-
-% save experimentStructure
-save([savePath 'experimentStructure.mat'], 'experimentStructure');
-
-% Create and save STD sums
- [stimSTDSum, preStimSTDSum, stimMeanSum , preStimMeanSum ,experimentStructure] = createStimSTDAverageGPU(vol, experimentStructure);
-% [stimSTDSum, preStimSTDSum,experimentStructure] = createStimSTDAverage(vol, experimentStructure);
-
-%save images
-saveastiff(stimSTDSum, [savePath 'STD_Stim_Sum.tif']);
-saveastiff(preStimSTDSum, [savePath 'STD_Prestim_Sum.tif']);
-saveastiff(stimMeanSum, [savePath 'Mean_Stim_Sum.tif']);
-saveastiff(preStimMeanSum, [savePath 'Mean_Prestim_Sum.tif']);
-
-% save experimentStructure
-save([savePath 'experimentStructure.mat'], 'experimentStructure');
-
-% Create STD average image and save
-
-% deals with issues of stack size
-stdVol = zeros(size(vol,1), size(vol,2));
-
-if size(vol,3)< 2000
-    stdVol = std(double(vol), [], 3);
-    stdVol = uint16(stdVol);
-else
-    yyLim = size(vol,1);
-    xxLim = size(vol,2);
-    parfor yy = 1:yyLim
-        for xx = 1:xxLim
-            tempData = std2(vol(yy,xx,:));
-            stdVol(yy,xx) = tempData;
+    % Register imaging data and save registered image stack
+    if regOrNot ==1
+        if isempty(channel2register)
+            channel2register = defaultRegChannel;
         end
+        disp(['Starting image registration on Channel ' num2str(channel2register)]);
+        [vol,xyShifts] = imageRegistration(volSplit(:,:,:,channel2register), [], micronsPerPix, [], templateImageForReg);
+        experimentStructure.xyShifts = xyShifts;
     end
-    stdVol = uint16(stdVol);
+        % deal with first channel
+        experimentStructure = prepDataSubFunction(vol, experimentStructure, saveRegMovie, channelNo{channel2register});
+        
+        
+        % deal with second channel
+        indForOtherChannel = find(~strcmp(channelNo, channelNo{channel2register}));
+         vol = shiftImageStack(volSplit(:,:,:,indForOtherChannel),xyShifts([2 1],:)'); % Apply actual shifts to tif stack
+        experimentStructure =  prepDataSubFunction(vol, experimentStructure, saveRegMovie, channelNo{indForOtherChannel});
+
+  
+else
+    
+    if regOrNot ==1
+        disp(['Starting image registration on Channel ' num2str(channel2register)]);
+        [vol,xyShifts] = imageRegistration(vol, [], micronsPerPix, [], templateImageForReg);
+        experimentStructure.xyShifts = xyShifts;
+    end
+    
+     experimentStructure =  prepDataSubFunction(vol, experimentStructure, saveRegMovie);
+
 end
 
-saveastiff(stdVol, [savePath 'STD_Average.tif']);
+% % save experimentStructure
+% save([savePath 'experimentStructure.mat'], 'experimentStructure');
 
-%Create normal average image and save
-volTall = tall(vol);
-meanVolTall = mean(volTall,3);
-meanVol = gather(meanVolTall);
-meanVol = mean(vol,3);
-meanVol = uint16(meanVol);
+% save experimentStructure
+save([savePath 'experimentStructure.mat'], 'experimentStructure');
 
-saveastiff(meanVol, [savePath 'Average.tif']);
 
 end

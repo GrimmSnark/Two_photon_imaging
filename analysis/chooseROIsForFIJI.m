@@ -1,4 +1,4 @@
-function chooseROIsForFIJI(recordingDir, overwriteROIFile, preproFolder2Open)
+function chooseROIsForFIJI(recordingDir, overwriteROIFile, preproFolder2Open, channel2Use)
 % Batch file for choosing all ROIs in multiple image stacks, is more user
 % input efficient that old method
 % Inputs: recordingDir- fullfile to folder containing TSeries Images
@@ -6,12 +6,20 @@ function chooseROIsForFIJI(recordingDir, overwriteROIFile, preproFolder2Open)
 %         overwriteROIFile - 0/1 flag to write ROI file, if 0 tries to find
 %         already created zip file containing ROIs
 %
-%          preproFolder2Open (usually leave blank unless you want to
+%         preproFolder2Open (usually leave blank unless you want to
 %                             specify the preprocessed folder number 1,2
 %                             etc to use)
 %
+%         channel2Use - OPTIONAL, indicates which channel to use for 
+%                       choosing ROIs if mutiple exist  
+
 
 magSize = 300; % magnification for image viewing
+
+if nargin <4
+    channel2Use = 2; % sets deafult channel to use if in mult
+end
+
 %% Deals with ROI zip file creation and loading and makes neuropil surround ROIs
 
 if contains(recordingDir, 'Raw') % if you specfy the raw folder then it finds the appropriate processed folder
@@ -27,8 +35,15 @@ elseif  contains(recordingDir, 'Processed')
 end
 
 % open all the relevant images for ROI chosing
-if exist([recordingDirProcessed 'STD_Stim_Sum.tif'], 'file')
-    imageROI = read_Tiffs([recordingDirProcessed 'STD_Stim_Sum.tif'],1);
+if ~isempty(dir([recordingDirProcessed 'STD_Stim_Sum*']))
+    
+    files = dir([recordingDirProcessed 'STD_Stim_Sum*']);
+    
+    if size(files,1) >1 % if multiple channel recording
+        imageROI = read_Tiffs([recordingDirProcessed 'STD_Stim_Sum_Ch' num2str(channel2Use) '.tif'],1); % reads in average image
+    else
+        imageROI = read_Tiffs([recordingDirProcessed 'STD_Stim_Sum.tif'],1); % reads in average image
+    end
     
     if exist([recordingDirProcessed 'Pixel Orientation Pref_native_Blue.tif'], 'file')
         pixelPrefBlue = read_Tiffs([recordingDirProcessed 'Pixel Orientation Pref_native_Blue.tif'],1);
@@ -50,7 +65,14 @@ else
     recordingDirProcessed = [firstSubFolder(preproFolder2Open).folder '\' firstSubFolder(preproFolder2Open).name '\']; % gets analysis subfolder
     
     try
-        imageROI = read_Tiffs([recordingDirProcessed 'STD_Stim_Sum.tif'],1); % reads in average image
+        files = dir([recordingDirProcessed 'STD_Stim_Sum*']);
+        
+        if size(files,1) >1 % if multiple channel recording
+            imageROI = read_Tiffs([recordingDirProcessed 'STD_Stim_Sum_Ch' num2str(channel2Use) '.tif'],1); % reads in average image
+        else
+            imageROI = read_Tiffs([recordingDirProcessed 'STD_Stim_Sum.tif'],1); % reads in average image
+        end
+        
         
         if exist([recordingDirProcessed 'Pixel Orientation Pref_native_Blue.tif'], 'file')
             pixelPrefBlue = read_Tiffs([recordingDirProcessed 'Pixel Orientation Pref_native_Blue.tif'],1);

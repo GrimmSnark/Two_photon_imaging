@@ -10,7 +10,7 @@ for i =1:length(subFolders)
     for x = 1:length(subSubFolder)
         recordingDir = returnSubFolderList([subSubFolder.folder '\' subSubFolder.name]);
         
-        processPixelOrientationSelectivityV2([recordingDir.folder '\' recordingDir.name '\'], 0)
+        processPixelOrientationSelectivityV2([recordingDir.folder '\' recordingDir.name '\'], 0, 1)
     end
     
 end

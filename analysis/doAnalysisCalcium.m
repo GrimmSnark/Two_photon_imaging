@@ -1,4 +1,4 @@
-function experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, runFISSA, prestimTime, behaviouralResponseFlag)
+function experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCorrectionType, runFISSA, prestimTime, channel2Use ,behaviouralResponseFlag)
 % Function enacts main Ca trace analysis for movie files, applys motion
 % correction shifts which were previously calculated, exacts rawF for cells
 % and neuropil, does neuropil correction, calculates dF/F and segements out
@@ -13,10 +13,19 @@ function experimentStructure = doAnalysisCalcium(experimentStructure, neuropilCo
 %          prestimTime ( [], fixed prestim time for analysis before stim on,
 %                      curretly not need as we have prestim events)
 %
+%          channel2Use - specify channel to use for Ca analysis (ie 1/2) if
+%                        multichannel file, if single channel recording can
+%                        be left blank 
+%
 %          behaviouralResponseFlag (NOT used, future proofing for awake
 %                                   animals)
 %
 % Outputs - experimentStructure (updated structure)
+
+%Sets default channel to use for multichannel recordings 
+if isempty(channel2Use)
+   channel2Use = 2; 
+end
 
 %% Clear previously calculated stuff
 
@@ -45,6 +54,23 @@ vol = read_Tiffs(experimentStructure.fullfile,1);
 if ndims(vol) ~=3
     vol = readMultipageTifFiles(experimentStructure.prairiePath);
 end
+
+
+% check number of channels in imaging stack
+channelIndxStart = strfind(experimentStructure.filenamesFrame{1}, '_Ch');
+for i =1:length(experimentStructure.filenamesFrame)
+    channelIdentity{i} = experimentStructure.filenamesFrame{i}(channelIndxStart:channelIndxStart+3);
+end
+channelNo = unique(channelIdentity);
+
+% chooses correct channel to analyse in multichannel recording
+if length(channelNo)>1
+      volSplit =  reshape(vol,size(vol,1),size(vol,2),[], length(channelNo));
+      vol = volSplit(:,:,:,channel2Use);
+end
+
+    
+
 % apply imageregistration shifts
 registeredVol = shiftImageStack(vol,experimentStructure.xyShifts([2 1],:)'); % Apply actual shifts to tif stack
 

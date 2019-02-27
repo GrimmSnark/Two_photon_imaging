@@ -22,7 +22,7 @@ if ~isempty(varargin)
 end
 
 if isempty(numReps)
-    numReps = Inf;
+    numReps = 100;
 end
 
 if isempty(width)
@@ -71,15 +71,30 @@ freqPix = degreeVisualAngle2Pixels(2,freq);
 freqPix =1/freqPix; % use the inverse as the function below takes bloody cycles/pixel...
 
 cyclespersecond =4; % temporal frequency to stimulate all cells (in Hz)
-
 contrast =  1; % contrast for grating
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% set up color and orientation levels
 colorLevels = rand(10 ,3);
 orientations = [0 :15:165];
 Angle =repmat(orientations,[1 size(colorLevels, 1)]); % angle in degrees x number of colors
 
-
 numCnd = length(Angle); % conditions = angle x colors
+
+% make balanced numbers of left/right start movement stims
+nOfDirectionPerOrien = length(orientations)/2;
+directionStartPerOrientation = zeros(1, length(orientations));
+directionStartPerOrientation(randperm(numel(directionStartPerOrientation), nOfDirectionPerOrien)) = 1;
+
+%covert to logical
+directionStartPerOrientation = logical(directionStartPerOrientation);
+
+% get inverse for next colour
+directionStartPerOrientation2 = ~directionStartPerOrientation;
+
+directionStartPerOrientation = [directionStartPerOrientation; directionStartPerOrientation2];
+
+blockMovementsBalanced = repmat(directionStartPerOrientation,length(colorLevels)/2,1);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% intial set up of experiment
 Screen('Preference', 'VisualDebugLevel', 1); % removes welcome screen
@@ -99,7 +114,7 @@ screenNumber = max(Screen('Screens')); % makes display screen the secondary one
 % Get the size of the on screen window
 [screenXpixels, screenYpixels] = Screen('WindowSize', screenNumber); % uncomment for your setup
 
-screenCentre = [0.5 * screenXpixels , 0.5 * screenYpixels]; 
+screenCentre = [0.5 * screenXpixels , 0.5 * screenYpixels];
 % Set up relative stim centre based on degree visual angle
 
 screenStimCentreOffset(1) = degreeVisualAngle2Pixels(2,stimCenter(1));
@@ -108,10 +123,10 @@ screenStimCentreOffset(2) = degreeVisualAngle2Pixels(2,stimCenter(2));
 screenStimCentre = screenCentre + screenStimCentreOffset;
 
 PsychImaging('PrepareConfiguration');
+PsychImaging('AddTask','General', 'FloatingPoint32Bit'); % sets accuracy of frame buffer to 32bit floating point
 
 % look into PsychImaging('AddTask', 'General', 'UseGPGPUCompute', apitype [, flags]);???
 
-PsychImaging('AddTask','General', 'FloatingPoint32Bit'); % sets accuracy of frame buffer to 32bit floating point
 
 [windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, [ backgroundColorOffsetCy(1:3) ] ); %opens screen and sets background to grey
 
@@ -167,9 +182,18 @@ while ~KbCheck
         
         for trialCnd = 1:length(cndOrder)
             
-            phase = 0;
+              phase = 0;
+              
+             % Get trial cnds
+            trialParams = Angle(cndOrder(trialCnd)); % get angle identity
+            indexForOrientation = find(Angle==trialParams, 1); % get index for that angle
+          
+            % get color condition
             currentColLevel = ceil(cndOrder(trialCnd)/length(orientations));
             modulateCol = colorLevels(currentColLevel, :);
+            
+            % get first direction flag ( 0 == left first, 1 == right first)
+            directionFlag = blockMovementsBalanced(currentColLevel, indexForOrientation);
             
             
             if doNotSendEvents ==0
@@ -177,8 +201,7 @@ while ~KbCheck
                 stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_START');
             end
             
-            % Get trial cnds
-            trialParams = Angle(cndOrder(trialCnd));
+          
             
             if fullfieldStim ==0
                 dstRect = OffsetRect(gratingrect, screenStimCentre(1)-radius, screenStimCentre(2)-radius);
@@ -231,6 +254,7 @@ while ~KbCheck
                 for frameNo =1:contrast_rampFrames
                     % Increment phase by cycles/s:
                     phase = phase + phaseincrement;
+                    disp(phase);
                     %create auxParameters matrix
                     propertiesMat = [phase, freqPix, contrastLevels(frameNo), 0];
                     % draw grating on screen
