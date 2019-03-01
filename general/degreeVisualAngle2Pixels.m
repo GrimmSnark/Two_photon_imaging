@@ -5,7 +5,7 @@ function sizeInPixels = degreeVisualAngle2Pixels(setup, sizeInVisualAngle)
 switch setup
     case 1 % Shel 1170 monitor
         hM = 20; % hight of monitor in cm
-        d = 25; % distance from monitor in cm
+        d = 57; % distance from monitor in cm
         res = 1024; % vertical resolution of monitor in cm
         
     case 2 % placeholder
