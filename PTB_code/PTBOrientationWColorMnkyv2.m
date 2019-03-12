@@ -3,7 +3,7 @@ function PTBOrientationWColorMnkyv2(width, stimCenter, preStimTime, stimTime, ra
 %
 % options:  width - (degrees) for full screen leave blank
 %           stimCenter - [0,0] (degrees visual angle from screen center)
-%           preStimTime - pre stimulus spontaneous activity period (in 
+%           preStimTime - pre stimulus spontaneous activity period (in
 %                         seconds)
 %           stimTime - stim time (seconds)
 %           rampTime - ramp time added on and off for stimulus (seconds)
@@ -52,7 +52,7 @@ phase = 0;
 
 % Color offsets for similar energy (specific for screen)
 redMax = 1;
- greenMax = 0.7255;
+greenMax = 0.7255;
 % greenMax = 1;
 blueMax = 1;
 
@@ -230,8 +230,12 @@ while ~KbCheck
             
             if directionFlag == 0
                 movementDirection = 'Postive';
+                movementEvent1 = 'POSITIVE MOVEMENT';
+                movementEvent2 = 'NEGATIVE MOVEMENT';
             else
                 movementDirection = 'Negative';
+                movementEvent1 = 'NEGATIVE MOVEMENT';
+                movementEvent2 = 'POSITIVE MOVEMENT';
             end
             
             
@@ -303,6 +307,11 @@ while ~KbCheck
                         if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
                             AnalogueOutEvent(daq, 'STIM_ON');
                             stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
+                            
+                            % add movement direction event
+                            AnalogueOutEvent(daq, movementEvent1);
+                            stimCmpEvents(end+1,:)= addCmpEvents(movementEvent1);
+                            
                             stimOnFlag = 0;
                         end
                     end
@@ -366,6 +375,11 @@ while ~KbCheck
             end % end stim presentation loop
             
             %% second movement direction
+            
+            % add movment direction event
+            AnalogueOutEvent(daq, movementEvent1);
+            stimCmpEvents(end+1,:)= addCmpEvents(movementEvent1);
+            
             for frameNo =1:totalNumFrames/2 % stim presentation loop
                 phase = phase + phaseincrement;
                 %create auxParameters matrix
@@ -445,7 +459,7 @@ while ~KbCheck
             
             Screen('Flip', windowPtr);
             Screen('BlendFunction', windowPtr, GL_ONE, GL_ZERO);
-             Screen('Flip', windowPtr);
+            Screen('Flip', windowPtr);
             
             WaitSecs(ITItime);
             

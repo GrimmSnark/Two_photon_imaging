@@ -11,7 +11,7 @@ for i =1:length(subFolders)
 %     subSubFolders = returnSubFolderList([directory subFolders(i).name]);
     subSubFolders = dir([directory subFolders(i).name '\TSeries*']);
     for x = 1:length(subSubFolders)
-        prepData([directory subFolders(i).name '\' subSubFolders(x).name],1 ,1,0, 'orientation', [], []);
+        prepData([directory subFolders(i).name '\' subSubFolders(x).name],1 ,1,0, 'orientation', [], [],1);
     end
     
 end

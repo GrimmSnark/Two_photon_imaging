@@ -9,7 +9,7 @@ function [tifStack,xyShifts] = imageRegistration(tifStack,imageRegistrationMetho
 
 if(nargin<2) || isempty(imageRegistrationMethod), imageRegistrationMethod = 'subMicronMethod'; end % can be either subMicronMethod or downsampleReg
 if(nargin<3) || isempty(spatialResolution), spatialResolution = 1.3650; end % in microns per pixel
-if(nargin<4) || isempty(filterCutoff), filterCutOff  = [30,200];   end % [lowpass cutoff, highpass cutoff] in units of microns
+if(nargin<4) || isempty(filterCutoff), filterCutOff  = [20,150];   end % [lowpass cutoff, highpass cutoff] in units of microns
 if(nargin<5), templateImage = [];         end % templateImage is ignored when empty
 imgsForTemplate     = [1:100];                % how many images to use for the template
 useSpatialFiltering = ~isempty(filterCutOff); % spatially filters the images in an attempt to reduce noise that may impair registration

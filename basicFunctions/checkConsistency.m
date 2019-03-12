@@ -1,4 +1,4 @@
-function eventArray = checkConsistency(dataPrairie, dataPTB)
+function [eventArray, PTBcodes ]= checkConsistency(dataPrairie, dataPTB)
 % checks the consistency between recorded prairie events and the events
 % set in the PTB experimental file
 % dataPrairie can be a filepath for .csv file OR preloaded eventArray

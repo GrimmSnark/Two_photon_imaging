@@ -1,4 +1,7 @@
 function processPixelOrientationSelectivity_wrapper(experimentDir)
+% Wrapper for processPixelOrientationSelectivityV2
+% This function creates a pixel wise orientation preference and selectivity
+% map for orientation experiments
 
 % experimentDir = 'D:\Data\2P_Data\Processed\Mouse\gCamp6s\Old Mice\M1\';
 subFolders = returnSubFolderList(experimentDir);
@@ -10,7 +13,7 @@ for i =1:length(subFolders)
     for x = 1:length(subSubFolder)
         recordingDir = returnSubFolderList([subSubFolder.folder '\' subSubFolder.name]);
         
-        processPixelOrientationSelectivityV2([recordingDir.folder '\' recordingDir.name '\'], 0, 1)
+        processPixelOrientationSelectivityV2([recordingDir(end).folder '\' recordingDir(end).name '\'], 0, 1)
     end
     
 end

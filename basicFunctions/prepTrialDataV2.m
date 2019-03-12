@@ -17,7 +17,7 @@ eventArray = readEventFilePrairieV2(dataFilepathPrairie, []); % read in events f
 PTBPath = dir([experimentStructure.prairiePath '*.mat']);
 if ~isempty(PTBPath)
     experimentStructure.PTB_TimingFilePath = [PTBPath.folder '\' PTBPath.name ];
-    eventArray = checkConsistency(eventArray, experimentStructure.PTB_TimingFilePath);
+   [eventArray, PTBeventArray ]= checkConsistency(eventArray, experimentStructure.PTB_TimingFilePath);
 end
 
 %% Proceed with trial event segementation
@@ -50,7 +50,6 @@ if diffRange ~= 0
 end
 
 %check trial has all the codes for a valid trial
-
 for k = 1:numel(rawTrials)
     numOfEssentialEvents(k) = recursiveSum((rawTrials{k}(:,2) == essentialEventsNum));
 end
@@ -58,6 +57,37 @@ end
 
 validTrial = numOfEssentialEvents==length(essentialEventsNum); % indx of valid trial by event inclusion
 disp([num2str(sum(validTrial)) ' / '  num2str(length(validTrial)) ' trials have valid condition codes!!!']);
+
+% try to fix invalid trials
+if any(validTrial==0)
+    for x =1: length(essentialEventsNum) % get essential event identities from PTB events
+        essentialEventLocPTB(x,:) = find(PTBeventArray == essentialEventsNum(x));
+    end
+    
+    paramStartCode = stringEvent2Num('PARAM_START', codes);
+    [~,paramStartPosition] = find(essentialEventsNum == paramStartCode);
+    invalidTrials = find(validTrial==0); % get invalid trial No
+    
+    for i = invalidTrials % for each trial
+        disp(['Fixing essential event error in Trial No. ' num2str(i) ' ...']);
+        trialEssentialEventLocPTB = essentialEventLocPTB(:,invalidTrials(i)); % get PTB locations for current trial essential events
+        
+        for z = 1:length(essentialEventsNum) % for each event
+            if any(rawTrials{invalidTrials,1}(:,2) ~= essentialEventsNum(z)) % if can not find event in current trial
+                [~, erroredIndx] = min(abs(rawTrials{invalidTrials,1}(:,2)- essentialEventsNum(z))); % find mismatched index
+                rawTrials{invalidTrials,1}(erroredIndx,2) = essentialEventsNum(z); % set the mismatched event to the appropriate one
+             end
+        end
+        
+        % fix block/cnd codes
+        paramStartIndx = find(rawTrials{invalidTrials,1}(:,2) == paramStartCode); % get the indx for param start in eventArray
+        rawTrials{invalidTrials,1}(paramStartIndx+1,2) = PTBeventArray(trialEssentialEventLocPTB(paramStartPosition)+1); % set the block (param start +1) to PTB block code
+        rawTrials{invalidTrials,1}(paramStartIndx+2,2) = PTBeventArray(trialEssentialEventLocPTB(paramStartPosition)+2); % set the condition (param start +2) to PTB condition code
+    
+        % reset valid flag for this trial to true
+        validTrial(i) = 1;
+    end
+end
 
 % extract stimulus conditions for each valid trial
 
@@ -128,7 +158,14 @@ for i =1:length(nonEssentialEventNumbers)
             trialSumEvents(q) = sum(indexOfBoth(:,1,q));
         end
         
-        trialEventAverage = floor(mean(trialSumEvents));
+%         trialEventAverage = floor(mean(trialSumEvents)); % finds the correct number of a particular event in each trial
+        trialEventAverage = mode(trialSumEvents); % finds the correct number of a particular event in each trial
+
+        
+        if trialEventAverage==0 % if calculates zero, corrects to one
+            trialEventAverage = ceil(mean(trialSumEvents));
+        end
+        
         indexOfMismatchedTrials = find(trialSumEvents~=trialEventAverage);
         
         % for each mismatched trial tries to find the out of place
@@ -236,7 +273,5 @@ experimentStructure.nonEssentialEvent= nonEssentialEvent;
 for i =1:length(experimentStructure.nonEssentialEvent)
     experimentStructure = alignEvents2Frames(experimentStructure.nonEssentialEvent{1,i}, experimentStructure);
 end
-
-
 
 end
