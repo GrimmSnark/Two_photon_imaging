@@ -1,4 +1,4 @@
-function experimentStructure = doAnalysisCalciumV2(experimentStructure, neuropilCorrectionType, runFISSA, prestimTime, channel2Use ,behaviouralResponseFlag)
+function experimentStructure = doAnalysisCalciumV2(experimentStructure, prestimTime, channel2Use ,behaviouralResponseFlag)
 % Function enacts main Ca trace analysis for movie files, applys motion
 % correction shifts which were previously calculated, exacts rawF for cells
 % and neuropil, does neuropil correction, calculates dF/F and segements out
@@ -74,8 +74,9 @@ end
 % apply imageregistration shifts
 registeredVol = shiftImageStack(vol,experimentStructure.xyShifts([2 1],:)'); % Apply actual shifts to tif stack
 
+%% FISSA neuropil extraction calculation... runs python script through win cmd
 % save registered image stack if you want to run FISSA toolbox
-if runFISSA ==1
+
     if ~exist([experimentStructure.savePath 'FISSA\'], 'dir')
         mkdir([experimentStructure.savePath 'FISSA\']);
     end
@@ -93,13 +94,11 @@ if runFISSA ==1
     
     % extract out the FISSA results
     experimentStructure = extractFISSA_results(experimentStructure);
-    
-end
-
+  
 % transfers to FIJI
 registeredVolMIJI = MIJ.createImage( 'Registered Volume', registeredVol,true);
 
-%% start running actual trace extraction
+%% start running raw trace extraction
 
 experimentStructure.rawF = [];
 experimentStructure.xPos = zeros(experimentStructure.cellCount,1);
@@ -142,13 +141,14 @@ for q =1:experimentStructure.cellCount
     fprintf('Computing baseline for cell %d \n', q);
     
     % Compute a moving baseline with a 60s percentile lowpass filter smoothed by a 60s Butterworth filter
+    offset = 100; % helps get around dividing my zero errors...
     percentileFiltCutOff = 10;
     lowPassFiltCutOff    = 30; %in seconds
-    experimentStructure.baseline(q,:)  = baselinePercentileFilter((experimentStructure.extractedF_FISSA(q,:)'+100),experimentStructure.rate,lowPassFiltCutOff,percentileFiltCutOff);
+    experimentStructure.baseline(q,:)  = baselinePercentileFilter((experimentStructure.extractedF_FISSA(q,:)'+offset),experimentStructure.rate,lowPassFiltCutOff,percentileFiltCutOff);
 end
 
 % computer delta F/F traces
-experimentStructure.dF = ((experimentStructure.extractedF_FISSA+100)-experimentStructure.baseline)./experimentStructure.baseline;
+experimentStructure.dF = ((experimentStructure.extractedF_FISSA+offset)-experimentStructure.baseline)./experimentStructure.baseline;
 
 
 %% Add some basic trace segementation into cell x cnd x trial for dF/F
@@ -193,51 +193,20 @@ if isempty(behaviouralResponseFlag) % if no behaviour, ie trials are the same le
                     %full trial prestimON-trialEND cell cnd trial
                     experimentStructure.dFperCnd{p}{x}(:,y) = experimentStructure.dF(p,currentTrialFrameStart:currentTrialFrameStart+ (analysisFrameLength-1)); %chunks data and sorts into structure
                     
-                    if runFISSA ==1 % if FISSA data exists
-                        experimentStructure.rawDFperCndFISSA{p}{x}(:,y) = experimentStructure.rawDF_FISSA(p,currentTrialFrameStart:currentTrialFrameStart+ (analysisFrameLength-1)); %chunks data and sorts into structure
-                        experimentStructure.extractedDFperCndFISSA{p}{x}(:,y) = experimentStructure.extractedDF_FISSA(p,currentTrialFrameStart:currentTrialFrameStart+ (analysisFrameLength-1)); %chunks data and sorts into structure
-                    end
-                    
-                    
                     % prestim response and average response per cell x cnd x trial
                     
                     if exist('noPrestim_Flag', 'var') % deals with chunk type, ie from PRESTIM_ON or STIM_ON minus prestimTime
                         experimentStructure.dFpreStimWindow{p}{y,x} = experimentStructure.dF(p,currentTrialFrameStart:experimentStructure.EventFrameIndx.STIM_ON(currentTrial)-1);
-                        
-                        if runFISSA ==1 % if FISSA data exists
-                            experimentStructure.rawDFpreStimWindow{p}{y,x} = experimentStructure.rawDF_FISSA(p,currentTrialFrameStart:experimentStructure.EventFrameIndx.STIM_ON(currentTrial)-1);
-                            experimentStructure.extractedDFpreStimWindow{p}{y,x} = experimentStructure.extractedDF_FISSA(p,currentTrialFrameStart:experimentStructure.EventFrameIndx.STIM_ON(currentTrial)-1);
-                        end
-                        
                     else
                         experimentStructure.dFpreStimWindow{p}{y,x} = experimentStructure.dF(p,currentTrialFrameStart:experimentStructure.EventFrameIndx.PRESTIM_OFF(currentTrial));
-                        
-                        if runFISSA ==1 % if FISSA data exists
-                            experimentStructure.rawDFpreStimWindowFISSA{p}{y,x} = experimentStructure.rawDF_FISSA(p,currentTrialFrameStart:experimentStructure.EventFrameIndx.PRESTIM_OFF(currentTrial));
-                            experimentStructure.extractedDFpreStimWindowFISSA{p}{y,x} = experimentStructure.extractedDF_FISSA(p,currentTrialFrameStart:experimentStructure.EventFrameIndx.PRESTIM_OFF(currentTrial));
-                        end
                     end
                     
                     experimentStructure.dFpreStimWindowAverage{p}{y,x} = mean(experimentStructure.dFpreStimWindow{p}{y,x});
                     
-                    if runFISSA ==1 % if FISSA data exists
-                        experimentStructure.rawDFpreStimWindowAverageFISSA{p}{y,x} = mean(experimentStructure.rawDFpreStimWindowFISSA{p}{y,x});
-                        experimentStructure.extractedDFpreStimWindowAverageFISSA{p}{y,x} = mean(experimentStructure.extractedDFpreStimWindowFISSA{p}{y,x});
-                    end
-                    
                     % stim response and average response per cell x cnd x trial
                     
                     experimentStructure.dFstimWindow{p}{y,x} = experimentStructure.dF(p,experimentStructure.EventFrameIndx.STIM_ON(currentTrial):experimentStructure.EventFrameIndx.STIM_OFF(currentTrial));
-                    experimentStructure.dFstimWindowAverage{p}{y,x} = mean(experimentStructure.dFstimWindow{p}{y,x});
-                    
-                    if runFISSA ==1 % if FISSA data exists
-                        experimentStructure.rawDFstimWindowFISSA{p}{y,x} = experimentStructure.rawDF_FISSA(p,experimentStructure.EventFrameIndx.STIM_ON(currentTrial):experimentStructure.EventFrameIndx.STIM_OFF(currentTrial));
-                        experimentStructure.rawDFstimWindowAverageFISSA{p}{y,x} = mean(experimentStructure.rawDFstimWindowFISSA{p}{y,x});
-                        
-                        experimentStructure.extractedDFstimWindowFISSA{p}{y,x} = experimentStructure.extractedDF_FISSA(p,experimentStructure.EventFrameIndx.STIM_ON(currentTrial):experimentStructure.EventFrameIndx.STIM_OFF(currentTrial));
-                        experimentStructure.extractedDFstimWindowAverageFISSA{p}{y,x} = mean(experimentStructure.extractedDFstimWindowFISSA{p}{y,x});
-                    end
-                    
+                    experimentStructure.dFstimWindowAverage{p}{y,x} = mean(experimentStructure.dFstimWindow{p}{y,x});   
                 end
             end
         end
@@ -255,16 +224,6 @@ for i = 1:length(experimentStructure.dFperCnd) % for each cell
     for x = 1:length(experimentStructure.dFperCnd{i}) % for each condition
         experimentStructure.dFperCndMean{i}(:,x) = mean(experimentStructure.dFperCnd{i}{x}, 2); % means for each cell frame value x cnd
         experimentStructure.dFperCndSTD{i}(:,x) = std(experimentStructure.dFperCnd{i}{x}, 0, 2); % std for each cell frame value x cnd
-        
-        
-        if runFISSA ==1 % if FISSA data exists
-            experimentStructure.rawDFperCndMeanFISSA{i}(:,x) =    mean(experimentStructure.rawDFperCndFISSA{i}{x}, 2); % means for each cell frame value x cnd
-            experimentStructure.rawDFperSTDMeanFISSA{i}(:,x) =     std(experimentStructure.rawDFperCndFISSA{i}{x}, 0, 2); % std for each cell frame value x cnd
-            
-            experimentStructure.extractedDFperCndMeanFISSA{i}(:,x) =    mean(experimentStructure.extractedDFperCndFISSA{i}{x}, 2); % means for each cell frame value x cnd
-            experimentStructure.extractedDFperSTDMeanFISSA{i}(:,x) =     std(experimentStructure.extractedDFperCndFISSA{i}{x}, 0, 2); % std for each cell frame value x cn
-        end
-        
     end
 end
 

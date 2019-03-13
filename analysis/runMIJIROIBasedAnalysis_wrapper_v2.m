@@ -21,7 +21,8 @@ end
 for x = startFolderNo%:length(subFolders)
     subSubFolder =  returnSubFolderList([subFolders(x).folder '\' subFolders(x).name '\TSeries*' ]);
     
-    runMijiROIBasedAnalysisBatch([subSubFolder(end).folder '\' subSubFolder(end).name '\'], 'Single', [], 'adaptive', 1, [], 2)
+%     runMijiROIBasedAnalysisBatch([subSubFolder(end).folder '\' subSubFolder(end).name '\'], 'Single', [], 'adaptive', 1, [], 2);
+    runMijiROIBasedAnalysisBatchV2([subSubFolder(end).folder '\' subSubFolder(end).name '\'], 'Single',[], [], 2)
     
 end
 
