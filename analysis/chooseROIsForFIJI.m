@@ -102,6 +102,7 @@ MIJ.run("Cell Magic Wand Tool");
 MIJImageROI = MIJ.createImage('ROI_image',imageROI,true); %#ok<NASGU> supressed warning as no need to worry about
 WaitSecs(0.2);
 ij.IJ.run('Set... ', ['zoom=' num2str(magSize) ' x=10 y=50']);
+ij.IJ.run('Enhance Contrast', 'saturated=0.35');
 
 
 %create stack for pixel pref stuff
@@ -119,13 +120,14 @@ if exist('pixelPrefGreen', 'var')
     stackImagePlusObj = ij.ImagePlus('Pixel Orientation Stack.tif', pixelPrefStack);
     stackImagePlusObj.show;
     WaitSecs(0.2);
-    ij.IJ.run('Set... ', ['zoom=' num2str(magSize) ' x=1000 y=50']);
+    ij.IJ.run('Set... ', ['zoom=' num2str(magSize) ' x=500 y=50']);
     
 elseif exist('pixelPref', 'var')
     Imp = ij.IJ.openImage([recordingDirProcessed 'Pixel Orientation Pref_native.tif']);
     Imp.show;
     WaitSecs(0.2);
-    ij.IJ.run('Set... ', ['zoom=' num2str(magSize) ' x=1000 y=50']);
+    ij.IJ.run('Set... ', ['zoom=' num2str(magSize) ' x=500 y=50']);
+    
 end
 
 

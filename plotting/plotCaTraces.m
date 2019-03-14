@@ -26,8 +26,9 @@ switch figData.plotChoice
             'Color',cmap(cellNum+1, :), 'Parent',hAx,'LineWidth',1));
         
         hAx.XLim = [0 length(data2plot)];
-        hAx.XTick = [0:50:length(data2plot) ];
+        hAx.XTick = [0:250:length(data2plot) ];
         hAx.YLim = [min(data2plot) max(data2plot)];
+        xticklabels([0:250:length(data2plot)]);
         
         if ~isempty(legendHandle) % checks if legend has been created previously, destroys if so
             try set(legendHandle,'visible','off');
@@ -46,6 +47,7 @@ switch figData.plotChoice
         hAx.XLim = [0 length(data2plot)];
         hAx.XTick = [0:50:length(data2plot) ];
         hAx.YLim = [min(data2plot) max(data2plot)];
+        xticklabels([0:250:length(data2plot)]);
         
         if ~isempty(legendHandle) % checks if legend has been created previously, destroys if so
             try set(legendHandle,'visible','off');
@@ -60,31 +62,49 @@ switch figData.plotChoice
         data2plot = experimentStructure.dFperCndMean{1,cellNum};
         legendText ={};
         
-        % plots each condition at different color and builds legend text
-        for i =1:size(experimentStructure.dFperCndMean{1,cellNum}, 2)
+        for x =1:size(data2plot, 2)
+            lengthOfData = experimentStructure.meanFrameLength;
+            if x >1
+                spacing = 5;
+                xlocations = ((lengthOfData +lengthOfData* (x-1))- (lengthOfData-1) :lengthOfData + lengthOfData* (x-1)) + spacing*(x-1);
+                xlocationMid(x) = xlocations(round(lengthOfData/2));
+            else
+                spacing = 0;
+                xlocations = 0:lengthOfData-1;
+                xlocationMid(x) = xlocations(round(lengthOfData/2));
+            end
             
-            hLine(numel(hLine)+1) = handle(line(1:size(data2plot,1),data2plot(:,i) ...
-                ,'Color',conditionCols(i, :), 'Parent',hAx,'LineWidth',1));
+            lineCol = cmap(cellNum+1, :);
             
-            legendText = [legendText {['Condition ' num2str(i)]}];
+            errorBars = experimentStructure.dFperCndSTDFBS{1,cellNum}(:,x);
+            
+            % plot data
+            hLine(numel(hLine)+1) = handle(line(xlocations,data2plot(:,x) ...
+                ,'Color',lineCol, 'Parent',hAx,'LineWidth',1));
+            
+            % plot error bars
+            hLine(numel(hLine)+1) = handle(line(xlocations,(data2plot(:,x)+errorBars) ...
+                ,'Color',lineCol, 'Parent',hAx, 'LineStyle','--'));
+            hLine(numel(hLine)+1) = handle(line(xlocations,(data2plot(:,x)-errorBars) ...
+                ,'Color',lineCol, 'Parent',hAx, 'LineStyle','--'));
+            
+            
+            
+            yMaxVector(x) =  max(data2plot(:,x)+errorBars);
+            yMinVector(x) =  min(data2plot(:,x)-errorBars);
         end
-        hAx.YLim = [min(data2plot(:)) max(data2plot(:))];
         
-        xLim = xlim;
-        yLim = ylim;
+        xticks(xlocationMid);
+        xticklabels([1:size(data2plot, 2)]);
+        title('Tuning curve');
+        ylabel('\DeltaF/F')
+        xlabel(sprintf('Stimulus direction (%s)', char(176)));
+        axis square;
         
-        %         hLine(numel(hLine)+1) = handle(rectangle(hAx, 'Position', [experimentStructure.stimOnFrames(1) xLim(1) (experimentStructure.stimOnFrames(2)-experimentStructure.stimOnFrames(1)) yLim(2)], 'FaceColour', [0.5 0.5 0.5]));
+        hAx.XLim = [1 xlocations(end)];
         
-        patchVertices = [experimentStructure.stimOnFrames(1), yLim(1); ...
-            experimentStructure.stimOnFrames(1), yLim(2)+0.5; ...
-            experimentStructure.stimOnFrames(2), yLim(2)+0.5; ...
-            experimentStructure.stimOnFrames(2), yLim(1)];
-        hLine(numel(hLine)+1) = patch( 'vertices', patchVertices, 'faces', [1,2,3,4], 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.5);
-        
-        % plots legend
-        hAx.XLim = [1 size(data2plot,1)];
-        hAx.XTickMode = 'auto';
-        legendHandle = legend(hAx,legendText, 'Location', 'southwest', 'TextColor', 'w');
+        % find y axis lims
+        hAx.YLim = [min(yMinVector)-0.2 max(yMaxVector)+0.2];
         
     case 'mean dF/F'
         data2plot = experimentStructure.dFperCndMean{1,cellNum};
@@ -257,7 +277,7 @@ switch figData.plotChoice
         end
         
         xticks(xlocationMid);
-        xticklabels([0:45:315 0:45:315]);
+        xticklabels([1:size(data2plot, 2)]);
         title('Tuning curve');
         ylabel('\DeltaF/F')
         xlabel(sprintf('Stimulus direction (%s)', char(176)));
