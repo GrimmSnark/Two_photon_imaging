@@ -45,7 +45,7 @@ switch figData.plotChoice
             'Color',cmap(cellNum+1, :), 'Parent',hAx,'LineWidth',1));
         
         hAx.XLim = [0 length(data2plot)];
-        hAx.XTick = [0:50:length(data2plot) ];
+        hAx.XTick = [0:250:length(data2plot) ];
         hAx.YLim = [min(data2plot) max(data2plot)];
         xticklabels([0:250:length(data2plot)]);
         
@@ -76,7 +76,7 @@ switch figData.plotChoice
             
             lineCol = cmap(cellNum+1, :);
             
-            errorBars = experimentStructure.dFperCndSTDFBS{1,cellNum}(:,x);
+            errorBars = experimentStructure.dFperCndSTD{1,cellNum}(:,x);
             
             % plot data
             hLine(numel(hLine)+1) = handle(line(xlocations,data2plot(:,x) ...

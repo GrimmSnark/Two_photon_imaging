@@ -32,9 +32,9 @@ function runMijiROIBasedAnalysisBatchV2(recordingDir, recordingType, preproFolde
 
 %%
 % Sets behavioural data flag to empty as not currently used
-if nargin<8
+
     behaviouralResponseFlag =[];
-end
+% 
 
 %% create appropriate filepaths
 if contains(recordingDir, 'Raw') % if you specfy the raw folder then it finds the appropriate processed folder
