@@ -50,17 +50,6 @@ stimCmpEvents = [1 1] ;
 
 phase = 0;
 
-% Color offsets for similar energy (specific for screen)
-redMax = 1;
-greenMax = 0.7255;
-% greenMax = 1;
-blueMax = 1;
-
-backgroundRed = redMax/2;
-backgroundGreen = greenMax/2;
-backgroundBlue = blueMax/2;
-
-backgroundColorOffsetCy = [backgroundRed backgroundGreen backgroundBlue 1]; %RGBA offset color
 %Stimulus
 %width = 10; % in degrees visual angle
 widthInPix = degreeVisualAngle2Pixels(1,width);
@@ -80,8 +69,13 @@ cyclespersecond =4; % temporal frequency to stimulate all cells (in Hz)
 contrast =  1; % contrast for grating
 
 % set up color and orientation levels
-colorLevels = rand(10 ,3);
-orientations = [0 :15:165];
+[colorLevels, colorDescriptors] = PTBOrientationColorValuesMonkey;
+
+backgroundColor = [colorLevels(1,:) 1]; %RGBA offset color
+colorLevels = colorLevels(2:end,:);
+colorDescriptors = colorDescriptors(2:end);
+
+orientations = [0:15:165];
 Angle =repmat(orientations,[1 size(colorLevels, 1)]); % angle in degrees x number of colors
 
 numCnd = length(Angle); % conditions = angle x colors
@@ -104,7 +98,7 @@ blockMovementsBalanced = repmat(directionStartPerOrientation,length(colorLevels)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% intial set up of experiment
+%% initial set up of experiment
 Screen('Preference', 'VisualDebugLevel', 1); % removes welcome screen
 PsychDefaultSetup(2); % PTB defaults for setup
 
@@ -136,14 +130,14 @@ PsychImaging('AddTask','General', 'FloatingPoint32Bit'); % sets accuracy of fram
 % look into PsychImaging('AddTask', 'General', 'UseGPGPUCompute', apitype [, flags]);???
 
 
-[windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, [ backgroundColorOffsetCy(1:3) ] ); %opens screen and sets background to grey
+[windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, [ backgroundColor(1:3) ] ); %opens screen and sets background to grey
 
 
 %create all gratings on GPU.....should be very fast
 if fullfieldStim ==0
-    [gratingid, gratingrect] = CreateProceduralSquareWaveGrating(windowPtr, widthInPix, heightInPix, backgroundColorOffsetCy, [], contrast);
+    [gratingid, gratingrect] = CreateProceduralSquareWaveGrating(windowPtr, widthInPix, heightInPix, backgroundColor, [], contrast);
 else
-    [gratingid, gratingrect] = CreateProceduralSquareWaveGrating(windowPtr, screenXpixels*1.5, screenXpixels*1.5, backgroundColorOffsetCy, [], contrast);
+    [gratingid, gratingrect] = CreateProceduralSquareWaveGrating(windowPtr, screenXpixels*1.5, screenXpixels*1.5, backgroundColor, [], contrast);
 end
 
 
@@ -177,9 +171,9 @@ contrastLevels = linspace(0, contrast, contrast_rampFrames);
 mask = ones(screenYpixels, screenXpixels+10, 3);
 
 % background values
-mask(:,:,1) = mask(:,:,1) * backgroundColorOffsetCy(1); % red value
-mask(:,:,2) = mask(:,:,2) * backgroundColorOffsetCy(2); % green value
-mask(:,:,3) = mask(:,:,3) * backgroundColorOffsetCy(3); % blue value
+mask(:,:,1) = mask(:,:,1) * backgroundColor(1); % red value
+mask(:,:,2) = mask(:,:,2) * backgroundColor(2); % green value
+mask(:,:,3) = mask(:,:,3) * backgroundColor(3); % blue value
 
 mask2 = NaN(screenYpixels, screenXpixels+10); %alpha mask
 blendVec = linspace(1, 0, blendDistancePixels);
@@ -256,11 +250,11 @@ while ~KbCheck
             fprintf(['Block No: %i \n'...
                 'Condition No: %i \n'...
                 'Trial No: %i of %i \n' ...
-                'Color Cnd: %i \n' ...
+                'Color Cnd: %s (No. %i) \n' ...
                 'Orientation: %.1f degrees \n'...
                 'First Direction = %s \n' ...
                 '############################################## \n'] ...
-                ,blockNum,cndOrder(trialCnd), trialCnd, length(cndOrder) , currentColLevel,  trialParams(1), movementDirection);
+                ,blockNum,cndOrder(trialCnd), trialCnd, length(cndOrder) , colorDescriptors{currentColLevel}, currentColLevel,  trialParams(1), movementDirection);
             
             if doNotSendEvents ==0
                 % send out cnds to imaging comp
@@ -377,8 +371,10 @@ while ~KbCheck
             %% second movement direction
             
             % add movment direction event
-            AnalogueOutEvent(daq, movementEvent1);
-            stimCmpEvents(end+1,:)= addCmpEvents(movementEvent1);
+            if doNotSendEvents ==0
+                AnalogueOutEvent(daq, movementEvent2);
+                stimCmpEvents(end+1,:)= addCmpEvents(movementEvent2);
+            end
             
             for frameNo =1:totalNumFrames/2 % stim presentation loop
                 phase = phase + phaseincrement;

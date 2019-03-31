@@ -30,9 +30,9 @@ zoomlevel =1; % resets level to standard for each instance of plot
 
 % load in average image
 try
-    STD_Stim_Sum = read_Tiffs([experimentStructure.savePath '\STD_Stim_Sum.tif']);
+    STD_Stim_Sum = read_Tiffs([experimentStructure.savePath 'STD_Stim_Sum.tif']);
 catch
-    STD_Stim_Sum = read_Tiffs([experimentStructure.savePath '\STD_Stim_Sum_Ch' num2str(channel2Use) '.tif']);
+    STD_Stim_Sum = read_Tiffs([experimentStructure.savePath 'STD_Stim_Sum_Ch' num2str(channel2Use) '.tif']);
 end
 
 figure
