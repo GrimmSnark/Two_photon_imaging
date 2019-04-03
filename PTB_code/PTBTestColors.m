@@ -8,14 +8,15 @@ sca;
 
 
 %% intial set up of experiment
+Screen('Preference', 'VisualDebugLevel', 1); % removes welcome screen
 PsychDefaultSetup(2); % PTB defaults for setup
-screenNumber = min(Screen('Screens')); % makes display screen the secondary one
+screenNumber = max(Screen('Screens')); % makes display screen the secondary one
 
 
 % Define black, white and grey for background
 % r g b
-g = 255/255;
-color = [0 g 0];
+b = 0/255;
+color = [0 0 0];
 
 PsychImaging('PrepareConfiguration');
 [windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, color); %opens screen and sets background to grey
