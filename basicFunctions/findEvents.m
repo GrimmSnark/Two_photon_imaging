@@ -1,4 +1,4 @@
-function eventIndx = findEvents(event, eventArray, codes)
+function [eventIndx, eventLocation]= findEvents(event, eventArray, codes)
 % find event indices within eventArray, event can be numeric or string,
 % codes is the cell array which is produced from running prairieCodes()
 
@@ -10,5 +10,5 @@ else
 end
 
 eventIndx = eventArray(:,2) == level;
-
+eventLocation = find(eventIndx);
 end

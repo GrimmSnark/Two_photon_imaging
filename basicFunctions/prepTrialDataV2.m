@@ -17,7 +17,7 @@ eventArray = readEventFilePrairieV2(dataFilepathPrairie, []); % read in events f
 PTBPath = dir([experimentStructure.prairiePath '*.mat']);
 if ~isempty(PTBPath)
     experimentStructure.PTB_TimingFilePath = [PTBPath.folder '\' PTBPath.name ];
-   [eventArray, PTBeventArray ]= checkConsistency(eventArray, experimentStructure.PTB_TimingFilePath);
+    [eventArray, PTBeventArray ]= checkConsistency(eventArray, experimentStructure.PTB_TimingFilePath);
 end
 
 %% Proceed with trial event segementation
@@ -29,7 +29,7 @@ endArray = eventStream(endIndx,:);
 endIndxNum = find(endIndx);
 rawTrials  = cell([length(endIndxNum),1]);
 
-% splits up raw trial events
+%% splits up raw trial events
 for i =1:length(endIndxNum)
     if i==1
         rawTrials{i,1} = eventStream(1:endIndxNum(i),:);
@@ -38,7 +38,7 @@ for i =1:length(endIndxNum)
     end
 end
 
-% check event numbers the same size
+%% check event numbers the same size
 numEventsPerTrial = arrayfun(@(I) size(rawTrials{I,1},1), 1:length(rawTrials));
 diffRange = range(numEventsPerTrial);
 
@@ -54,11 +54,36 @@ for k = 1:numel(rawTrials)
     numOfEssentialEvents(k) = recursiveSum((rawTrials{k}(:,2) == essentialEventsNum));
 end
 
-
 validTrial = numOfEssentialEvents==length(essentialEventsNum); % indx of valid trial by event inclusion
+
+%% If the number of essential events in a trial is higher than the supposed
+% number it may be that the condition code is the same as one of the
+% essential events. Try to fix this
+trialsToFix = [];
+trialsToFix = find(numOfEssentialEvents>length(essentialEventsNum));
+
+if ~isempty(trialsToFix)
+    for q = trialsToFix % for each trial to fix
+        for currentEvent = essentialEventsNum% for each essential event
+            indexOfEvent = find(rawTrials{q}(:,2)==currentEvent); % find index of events in question
+            
+            if length(indexOfEvent) > 1 % if multiple essential event numbers found, try to see if one of them is a condition code
+                [~,paramStIndx] = findEvents('PARAM_START',rawTrials{q,1},codes);
+                [~,paramStopIndx] = findEvents('PARAM_END',rawTrials{q,1},codes);
+                
+                for f = length(indexOfEvent) % for each instance of the event
+                    if indexOfEvent(f)> paramStIndx(1) && indexOfEvent(f)< paramStopIndx(end) % check if it is a block or condition number
+                        validTrial(q) = 1; % declares trial valid again
+                    end
+                end
+            end
+        end
+    end
+end
+
 disp([num2str(sum(validTrial)) ' / '  num2str(length(validTrial)) ' trials have valid condition codes!!!']);
 
-% try to fix invalid trials
+%% try to fix invalid trials
 if any(validTrial==0)
     for x =1: length(essentialEventsNum) % get essential event identities from PTB events
         essentialEventLocPTB(x,:) = find(PTBeventArray == essentialEventsNum(x));
@@ -76,20 +101,20 @@ if any(validTrial==0)
             if any(rawTrials{invalidTrials,1}(:,2) ~= essentialEventsNum(z)) % if can not find event in current trial
                 [~, erroredIndx] = min(abs(rawTrials{invalidTrials,1}(:,2)- essentialEventsNum(z))); % find mismatched index
                 rawTrials{invalidTrials,1}(erroredIndx,2) = essentialEventsNum(z); % set the mismatched event to the appropriate one
-             end
+            end
         end
         
         % fix block/cnd codes
         paramStartIndx = find(rawTrials{invalidTrials,1}(:,2) == paramStartCode); % get the indx for param start in eventArray
         rawTrials{invalidTrials,1}(paramStartIndx+1,2) = PTBeventArray(trialEssentialEventLocPTB(paramStartPosition)+1); % set the block (param start +1) to PTB block code
         rawTrials{invalidTrials,1}(paramStartIndx+2,2) = PTBeventArray(trialEssentialEventLocPTB(paramStartPosition)+2); % set the condition (param start +2) to PTB condition code
-    
+        
         % reset valid flag for this trial to true
         validTrial(i) = 1;
     end
 end
 
-% extract stimulus conditions for each valid trial
+%% extract stimulus conditions for each valid trial
 
 block = zeros(length(validTrial),2);
 cnd = block;
@@ -150,7 +175,9 @@ for i =1:length(nonEssentialEventNumbers)
     
     try
         nonEssentialEvent{2,i}= reshape(nonEssentialCodes(indexOfBoth),[],2,size(nonEssentialCodes,3)); % if all goes well reshapes array
-    catch % if there has been some weirdness, not all the same number of events in each trial
+    catch
+        %% Second step fixes if needed
+        % if there has been some weirdness, not all the same number of events in each trial
         disp('Trying to fix irrational event timing issues');
         
         % finds the trials that have non matching number of events
@@ -158,9 +185,9 @@ for i =1:length(nonEssentialEventNumbers)
             trialSumEvents(q) = sum(indexOfBoth(:,1,q));
         end
         
-%         trialEventAverage = floor(mean(trialSumEvents)); % finds the correct number of a particular event in each trial
+        %         trialEventAverage = floor(mean(trialSumEvents)); % finds the correct number of a particular event in each trial
         trialEventAverage = mode(trialSumEvents); % finds the correct number of a particular event in each trial
-
+        
         
         if trialEventAverage==0 % if calculates zero, corrects to one
             trialEventAverage = ceil(mean(trialSumEvents));
@@ -241,7 +268,6 @@ for i =1:length(nonEssentialEventNumbers)
                 end
             end
         end
-        
         nonEssentialEvent{2,i}= reshape(nonEssentialCodes(indexOfBoth),[],2,size(nonEssentialCodes,3)); % if all goes well reshapes array
     end
 end
