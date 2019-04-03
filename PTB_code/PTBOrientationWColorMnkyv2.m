@@ -95,8 +95,30 @@ directionStartPerOrientation = [directionStartPerOrientation; directionStartPerO
 
 blockMovementsBalanced = repmat(directionStartPerOrientation,length(colorLevels)/2,1);
 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Display total experiment predicted time and query continue.....
+
+lengthofTrial = preStimTime + stimTime + rampTime*2 + ITItime;
+totalTrialNo = numCnd * numReps;
+totalTime = lengthofTrial * totalTrialNo;
+
+disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+disp('');
+disp(['This experiment will take approx. ' num2str(totalTime) 's (' num2str(totalTime/60) ' minutes)']);
+disp('If you want to procceed press SPACEBAR, if you want to CANCEL, pres ESC');
+disp('');
+disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+
+[secs, keyCode, deltaSecs] = KbWait([],2, inf);
+
+keypressNo = find(keyCode);
+
+   if keypressNo == 27 % ESC code = 27
+        return 
+   end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 %% initial set up of experiment
 Screen('Preference', 'VisualDebugLevel', 1); % removes welcome screen

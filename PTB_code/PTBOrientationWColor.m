@@ -74,6 +74,30 @@ Angle =[0    45    90   135   180   225   270   315  0    45    90   135   180  
 
 numCnd = length(Angle); % conditions = angle x colors
 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Display total experiment predicted time and query continue.....
+
+lengthofTrial = preStimTime + stimTime + rampTime*2 + ITItime;
+totalTrialNo = numCnd * numReps;
+totalTime = lengthofTrial * totalTrialNo;
+
+disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+disp('');
+disp(['This experiment will take approx. ' num2str(totalTime) 's (' num2str(totalTime/60) ' minutes)']);
+disp('If you want to procceed press SPACEBAR, if you want to CANCEL, pres ESC');
+disp('');
+disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+
+[secs, keyCode, deltaSecs] = KbWait([],2, inf);
+
+keypressNo = find(keyCode);
+
+   if keypressNo == 27 % ESC code = 27
+        return 
+   end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %% intial set up of experiment
 Screen('Preference', 'VisualDebugLevel', 1); % removes welcome screen
 PsychDefaultSetup(2); % PTB defaults for setup
