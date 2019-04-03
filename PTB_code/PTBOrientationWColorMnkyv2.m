@@ -52,17 +52,17 @@ phase = 0;
 
 %Stimulus
 %width = 10; % in degrees visual angle
-widthInPix = degreeVisualAngle2Pixels(1,width);
+widthInPix = degreeVisualAngle2Pixels(2,width);
 heightInPix =widthInPix;
 radius=widthInPix/2; % circlar apature in pixels
 
-blendDistancePixels = degreeVisualAngle2Pixels(1,blendDistance);
+blendDistancePixels = degreeVisualAngle2Pixels(2,blendDistance);
 
 
 %spatial frequency
 freq = 2 ; % in cycles per degree
 freq = 1/freq; % hack hack hack
-freqPix = degreeVisualAngle2Pixels(1,freq);
+freqPix = degreeVisualAngle2Pixels(2,freq);
 freqPix =1/freqPix; % use the inverse as the function below takes bloody cycles/pixel...
 
 cyclespersecond =4; % temporal frequency to stimulate all cells (in Hz)
@@ -113,9 +113,9 @@ disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
 
 keypressNo = find(keyCode);
 
-   if keypressNo == 27 % ESC code = 27
-        return 
-   end
+if keypressNo == 27 % ESC code = 27
+    return
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -141,8 +141,8 @@ screenNumber = max(Screen('Screens')); % makes display screen the secondary one
 screenCentre = [0.5 * screenXpixels , 0.5 * screenYpixels];
 % Set up relative stim centre based on degree visual angle
 
-screenStimCentreOffset(1) = degreeVisualAngle2Pixels(1,stimCenter(1));
-screenStimCentreOffset(2) = degreeVisualAngle2Pixels(1,stimCenter(2));
+screenStimCentreOffset(1) = degreeVisualAngle2Pixels(2,stimCenter(1));
+screenStimCentreOffset(2) = degreeVisualAngle2Pixels(2,stimCenter(2));
 
 screenStimCentre = screenCentre + screenStimCentreOffset;
 
@@ -153,6 +153,14 @@ PsychImaging('AddTask','General', 'FloatingPoint32Bit'); % sets accuracy of fram
 
 
 [windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, [ backgroundColor(1:3) ] ); %opens screen and sets background to grey
+
+% load gamma table
+try
+    load 'C:\All Docs\calibrations\gammaTableGamma.mat'
+catch
+    load 'C:\PostDoc Docs\Two Photon Rig\calibrations\LCD monitor\gammaTableGamma.mat'
+end
+Screen('LoadNormalizedGammaTable', windowPtr, gammaTable1*[1 1 1]);
 
 
 %create all gratings on GPU.....should be very fast
@@ -368,6 +376,11 @@ while ~KbCheck
                         if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
                             AnalogueOutEvent(daq, 'STIM_ON');
                             stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
+                            
+                            % add movement direction event
+                            AnalogueOutEvent(daq, movementEvent1);
+                            stimCmpEvents(end+1,:)= addCmpEvents(movementEvent1);
+                            
                             stimOnFlag = 0;
                         end
                     end

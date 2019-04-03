@@ -72,7 +72,7 @@ contrast =  1; % contrast for grating
 
 % set up color and orientation levels
 % [colorLevels, colorDescriptors] = PTBOrientationColorValuesMonkey;
-colorLevels = [0.67 0.67 0.67; 1 1 1];
+colorLevels = [0.5 0.5 0.5; 1 1 1];
 colorDescriptors = [{'background'}, {'black_white'}];
 
 backgroundColor = [colorLevels(1,:) 1]; %RGBA offset color
@@ -98,7 +98,29 @@ directionStartPerOrientation2 = ~directionStartPerOrientation;
 directionStartPerOrientation = [directionStartPerOrientation; directionStartPerOrientation2];
 
 blockMovementsBalanced = directionStartPerOrientation;
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Display total experiment predicted time and query continue.....
 
+lengthofTrial = preStimTime + stimTime + rampTime*2 + ITItime;
+totalTrialNo = numCnd * numReps;
+totalTime = lengthofTrial * totalTrialNo;
+
+disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+disp('');
+disp(['This experiment will take approx. ' num2str(totalTime) 's (' num2str(totalTime/60) ' minutes)']);
+disp('If you want to procceed press SPACEBAR, if you want to CANCEL, pres ESC');
+disp('');
+disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+
+[secs, keyCode, deltaSecs] = KbWait([],2, inf);
+
+keypressNo = find(keyCode);
+
+   if keypressNo == 27 % ESC code = 27
+        return 
+   end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -138,7 +160,11 @@ PsychImaging('AddTask','General', 'FloatingPoint32Bit'); % sets accuracy of fram
 [windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, [ backgroundColor(1:3) ] ); %opens screen and sets background to grey
 
 % load gamma table
-load 'C:\All Docs\calibrations\gammaTableGamma.mat'
+try
+    load 'C:\All Docs\calibrations\gammaTableGamma.mat'
+catch
+    load 'C:\PostDoc Docs\Two Photon Rig\calibrations\LCD monitor\gammaTableGamma.mat'
+end
 Screen('LoadNormalizedGammaTable', windowPtr, gammaTable1*[1 1 1]);
 
 %create all gratings on GPU.....should be very fast

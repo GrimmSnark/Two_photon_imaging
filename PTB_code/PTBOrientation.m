@@ -147,6 +147,15 @@ PsychImaging('AddTask','General', 'FloatingPoint32Bit'); % sets accuracy of fram
 
 [windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, [ grey ] ); %opens screen and sets background to grey
 
+% load gamma table
+try
+    load 'C:\All Docs\calibrations\gammaTableGamma.mat'
+catch
+    load 'C:\PostDoc Docs\Two Photon Rig\calibrations\LCD monitor\gammaTableGamma.mat'
+end
+Screen('LoadNormalizedGammaTable', windowPtr, gammaTable1*[1 1 1]);
+
+
 %create all gratings on GPU.....should be very fast
 if fullfieldStim ==0
     [gratingid, gratingrect] = CreateProceduralSineGrating(windowPtr, widthInPix, heightInPix, backgroundColorOffset, radius, contrast);
