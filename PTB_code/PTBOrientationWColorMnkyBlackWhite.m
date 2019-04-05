@@ -43,7 +43,7 @@ timeSave = datestr(now,'yyyymmddHHMMSS');
 indentString = 'OrientationWColorMnkyBlackWhite_';
 
 % stimTime = 1; %in s
-ITItime = 20; % intertrial interval in seconds
+ITItime = 5; % intertrial interval in seconds
 % firstTime =1;
 blockNum = 0;
 stimCmpEvents = [1 1] ;
@@ -60,7 +60,7 @@ blendDistancePixels = degreeVisualAngle2Pixels(2,blendDistance);
 
 
 % %%%%%%%%%%%%%%%%%%%%%%% spatial frequency %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-freq = 1 ; % in cycles per degree
+freq = 0.5 ; % in cycles per degree
 freq = 1/freq; % hack hack hack
 freqPix = degreeVisualAngle2Pixels(2,freq);
 freqPix =1/freqPix; % use the inverse as the function below takes bloody cycles/pixel...
@@ -79,7 +79,10 @@ backgroundColor = [colorLevels(1,:) 1]; %RGBA offset color
 colorLevels = colorLevels(2:end,:);
 colorDescriptors = colorDescriptors(2:end);
 
-orientations = [0 45 90 135];
+%  orientations = [0 45 90 135]; % 4 orientations
+  orientations = [0:30:150]; % 6 orientations
+% orientations = [0:15:165]; % 12 orientations
+
 Angle =repmat(orientations,[1 size(colorLevels, 1)]); % angle in degrees x number of colors
 
 numCnd = length(Angle); % conditions = angle x colors
@@ -258,12 +261,12 @@ while ~KbCheck
             
             if directionFlag == 0
                 movementDirection = 'Postive';
-                movementEvent1 = 'POSITIVE MOVEMENT';
-                movementEvent2 = 'NEGATIVE MOVEMENT';
+                movementEvent1 = 'POSITIVE_MOVEMENT';
+                movementEvent2 = 'NEGATIVE_MOVEMENT';
             else
                 movementDirection = 'Negative';
-                movementEvent1 = 'NEGATIVE MOVEMENT';
-                movementEvent2 = 'POSITIVE MOVEMENT';
+                movementEvent1 = 'NEGATIVE_MOVEMENT';
+                movementEvent2 = 'POSITIVE_MOVEMENT';
             end
             
             

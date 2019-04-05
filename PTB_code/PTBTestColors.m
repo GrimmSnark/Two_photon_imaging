@@ -16,7 +16,7 @@ screenNumber = max(Screen('Screens')); % makes display screen the secondary one
 % Define black, white and grey for background
 % r g b
 b = 0/255;
-color = [0 0 0];
+color = [1 1 1];
 
 PsychImaging('PrepareConfiguration');
 [windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, color); %opens screen and sets background to grey

@@ -46,7 +46,7 @@ colorDescriptors{end+1}= 'L/M+ & S-';
 
 % (CM^-1)*[.3 .3 .3]' 
 colorValues(end+1,:)=[.1859 .1605 .4152]';  % example equal L/M- & S- at pi/4 
-colorDescriptors{end+1}= 'L/M+ & S-';
+colorDescriptors{end+1}= 'L/M- & S-';
 
 % (CM^-1)*[.5 .5 .1]'
 colorValues(end+1,:)=[.0154 .4723 .1189]';  % example L/M0 & S--
