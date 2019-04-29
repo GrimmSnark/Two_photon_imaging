@@ -1,4 +1,4 @@
-function prepData(dataDir, loadMeta, regOrNot, saveRegMovie, experimentType, channel2register, templateImageForReg, useBrightestFrameAlignment)
+function prepData(dataDir, loadMeta, regOrNot, saveRegMovie, experimentType, channel2register,registrationType, templateImageForReg, useBrightestFrameAlignment)
 % This function does basic preprocessing of t series imaging data including
 % meta data, trial data extraction and image registration
 % Input- dataDir: image data directory for the t series
@@ -15,6 +15,9 @@ function prepData(dataDir, loadMeta, regOrNot, saveRegMovie, experimentType, cha
 %
 %        channel2register: can speicfy channel to register the stack with
 %        if there are more than one recorded channel
+%
+%        registrationType- DFT-based subpixel method ('subMicronMethod')
+%                        - non-rigid DFT subpixel registration ('nonRigid')
 %
 %        templateImageForReg: 2D image array which is used for registering
 %        tif stack (used for multiple tif stacks in the same recording
@@ -90,8 +93,9 @@ if length(channelNo)> 1 % choose one channel to register if multiple exist
         end
         
         disp(['Starting image registration on Channel ' num2str(channel2register)]);
-        [vol,xyShifts] = imageRegistration(volSplit(:,:,:,channel2register), [], micronsPerPix, [], templateImageForReg);
+        [vol,xyShifts, options_nonrigid] = imageRegistration(volSplit(:,:,:,channel2register), [], micronsPerPix, [], templateImageForReg);
         experimentStructure.xyShifts = xyShifts;
+        experimentStructure.options_nonrigid = options_nonrigid;
     end
     % deal with first channel
     experimentStructure = prepDataSubFunction(vol, experimentStructure, saveRegMovie, channelNo{channel2register});
@@ -127,8 +131,9 @@ else
         
         
         disp(['Starting image registration on Channel ' num2str(channel2register)]);
-        [vol,xyShifts] = imageRegistration(vol, [], micronsPerPix, [], templateImageForReg);
+        [vol,xyShifts, options_nonrigid] = imageRegistration(vol,registrationType, micronsPerPix, [], templateImageForReg);
         experimentStructure.xyShifts = xyShifts;
+        experimentStructure.options_nonrigid = options_nonrigid;
     end
     
     experimentStructure =  prepDataSubFunction(vol, experimentStructure, saveRegMovie);

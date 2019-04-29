@@ -72,8 +72,11 @@ end
     
 
 % apply imageregistration shifts
-registeredVol = shiftImageStack(vol,experimentStructure.xyShifts([2 1],:)'); % Apply actual shifts to tif stack
-
+if ~isempty(experimentStructure.options_nonrigid) % if using non rigid correctionn
+    registeredVol = apply_shifts(vol,experimentStructure.xyShifts,experimentStructure.options_nonrigid);
+else
+    registeredVol = shiftImageStack(vol,experimentStructure.xyShifts([2 1],:)'); % Apply actual shifts to tif stack
+end
 %% FISSA neuropil extraction calculation... runs python script through win cmd
 % save registered image stack if you want to run FISSA toolbox
 
