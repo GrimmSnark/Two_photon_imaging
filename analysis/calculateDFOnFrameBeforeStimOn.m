@@ -19,7 +19,6 @@ for p = 1:experimentStructure.cellCount % for each cell
             % calulates per trial DF/F
             experimentStructure.dFperCndFBS{p}{x}(:,y) = (experimentStructure.rawF(p,currentTrialFrameStart:currentTrialFrameStart+ (analysisFrameLength-1)) - experimentStructure.rawF(p,currentTrialFrameStart+experimentStructure.stimOnFrames(1)-2))/experimentStructure.rawF(p,currentTrialFrameStart+experimentStructure.stimOnFrames(1)-2); %chunks data and sorts into structure
             
-            
             experimentStructure.dFpreStimWindowFBS{p}{y,x} =  experimentStructure.dFperCndFBS{p}{x}(1:experimentStructure.stimOnFrames(1)-1,y);
             experimentStructure.dFpreStimWindowAverageFBS{p}{y,x} = mean(experimentStructure.dFpreStimWindowFBS{p}{y,x});
             

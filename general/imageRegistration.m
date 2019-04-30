@@ -37,7 +37,7 @@ parfor_progress(numberOfImages);
 disp('Starting to calculate frame shifts');
 
 if strcmp(imageRegistrationMethod, 'nonRigid')
-    options_nonrigid = NoRMCorreSetParms('d1',size(tifStack,1),'d2',size(tifStack,2),'grid_size',[32,32],'mot_uf',4,'bin_width',200,'max_shift',15,'max_dev',3,'us_fac',50,'init_batch',200);
+    options_nonrigid = NoRMCorreSetParms('d1',size(tifStack,1),'d2',size(tifStack,2),'grid_size',[32,32],'mot_uf',4,'bin_width',200,'max_shift',29,'max_dev',3,'us_fac',50,'init_batch',200);
     [tifStack,xyShifts,~,options_nonrigid,~] = normcorre_batch(tifStack,options_nonrigid, templateImage);
     
 else

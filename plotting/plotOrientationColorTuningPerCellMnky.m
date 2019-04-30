@@ -24,6 +24,7 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     
     % get Data
     yData     = cell2mat(experimentStructure.dFstimWindowAverageFBS{1,i});
+    blankResponse = cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i});
     blankResponseMean = mean(mean(cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i})));
     blackResponseStd = mean(std(cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i})));
     yResponse     = experimentStructure.dFperCndFBS{1,i};
@@ -35,11 +36,15 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     yMean = mean(yData,1);
     preferredStimulus = find(yMean(1:(end-1)) == max(yMean(1:(end-1))));
     
+    prefResponses = yData(:,preferredStimulus);
+    blankPrefResponses = blankResponse(:,preferredStimulus);
     
-    responseThreshold = blankResponseMean+2*blackResponseStd; % The average response at the preferred stimulus must be 2 standard deviations above the blank condition mean
-    IsRespSignificant = yMean(preferredStimulus)>responseThreshold;
+    [h, pVal] = ttest(prefResponses, blankPrefResponses);
     
-    if IsRespSignificant ==1
+%     responseThreshold = blankResponseMean+2*blackResponseStd; % The average response at the preferred stimulus must be 2 standard deviations above the blank condition mean
+%     IsRespSignificant = yMean(preferredStimulus)>responseThreshold;
+    
+    if pVal < 0.05
         sigText = 'Significant Response';
     else
         sigText = 'Non-signficant Response';
@@ -50,7 +55,7 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     
     
     % Compute stats for preferred response
-    timeFrame = (1: experimentStructure.meanFrameLength) * experimentStructure.framePeriod;
+    timeFrame = ((1: experimentStructure.meanFrameLength) * experimentStructure.framePeriod) - experimentStructure.stimOnFrames(1)*experimentStructure.framePeriod;
     
     % Get preferred color
     [prefOrientation, prefColor] = ind2sub([orientationNo colorNo],preferredStimulus);
@@ -66,12 +71,13 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     plot(timeFrame,yResponseMeanPreferred,'-r','lineWidth',3);
     hold on;
     plot(timeFrame,yResponsePreferred,'--k','Color',0.25*[1,0,0]);
-    hline(responseThreshold, '--b');
-    legend({'Average response','Trial responses', 'Response threshold'},'Location','northwest');
+%     hline(responseThreshold, '--b');
+%     legend({'Average response','Trial responses', 'Response threshold'},'Location','northwest');
+    legend({'Average response','Trial responses'},'Location','northwest');
     xlim([min(timeFrame) max(timeFrame)]);
     set(gca,'Box','off');
     xticks([0 5, 10]);
-    title(sprintf('Preferred response at %d%s Color: %s for cell %d: %s',angles(prefOrientation),char(176),colorText,i, sigText));
+    title(sprintf('Preferred response at %d%s Color: %s for cell %d: %s (p= %0.5g)',angles(prefOrientation),char(176),colorText,i, sigText, pVal));
     ylabel('\DeltaF/F')
     xlabel('Time (seconds)')
     axis square;
