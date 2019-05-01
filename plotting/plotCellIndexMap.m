@@ -1,16 +1,25 @@
 function plotCellIndexMap(experimentStructure, mapType)
+% Plots and saves image of index preference for a variety of indices
+% Input:    experimentStructure
+%           mapType- string variable of the index to use, ie 'OSI',
+%           'ratioLM', 'ratioLMS'
 
+% gets cell ROI map
 cellROIs = experimentStructure.labeledCellROI;
+
+% sets up blank images
 cellMap = zeros(experimentStructure.pixelsPerLine);
 nonResponsiveMap = cellMap;
 
+% checks if field exists
 if isfield(experimentStructure, mapType)
     map = eval(['experimentStructure.' mapType]);
+    
+    % runs through all cells
     for i = 1:experimentStructure.cellCount
-        
+        % sorts between responsive and non-responsive cells
         if ~isnan(map(i))
             cellMap(cellROIs ==i) = map(i);
-            
         else
             nonResponsiveMap(cellROIs ==i) = 255;
         end
@@ -20,18 +29,24 @@ else
     return
 end
 
+%% create map
+
+% rescales image to 0-1 and applys colormap
 cellMapRescale = cellMap/max(cellMap(:));
 cellMapRescale = round(cellMapRescale*256);
 cellMapRGB = ind2rgb(cellMapRescale,lcs);
 
-figure
+% creates nonresponsive RGB image map
 nonResponsCont = im2bw(nonResponsiveMap);
 nonResponsCont = ~nonResponsCont;
 nonResponsCont = cat(3, nonResponsCont, nonResponsCont, nonResponsCont);
+
+% adds non responsive to RGB index map and sets the color to grey
 cellMapRGB(nonResponsCont == 0) = 0.5;
 
-colormap(lcs);
+% plots index map and applies LCS colors
 figMap = imshow(cellMapRGB);
+colormap(lcs);
 set(gcf, 'units','normalized','outerposition',[0 0 1 1]);
 colorBar = colorbar ;
 axis on
@@ -41,6 +56,7 @@ set(gca,'ytick',[])
 % colorBar.Ticks =  [0. 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6];
 colorBar.TickLabels = [linspace(0,round(max(map),1), 11)];
 
+%% saves images for display and at native size
 saveas(figMap, [experimentStructure.savePath mapType '.tif']);
 imwrite(cellMapRGB, [experimentStructure.savePath mapType '_native.tif']);
 close();
