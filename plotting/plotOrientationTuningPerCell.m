@@ -24,7 +24,7 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     preferredStimulus = find(yMean(1:(end-1)) == max(yMean(1:(end-1))));
     
     % get mean of prestim response (blank screen)
-    
+    blankResponse = cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i});
     blankResponseMean = nanmean(nanmean(cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i})));
     blackResponseStd = nanmean(nanstd(cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i})));
     
