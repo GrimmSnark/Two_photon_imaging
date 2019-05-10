@@ -24,12 +24,18 @@ stimOnLine = zeros(length(zProfilesPerPixel), 1);
 % scrollplot('axis', 'xy');
 % colormap(lcs);
 
+% checks if meanFrameLength exists, if not calculates it
+if ~isfield(experimentStructure , 'meanFrameLength')
+    experimentStructure.meanFrameLength = ceil(mean(experimentStructure.EventFrameIndx.TRIAL_END - experimentStructure.EventFrameIndx.PRESTIM_ON));
+    save([experimentStructure.savePath 'experimentStructure.mat'], 'experimentStructure');
+end
+
 for cnd = 1:length(experimentStructure.cndTotal)
     cndIndexs = find(experimentStructure.cnd(:,2) == cnd);
     for trial = 1:length(cndIndexs)
         framStimStart = experimentStructure.EventFrameIndx.STIM_ON(cndIndexs(trial));
         
-        cndLines(cnd,trial,:,:) = zProfilesPerPixel(:,framStimStart-7:(framStimStart + experimentStructure.meanFrameLength) -1);
+        cndLines(cnd,trial,:,:) = zProfilesPerPixel(:,framStimStart-4:(framStimStart + experimentStructure.meanFrameLength) -1);
     end
 end
 

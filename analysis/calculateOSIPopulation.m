@@ -48,7 +48,7 @@ end
 % plots histogram of OSO
 figHandle= histogram( OSI,50);
 title('OSI')
-set(figHandle, 'units','normalized','outerposition',[0 0 1 1]);
+set(gcf, 'units','normalized','outerposition',[0 0 1 1]);
 
 % adds OSI field to experimentStructure
 experimentStructure.OSI = OSI;

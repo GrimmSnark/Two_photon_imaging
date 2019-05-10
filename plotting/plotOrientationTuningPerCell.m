@@ -12,25 +12,37 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     % Compute summary stats for responses
 %     cndRepitions     = round(mean(experimentStructure.cndTotal(:)));
     angles     = linspace(0,315,length(experimentStructure.cndTotal));
+    
+    empties = cellfun('isempty',experimentStructure.dFstimWindowAverageFBS{1,i});
+    
+    experimentStructure.dFstimWindowAverageFBS{1,i}(empties) = {NaN};
+    experimentStructure.dFpreStimWindowAverageFBS{1,i}(empties) = {NaN};
+    experimentStructure.dFpreStimWindowAverageFBS{1,i}(empties) = {NaN};
+    
     yData     = cell2mat(experimentStructure.dFstimWindowAverageFBS{1,i});
-    yMean = mean(yData,1);
+    yMean = nanmean(yData,1);
     preferredStimulus = find(yMean(1:(end-1)) == max(yMean(1:(end-1))));
     
     % get mean of prestim response (blank screen)
     
-    blankResponseMean = mean(mean(cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i})));
-    blackResponseStd = mean(std(cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i})));
+    blankResponseMean = nanmean(nanmean(cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i})));
+    blackResponseStd = nanmean(nanstd(cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i})));
     
+    prefResponses = yData(:,preferredStimulus);
+    blankPrefResponses = blankResponse(:,preferredStimulus);
     
+    [h, pVal] = ttest(prefResponses, blankPrefResponses);
     
-    responseThreshold = blankResponseMean+2*blackResponseStd; % The average response at the preferred stimulus must be 2 standard deviations above the blank condition mean
-    IsRespSignificant = yMean(preferredStimulus)>responseThreshold;
-    
-    if IsRespSignificant ==1
+    if pVal < 0.05
         sigText = 'Significant Response';
     else
         sigText = 'Non-signficant Response';
     end
+ 
+    
+%     responseThreshold = blankResponseMean+2*blackResponseStd; % The average response at the preferred stimulus must be 2 standard deviations above the blank condition mean
+%     IsRespSignificant = yMean(preferredStimulus)>responseThreshold;
+    
     
     % Compute stats for preferred response
     timeFrame = [1:experimentStructure.meanFrameLength] * experimentStructure.framePeriod;
@@ -49,7 +61,7 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     xlim([min(timeFrame) max(timeFrame)]);
     set(gca,'Box','off');
     xticks([0 5, 10]);
-    title(sprintf('Preferred response at %d%s for cell %d: %s',angles(preferredStimulus),char(176),i, sigText));
+    title(sprintf('Preferred response at %d%s for cell %d: %s (p= %0.5g)',angles(preferredStimulus),char(176),i, sigText, pVal));
     ylabel('\DeltaF/F')
     xlabel('Time (seconds)')
     axis square;

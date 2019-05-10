@@ -53,6 +53,7 @@ end
 registeredVol = shiftImageStack(vol,experimentStructure.xyShifts([2 1],:)'); % Apply actual shifts to tif stack
 
 % transfers to FIJI
+intializeMIJ;
 registeredVolMIJI = MIJ.createImage( 'Registered Volume', registeredVol,true);
 
 
