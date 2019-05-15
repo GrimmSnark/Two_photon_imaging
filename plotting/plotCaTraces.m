@@ -70,7 +70,7 @@ switch figData.plotChoice
                 xlocationMid(x) = xlocations(round(lengthOfData/2));
             else
                 spacing = 0;
-                xlocations = 0:lengthOfData-1;
+                xlocations = 1:lengthOfData;
                 xlocationMid(x) = xlocations(round(lengthOfData/2));
             end
             
@@ -88,6 +88,14 @@ switch figData.plotChoice
             hLine(numel(hLine)+1) = handle(line(xlocations,(data2plot(:,x)-errorBars) ...
                 ,'Color',lineCol, 'Parent',hAx, 'LineStyle','--'));
             
+            xLim = xlim;
+            yLim = ylim;
+            
+            patchVertices = [xlocations(1)+ experimentStructure.stimOnFrames(1)-1, yLim(1); ...
+                xlocations(1)+experimentStructure.stimOnFrames(1)-1, yLim(2)+40; ...
+                xlocations(1)+experimentStructure.stimOnFrames(2)-1, yLim(2)+40; ...
+                xlocations(1)+experimentStructure.stimOnFrames(2)-1, yLim(1)-40];
+            hLine(numel(hLine)+1) = patch( 'vertices', patchVertices, 'faces', [1,2,3,4], 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.5);
             
             
             yMaxVector(x) =  max(data2plot(:,x)+errorBars);
@@ -252,7 +260,7 @@ switch figData.plotChoice
                 xlocationMid(x) = xlocations(round(lengthOfData/2));
             else
                 spacing = 0;
-                xlocations = 0:lengthOfData-1;
+                xlocations = 1:lengthOfData;
                 xlocationMid(x) = xlocations(round(lengthOfData/2));
             end
             
@@ -270,7 +278,14 @@ switch figData.plotChoice
             hLine(numel(hLine)+1) = handle(line(xlocations,(data2plot(:,x)-errorBars) ...
                 ,'Color',lineCol, 'Parent',hAx, 'LineStyle','--'));
             
+            xLim = xlim;
+            yLim = ylim;
             
+            patchVertices = [xlocations(1)+ experimentStructure.stimOnFrames(1)-1, yLim(1); ...
+                xlocations(1)+experimentStructure.stimOnFrames(1)-1, yLim(2)+40; ...
+                xlocations(1)+experimentStructure.stimOnFrames(2)-1, yLim(2)+40; ...
+                xlocations(1)+experimentStructure.stimOnFrames(2)-1, yLim(1)-40];
+            hLine(numel(hLine)+1) = patch( 'vertices', patchVertices, 'faces', [1,2,3,4], 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.5);
             
             yMaxVector(x) =  max(data2plot(:,x)+errorBars);
             yMinVector(x) =  min(data2plot(:,x)-errorBars);

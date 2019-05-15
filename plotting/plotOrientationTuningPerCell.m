@@ -56,8 +56,7 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     plot(timeFrame,yResponseMean,'-r','lineWidth',3);
     hold on;
     plot(timeFrame,yResponse,'--k','Color',0.25*[1,0,0]);
-    hline(responseThreshold, '--b');
-    legend({'Average response','Trial responses', 'Response threshold'},'Location','northwest');
+    legend({'Average response','Trial responses'},'Location','northwest');
     xlim([min(timeFrame) max(timeFrame)]);
     set(gca,'Box','off');
     xticks([0 5, 10]);

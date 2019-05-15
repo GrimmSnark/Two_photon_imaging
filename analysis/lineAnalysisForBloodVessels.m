@@ -54,7 +54,7 @@ registeredVol = shiftImageStack(vol,experimentStructure.xyShifts([2 1],:)'); % A
 
 % transfers to FIJI
 intializeMIJ;
-registeredVolMIJI = MIJ.createImage( 'Registered Volume', registeredVol,true);
+registeredVolMIJI = MIJ.createImage( 'Registered Volume', registeredVol,false);
 
 
 % initalize MIJI
@@ -63,9 +63,34 @@ ij.IJ.setTool('LINE');
 
 
 % get image to FIJI
-MIJImageROI = MIJ.createImage('ROI_image',imageROI,true); %#ok<NASGU> supressed warning as no need to worry about
-WaitSecs(0.2);
-ij.IJ.run('Set... ', ['zoom=' num2str(magSize) ' x=10 y=50']);
+MIJImageROI = MIJ.createImage('ROI_image',imageROI,false); %#ok<NASGU> supressed warning as no need to worry about
+
+if exist([experimentStructure.savePath 'Pixel Orientation Selectivity_native.tif'], 'file')
+    pixelPref = read_Tiffs([experimentStructure.savePath 'Pixel Orientation Selectivity_native.tif'],1);
+end
+
+if exist('pixelPref', 'var')
+    
+    prefImp = ij.IJ.openImage([experimentStructure.savePath 'Pixel Orientation Selectivity_native.tif']);
+    prefImpConvert = ij.process.ImageConverter(prefImp);
+    prefImpConvert.convertToGray16();
+    
+    prefImpProcess = prefImp.getProcessor();
+    MIJImageROIImpProcess = MIJImageROI.getProcessor();
+    
+    pixelPrefStack = ij.ImageStack(prefImpProcess.getWidth, prefImpProcess.getHeight);
+        pixelPrefStack.addSlice(MIJImageROI.getTitle, MIJImageROIImpProcess);
+    pixelPrefStack.addSlice(prefImp.getTitle, prefImpProcess);
+    
+    stackImagePlusObj = ij.ImagePlus('Pixel Orientation Stack.tif', pixelPrefStack);
+    stackImagePlusObj.show;
+    stackImagePlusObj.setSlice(2);
+    ij.IJ.run(stackImagePlusObj, "Enhance Contrast", "saturated=0.35 normalize");
+    WaitSecs(0.2);
+    ij.IJ.run('Set... ', ['zoom=' num2str(magSize) ' x=500 y=50']);
+else
+    stackImagePlusObj = MIJImageROI;
+end
 
 happy = 0;
 while happy == 0
@@ -86,7 +111,7 @@ while happy == 0
 end
 
 % create subfunction from here
-plotLineDynamics(MIJImageROI,registeredVolMIJI, experimentStructure );
+plotLineDynamics(stackImagePlusObj,registeredVolMIJI, experimentStructure );
 
 hold;
 end

@@ -1,10 +1,13 @@
-function processPixelOrientationSelectivityV2(recordingDir, isColorOrientation, useSTDorMean, channel2Use)
+function processPixelOrientationSelectivityV2(recordingDir, noOrientations, noColor,angleMax, useSTDorMean, channel2Use)
 % Function which plots orientation selectivty maps from STD or mean stim
 % images
 %
 % Inputs: recordingDir - processed data directory file path
-%         isColorOrientation - 0/1 flag for orientation (0) or color
-%                              orientation experiment (1)
+%         noOrientations - number of orientations tested in the experiment
+%                          ie 4/8 etc
+%         noColor - number of colors tested, ie 1 for black/white, 2 for
+%                   mouse color paradigm etc
+%         angleMax - 360 or 180 for the Max angle tested
 %         useSTDorMean - 0/1 flag for using STD (0) or mean (1) per 
 %                        condition array for calculations
 %         channel2Use - OPTIONAL, specify channel , 1/2 etc for
@@ -12,17 +15,17 @@ function processPixelOrientationSelectivityV2(recordingDir, isColorOrientation, 
 %
 % recordingDir = 'D:\Data\2P_Data\Processed\Mouse\gCamp6s\M3\5on_5off_8\TSeries-09242018-1042-010\20180927124421\';
 
-if nargin < 4 || isempty(channel2Use)
+if nargin < 6 || isempty(channel2Use)
     channel2Use = 2; % sets up deafult channel to use for multi-channel images
 end
 
+angles = linspace(0, angleMax, noOrientations+1);
+angles = angles(1:end-1)*2; % angles x2 to make radians and orientation cal easier
 
-if isColorOrientation ==1
-    angles = (0:45:315)*2;
-    angles = [angles angles];
-else
-    angles = (0:45:315)*2;
+if noColor > 1
+    angles = repmat(angles, 1, noColor);
 end
+
 angles_rad = circ_ang2rad(angles);
 
 recordingDirProcessed = recordingDir; % sets processed data path
@@ -78,7 +81,7 @@ parfor pixelNo = 1:length(reshapedImageNorm)
 end
 
 % calculate vector mean per pixel per cnd
-if isColorOrientation ==1
+if noColor ==2
     parfor pixelNo = 1:length(pixelVectorAngles)
         
         % Green stimulus

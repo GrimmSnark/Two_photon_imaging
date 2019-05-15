@@ -40,15 +40,16 @@ for cnd = 1:length(experimentStructure.cndTotal)
 end
 
 cndLineMeans = squeeze(mean(cndLines,2));
-figHandle = figure('units','normalized','outerposition',[0 0 1 1]);
+% figHandle = figure('units','normalized','outerposition',[0 0 1 1]);
 
-cndLineMeans = cndLineMeans([2 3 6 7],:,:);
+% cndLineMeans = cndLineMeans([2 3 6 7],:,:);
 maxVal = max(cndLineMeans(:));
 minVal = min(cndLineMeans(:));
+figHandle = figure('units','normalized','outerposition',[0 0 0.8 1]);
 for plotNo = 1:size(cndLineMeans,1)
     colormap(lcs);
 
-    subplot( 2, 4, plotNo);
+    subplot(2, 4, plotNo);
     handeIm = imagesc(squeeze(cndLineMeans(plotNo,:,:))');
     tempImg = squeeze(cndLineMeans(plotNo,:,:))';
 %    rgbTempImg = convertIndexImage2RGB(tempImg, lcs, minVal, maxVal);
@@ -84,6 +85,11 @@ for plotNo = 1:size(cndLineMeans,1)
     xticklabels(-20:10:20);
     
 end
+
+tightfig;
+WaitSecs(0.1);
+set(figHandle, 'units','normalized','outerposition',[0 0 0.8 1]);
+set(figHandle, 'units','normalized','outerposition',[0 0 0.8 1]);
 saveas(figHandle, [experimentStructure.savePath 'Vessel Line Plot X1_' num2str(pointsOnLineCoordinates(1,1)) ' Y1_' num2str(pointsOnLineCoordinates(1,2)) ' X2_' num2str(pointsOnLineCoordinates(end,1)) ' Y2_' num2str(pointsOnLineCoordinates(end,2)) '.png']);
 saveas(figHandle, [experimentStructure.savePath 'Vessel Line Plot X1_' num2str(pointsOnLineCoordinates(1,1)) ' Y1_' num2str(pointsOnLineCoordinates(1,2)) ' X2_' num2str(pointsOnLineCoordinates(end,1)) ' Y2_' num2str(pointsOnLineCoordinates(end,2)) '.svg']);
 
