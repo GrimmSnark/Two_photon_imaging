@@ -15,16 +15,16 @@ function experimentStructure = doAnalysisCalciumV2(experimentStructure, prestimT
 %
 %          channel2Use - specify channel to use for Ca analysis (ie 1/2) if
 %                        multichannel file, if single channel recording can
-%                        be left blank 
+%                        be left blank
 %
 %          behaviouralResponseFlag (NOT used, future proofing for awake
 %                                   animals)
 %
 % Outputs - experimentStructure (updated structure)
 
-%Sets default channel to use for multichannel recordings 
+%Sets default channel to use for multichannel recordings
 if isempty(channel2Use)
-   channel2Use = 2; 
+    channel2Use = 2;
 end
 
 %% Clear previously calculated stuff
@@ -65,11 +65,11 @@ channelNo = unique(channelIdentity);
 
 % chooses correct channel to analyse in multichannel recording
 if length(channelNo)>1
-      volSplit =  reshape(vol,size(vol,1),size(vol,2),[], length(channelNo));
-      vol = volSplit(:,:,:,channel2Use);
+    volSplit =  reshape(vol,size(vol,1),size(vol,2),[], length(channelNo));
+    vol = volSplit(:,:,:,channel2Use);
 end
 
-    
+
 
 % apply imageregistration shifts
 if isfield(experimentStructure, 'options_nonrigid') && ~isempty(experimentStructure.options_nonrigid) % if using non rigid correctionn
@@ -80,24 +80,24 @@ end
 %% FISSA neuropil extraction calculation... runs python script through win cmd
 % save registered image stack if you want to run FISSA toolbox
 
-    if ~exist([experimentStructure.savePath 'FISSA\'], 'dir')
-        mkdir([experimentStructure.savePath 'FISSA\']);
-    end
-    
-    disp('Saving registered image stack')
-    options.overwrite = true;
-    saveastiff(registeredVol, [experimentStructure.savePath 'FISSA\registered.tif'], options);
-    disp('Finished saving registered image stack');
-    
-    % create FISSA run file
-    createFISSARunFile(experimentStructure);
-    
-    % call to system to run python file
-    system(['python "' experimentStructure.savePath 'FISSA\FISSA_run.py"']);
-    
-    % extract out the FISSA results
-    experimentStructure = extractFISSA_results(experimentStructure);
-  
+if ~exist([experimentStructure.savePath 'FISSA\'], 'dir')
+    mkdir([experimentStructure.savePath 'FISSA\']);
+end
+
+disp('Saving registered image stack')
+options.overwrite = true;
+saveastiff(registeredVol, [experimentStructure.savePath 'FISSA\registered.tif'], options);
+disp('Finished saving registered image stack');
+
+% create FISSA run file
+createFISSARunFile(experimentStructure);
+
+% call to system to run python file
+system(['python "' experimentStructure.savePath 'FISSA\FISSA_run.py"']);
+
+% extract out the FISSA results
+experimentStructure = extractFISSA_results(experimentStructure);
+
 % transfers to FIJI
 registeredVolMIJI = MIJ.createImage( 'Registered Volume', registeredVol,true);
 
@@ -119,21 +119,21 @@ for x = 1:experimentStructure.cellCount
     % Get the fluorescence timecourse for the cell and neuropol ROI by
     % using ImageJ's "z-axis profile" function. We can also rename the
     % ROIs for easier identification.1
-        ij.IJ.getInstance().toFront();
-        
-        % for imagej 1.50c
-        %         MIJ.run('Plot Z-axis Profile'); % For each image, this outputs four summary metrics: number of pixels (in roi), mean ROI value, min ROI value, and max ROI value
-        %         RT = MIJ.getResultsTable();
-        %         MIJ.run('Clear Results');
-        %                 MIJ.run('Close','');
-        
-        %   for imagej >1.50c
-        plotVal = ij.plugin.ZAxisProfiler.getPlot(registeredVolMIJI);
-        RT(:,1) = plotVal.getXValues();
-        RT(:,2) = plotVal.getYValues();
-        
-            %RC.setName(sprintf('Cell ROI %d',i));
-            experimentStructure.rawF(x,:) = RT(:,2);
+    ij.IJ.getInstance().toFront();
+    
+    % for imagej 1.50c
+    %         MIJ.run('Plot Z-axis Profile'); % For each image, this outputs four summary metrics: number of pixels (in roi), mean ROI value, min ROI value, and max ROI value
+    %         RT = MIJ.getResultsTable();
+    %         MIJ.run('Clear Results');
+    %                 MIJ.run('Close','');
+    
+    %   for imagej >1.50c
+    plotVal = ij.plugin.ZAxisProfiler.getPlot(registeredVolMIJI);
+    RT(:,1) = plotVal.getXValues();
+    RT(:,2) = plotVal.getYValues();
+    
+    %RC.setName(sprintf('Cell ROI %d',i));
+    experimentStructure.rawF(x,:) = RT(:,2);
 end
 
 %% Define a moving and fluorescence baseline using a percentile filter
@@ -145,14 +145,25 @@ for q =1:experimentStructure.cellCount
     
     % Compute a moving baseline with a 60s percentile lowpass filter smoothed by a 60s Butterworth filter
     offset = 100; % helps get around dividing my zero errors...
-    percentileFiltCutOff = 10;
+    [~,percentileFiltCutOff(q)] = estimate_percentile_level((experimentStructure.extractedF_FISSA(q,:)'+offset),length(registeredVol),length(registeredVol));
+    
+    if      percentileFiltCutOff(q) <10
+        percentileFiltCutOff(q) = 5;
+    end
+    
     lowPassFiltCutOff    = 30; %in seconds
-    experimentStructure.baseline(q,:)  = baselinePercentileFilter((experimentStructure.extractedF_FISSA(q,:)'+offset),experimentStructure.rate,lowPassFiltCutOff,percentileFiltCutOff);
+    experimentStructure.baseline(q,:)  = baselinePercentileFilter((experimentStructure.extractedF_FISSA(q,:)'+offset),experimentStructure.rate,lowPassFiltCutOff,percentileFiltCutOff(q));
 end
+
+experimentStructure.percentileFiltCutOff = percentileFiltCutOff(q);
 
 % computer delta F/F traces
 experimentStructure.dF = ((experimentStructure.extractedF_FISSA+offset)-experimentStructure.baseline)./experimentStructure.baseline;
 
+% [experimentStructure.dF2, experimentStructure.baseline2, experimentStructure.sn] = estimate_baseline((experimentStructure.extractedF_FISSA+offset)-experimentStructure.baseline, experimentStructure);
+%
+
+% experimentStructure = baselineCalAM((experimentStructure.extractedF_FISSA+offset),experimentStructure);
 
 %% Add some basic trace segementation into cell x cnd x trial for dF/F
 
@@ -209,7 +220,7 @@ if isempty(behaviouralResponseFlag) % if no behaviour, ie trials are the same le
                     % stim response and average response per cell x cnd x trial
                     
                     experimentStructure.dFstimWindow{p}{y,x} = experimentStructure.dF(p,experimentStructure.EventFrameIndx.STIM_ON(currentTrial):experimentStructure.EventFrameIndx.STIM_OFF(currentTrial));
-                    experimentStructure.dFstimWindowAverage{p}{y,x} = mean(experimentStructure.dFstimWindow{p}{y,x});   
+                    experimentStructure.dFstimWindowAverage{p}{y,x} = mean(experimentStructure.dFstimWindow{p}{y,x});
                 end
             end
         end

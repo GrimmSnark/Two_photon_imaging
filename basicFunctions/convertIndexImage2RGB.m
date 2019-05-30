@@ -1,16 +1,10 @@
-function rgbImg = convertIndexImage2RGB(indxImg, colormap, minVal, maxVal)
+function rgbImg = convertIndexImage2RGB(indxImg, colormap)
 % Function to convert indexed image to rgb without any scaling issues
 % Inputs - indxImg: imdex image array
 %          colormap: colormap to use
-%          minVal: optional if you want to normalise to a particular value
-%          maxVal: same as above
 
 % rescale
-if nargin <3
-    minVal = min(indxImg(:));
-    maxVal = max(indxImg(:));
-end
-indxImgNorm = (indxImg - minVal)/(maxVal - minVal);
+indxImgNorm = rescale(indxImg);
 
 
 %map onto colormap

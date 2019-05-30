@@ -1,8 +1,12 @@
-function plotCellIndexMap(experimentStructure, mapType)
+function plotCellIndexMap(experimentStructure, mapType, limitVal)
 % Plots and saves image of index preference for a variety of indices
 % Input:    experimentStructure
 %           mapType- string variable of the index to use, ie 'OSI',
 %           'ratioLM', 'ratioLMS'
+
+if nargin<3
+    limitVal =[];
+end
 
 % gets cell ROI map
 cellROIs = experimentStructure.labeledCellROI;
@@ -14,6 +18,10 @@ nonResponsiveMap = cellMap;
 % checks if field exists
 if isfield(experimentStructure, mapType)
     map = eval(['experimentStructure.' mapType]);
+    
+    if ~isempty(limitVal)
+        map(map>limitVal) = limitVal;
+    end
     
     % runs through all cells
     for i = 1:experimentStructure.cellCount
@@ -57,7 +65,12 @@ set(gca,'ytick',[])
 colorBar.TickLabels = [linspace(0,round(max(map),1), 11)];
 
 %% saves images for display and at native size
-saveas(figMap, [experimentStructure.savePath mapType '.tif']);
-imwrite(cellMapRGB, [experimentStructure.savePath mapType '_native.tif']);
+if isempty(limitVal)
+    saveas(figMap, [experimentStructure.savePath mapType '.tif']);
+    imwrite(cellMapRGB, [experimentStructure.savePath mapType '_native.tif']);
+else
+    saveas(figMap, [experimentStructure.savePath mapType '_limited.tif']);
+    imwrite(cellMapRGB, [experimentStructure.savePath mapType '_native_limited.tif']);
+end
 close();
 end

@@ -213,6 +213,11 @@ else % if only 'grey color'
     
     imwrite(orientationSelectivityImageConverted, ggb1, [experimentStructure.savePath 'Pixel Orientation Pref_native.tif']);
     imwrite(orientationAmplitudeImage, [experimentStructure.savePath 'Pixel Orientation Selectivity_native.tif']);
+    
+    orientationAmplitudeImageRGB = convertIndexImage2RGB(orientationAmplitudeImage,lcs);
+    
+    imwrite(orientationAmplitudeImageRGB, [experimentStructure.savePath 'Pixel Orientation Selectivity_native_Color_' num2str(z) '_LCS.tif']);
+    
     close;
 end
 %  figure

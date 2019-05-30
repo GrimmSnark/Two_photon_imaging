@@ -1,12 +1,17 @@
-function [stimSTDSum, preStimSTDSum,experimentStructure] = createStimSTDAverage(vol, experimentStructure)
+function [stimSTDSum, preStimSTDSum,experimentStructure] = createStimSTDAverage(vol, experimentStructure,channelIdentifier)
 % Function to create STD sum images for prestim and stim times
 % Input: vol- registered 3D image stack
 %        experimentStructure- structure for this experiement
+%        channelIdentifier- OPTIONAL, string for identifying channel if
+%        multiple exist
 %        
 % Output: stimSTDSum- 2D image of summed STDs for stim trial window period 
 %         preStimSTDSum- 2D image of summed STDs for prestim trial window period 
 %         experimentStructure - modified experimentStructure
 
+if nargin<3
+    channelIdentifier =[];
+end
 
 disp('Starting stim STD image calculation');
 cndLength = length(experimentStructure.cndTrials);
@@ -49,8 +54,14 @@ preStimSTDSum = rescale(sum(preStimSTDImage, 3))*65535;
 preStimSTDSum = uint16(preStimSTDSum);
 
 % add to experimentStructure
-experimentStructure.stimSTDImageCND = stimSTDImageCND;
+
+if ~isempty(channelIdentifier) % if multiple channels in recording
+  eval(['experimentStructure.stimSTDImageCND' channelIdentifier ' = uint16(gather(stimSTDImageCND));'])
+   eval(['experimentStructure.preStimSTDImageCND' channelIdentifier ' = uint16(gather(preStimSTDImageCND));' ])
+else
+  experimentStructure.stimSTDImageCND = stimSTDImageCND;
 experimentStructure.preStimSTDImageCND = preStimSTDImageCND;
+end
 
 
 end

@@ -1,13 +1,27 @@
-function calculateOSIPopulation(experimentStructure, orientationNo, colorNo)
+function calculateOSIPopulation(experimentStructure, orientationNo, colorNo, dataType)
 % Calculates OSIs for a recording and plots a histogram of the results
 % Inputs:   experimentStructure
 %           orientationNo- number of orientation conditions
 %           colorNo- number of color conditions
+%           dataType - 'FBS' or 'FISSA'
+
+if nargin <4
+    dataType = 'FBS';
+end
 
 % sets up blank OSI vector
 OSI = nan(experimentStructure.cellCount,1);
 
-data = experimentStructure.dFstimWindowAverageFBS;
+switch dataType
+    case 'FBS'
+        data = experimentStructure.dFstimWindowAverageFBS;
+        responseFlagText = 'responsiveCellFlag';
+        OSI_text = 'OSI';
+    case 'FISSA'
+        data = experimentStructure.dFstimWindowAverage;
+        responseFlagText = 'responsiveCellFlagFISSA';
+        OSI_text = 'OSI_FISSA';
+end
 % orientationNo = 6;
 % colorNo = 4;
 
@@ -22,10 +36,10 @@ end
 for i = 1:experimentStructure.cellCount
     
     % only deals with responsive cells
-    if experimentStructure.responsiveCellFlag(i) ==1
+    if eval(['experimentStructure.' responseFlagText '(' num2str(i) ') ==1'])
         %% OSI
         % gets mean data per condition
-        dataMean= mean(cell2mat(data{1,i}));
+        dataMean= mean(cell2mat(data{1,i})); 
         
         % finds preferred condition
         [~ ,preferredStimulus] = max(dataMean);
@@ -47,14 +61,14 @@ end
 
 % plots histogram of OSO
 figHandle= histogram( OSI,50);
-title('OSI')
+title(OSI_text)
 set(gcf, 'units','normalized','outerposition',[0 0 1 1]);
 
 % adds OSI field to experimentStructure
-experimentStructure.OSI = OSI;
+eval(['experimentStructure.' OSI_text '= OSI;']);
 
 % saves everything
-saveas(figHandle, [experimentStructure.savePath 'OSI_hist.tif']);
+saveas(figHandle, [experimentStructure.savePath OSI_text '_hist.tif']);
 save([experimentStructure.savePath 'experimentStructure.mat'], 'experimentStructure');
 
 close;

@@ -1,4 +1,10 @@
-function plotCellOrienationPref(experimentStructure, orientationNo, colorNo, orienatationRange)
+function plotCellOrienationPref(experimentStructure, orientationNo, colorNo, orienatationRange, dataType)
+
+
+if nargin <5
+    dataType = 'FBS';
+end
+
 
 cellROIs = experimentStructure.labeledCellROI;
 cellMap = zeros(experimentStructure.pixelsPerLine);
@@ -12,7 +18,18 @@ orientationColLevels = round(linspace(1, 256, length(orientations)));
 
 
 cndNo = length(orientations) * colorNo;
-data = experimentStructure.dFstimWindowAverageFBS;
+
+switch dataType
+    case 'FBS'
+        data = experimentStructure.dFstimWindowAverageFBS;
+         responseFlagText = 'responsiveCellFlag';
+        textTag = [];
+    case 'FISSA'
+        data = experimentStructure.dFstimWindowAverage;
+            responseFlagText = 'responsiveCellFlagFISSA';
+        textTag = '_FISSA';
+end
+
 dataMean = cellfun(@mean,(cellfun(@cell2mat,data, 'Un', false)), 'Un', false);
 
 if cndNo~= length(experimentStructure.cndTotal)
@@ -27,7 +44,7 @@ end
     end
 
     for i = 1:experimentStructure.cellCount
-        if experimentStructure.responsiveCellFlag(i) ~=0
+        if eval(['experimentStructure.' responseFlagText '(' num2str(i) ') ~=0'])
             cellMapPrefOri(cellROIs ==i) = prefOrientationNo(i);
             cellMap(cellROIs ==i) = orientationColLevels(prefOrientationNo(i));
         else
@@ -64,7 +81,7 @@ set(gca,'ytick',[])
  colorBar.Ticks =  [linspace(0,1,orientationNo)];
 colorBar.TickLabels = orientations;
 
-saveas(figMap, [experimentStructure.savePath  'orientation_Pref.tif']);
-imwrite(cellMapRGB, [experimentStructure.savePath 'orientation_Pref_native.tif']);
+saveas(figMap, [experimentStructure.savePath  'orientation_Pref' textTag '.tif']);
+imwrite(cellMapRGB, [experimentStructure.savePath 'orientation_Pref_native' textTag '.tif']);
 close();
 end

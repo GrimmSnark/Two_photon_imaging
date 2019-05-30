@@ -21,6 +21,7 @@ switch figData.plotChoice
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% normal analysis plots %%%%%%%%%%%%%%%%%
     case 'rawF'
+        %%
         data2plot = experimentStructure.rawF(cellNum,:);
         hLine = handle(line(1:length(data2plot),data2plot,...
             'Color',cmap(cellNum+1, :), 'Parent',hAx,'LineWidth',1));
@@ -40,6 +41,7 @@ switch figData.plotChoice
         end
         
     case 'dF/F'
+        %%
         data2plot = experimentStructure.dF(cellNum,:);
         hLine = handle(line(1:length(data2plot),data2plot,...
             'Color',cmap(cellNum+1, :), 'Parent',hAx,'LineWidth',1));
@@ -59,6 +61,7 @@ switch figData.plotChoice
         end
         
     case 'mean Cnd dF/F'
+        %%
         data2plot = experimentStructure.dFperCndMean{1,cellNum};
         legendText ={};
         
@@ -115,6 +118,7 @@ switch figData.plotChoice
         hAx.YLim = [min(yMinVector)-0.2 max(yMaxVector)+0.2];
         
     case 'mean dF/F'
+        %%
         data2plot = experimentStructure.dFperCndMean{1,cellNum};
         data2plot = mean(data2plot,2);
         
@@ -148,6 +152,7 @@ switch figData.plotChoice
         %%%%%%%%%%%%%%%%%%%%%%%%%%% FISSA Plots %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
     case 'rawF_FISSA'
+        %%
         data2plot = experimentStructure.rawF_FISSA(cellNum,:);
         hLine = handle(line(1:length(data2plot),data2plot,...
             'Color',cmap(cellNum+1, :), 'Parent',hAx,'LineWidth',1));
@@ -166,6 +171,7 @@ switch figData.plotChoice
         end
         
     case 'dF/F_FISSA'
+        %%
         data2plot = experimentStructure.extractedDF_FISSA(cellNum,:);
         hLine = handle(line(1:length(data2plot),data2plot,...
             'Color',cmap(cellNum+1, :), 'Parent',hAx,'LineWidth',1));
@@ -184,6 +190,7 @@ switch figData.plotChoice
         end
         
     case 'mean Cnd dF/F_FISSA'
+        %%
         data2plot = experimentStructure.extractedDFperCndMeanFISSA{1,cellNum};
         legendText ={};
         
@@ -214,6 +221,7 @@ switch figData.plotChoice
         legendHandle = legend(hAx,legendText, 'Location', 'southwest', 'TextColor', 'w');
         
     case 'mean dF/F_FISSA'
+        %%
         data2plot = experimentStructure.extractedDFperCndMeanFISSA{1,cellNum};
         data2plot = mean(data2plot,2);
         
@@ -244,9 +252,9 @@ switch figData.plotChoice
         hLine(numel(hLine)+1) = patch( 'vertices', patchVertices, 'faces', [1,2,3,4], 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.5, 'Parent',hAx);
         
         
-        
+       
     case 'mean Cnd dF/F_FBS'
-        
+       %% 
         %            if ~isempty(hAx.Children)
         %                delete(hAx.Children)
         %            end

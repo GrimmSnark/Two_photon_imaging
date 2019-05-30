@@ -21,27 +21,27 @@ if saveRegMovie ==1
     %     saveImagingData(vol,savePath,1,size(vol,3));
 end
 
+GPU_used = gpuDevice();
 
-% Commment out below if your GPU can not handle data size
-% Create and save STD sums
-[stimSTDSum, preStimSTDSum, stimMeanSum , preStimMeanSum ,experimentStructure] = createStimSTDAverageGPU(vol, experimentStructure, channelIdentifier);
-
-%save images
-saveastiff(stimSTDSum, [experimentStructure.savePath 'STD_Stim_Sum' channelIdentifier '.tif']);
-saveastiff(preStimSTDSum, [experimentStructure.savePath 'STD_Prestim_Sum ' channelIdentifier '.tif']);
-saveastiff(stimMeanSum, [experimentStructure.savePath 'Mean_Stim_Sum' channelIdentifier '.tif']);
-saveastiff(preStimMeanSum, [experimentStructure.savePath 'Mean_Prestim_Sum' channelIdentifier '.tif']);
-
-% Stop comment out here..
-
-% Uncomment below if your GPU can not handle the data size
-% % Create and save STD sums
-%  [stimSTDSum, preStimSTDSum,experimentStructure] = createStimSTDAverage(vol, experimentStructure);
-% 
-% %save images
-% saveastiff(stimSTDSum, [experimentStructure.savePath 'STD_Stim_Sum' channelIdentifier '.tif']);
-% saveastiff(preStimSTDSum, [experimentStructure.savePath 'STD_Prestim_Sum ' channelIdentifier '.tif']);
-
+if GPU_used.TotalMemory > 6e+9 % uses GPU to do calc if large enough
+    % Create and save STD sums
+    [stimSTDSum, preStimSTDSum, stimMeanSum , preStimMeanSum ,experimentStructure] = createStimSTDAverageGPU(vol, experimentStructure, channelIdentifier);
+    
+    %save images
+    saveastiff(stimSTDSum, [experimentStructure.savePath 'STD_Stim_Sum' channelIdentifier '.tif']);
+    saveastiff(preStimSTDSum, [experimentStructure.savePath 'STD_Prestim_Sum ' channelIdentifier '.tif']);
+    saveastiff(stimMeanSum, [experimentStructure.savePath 'Mean_Stim_Sum' channelIdentifier '.tif']);
+    saveastiff(preStimMeanSum, [experimentStructure.savePath 'Mean_Prestim_Sum' channelIdentifier '.tif']);
+    
+else  % otherwise uses CPU...
+    
+    % Create and save STD sums
+    [stimSTDSum, preStimSTDSum,experimentStructure] = createStimSTDAverage(vol, experimentStructure, channelIdentifier);
+    
+    %save images
+    saveastiff(stimSTDSum, [experimentStructure.savePath 'STD_Stim_Sum' channelIdentifier '.tif']);
+    saveastiff(preStimSTDSum, [experimentStructure.savePath 'STD_Prestim_Sum ' channelIdentifier '.tif']);
+end
 
 % Create STD average image and save
 
