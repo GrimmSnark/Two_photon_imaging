@@ -27,6 +27,7 @@ Analysis Prerequisites
 5. In order to use the FISSA toolbox to do non-negative matrix factorization neuropil signal extraction, download and install the toolbox from the git page (https://github.com/rochefort-lab/fissa).
 6. You will also need to add the anaconda version of Python to your envoiroment variable path to run the toolbox through matlab (should be something like "C:\Users\User_name\ProgramData\Anaconda2\python.exe")
 7. You will need to modify the "Two_photon_imaging\mijiFunction\intializeMIJ.m" to your local FIJI path. 
+8. In order to use this pipeline there are some code dependancies from another Calcium Imaging package CaImAm, download and install here (https://github.com/flatironinstitute/CaImAn-MATLAB)
 
 Data Analysis
 1. prepData and preDataMultiSingle will run motion correction and create average images from ROI selection
