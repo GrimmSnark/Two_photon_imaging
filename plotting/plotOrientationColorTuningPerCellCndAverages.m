@@ -12,10 +12,12 @@ function plotOrientationColorTuningPerCellCndAverages(experimentStructure, cellN
 
 useSTDorSEM = 2;
 
+% experimentStructure.savePath = 'D:\Data\CristinaR21\PVCre\old\PV_cre_ChR2_Old_M4\5off_5on_6\TSeries-03082019-1001-005\20190315115604\';
+
 for i =cellNo %[2 38 69 86] %1:cellNumber
     figure('units','normalized','outerposition',[0 0 1 1])
     % Compute summary stats for responses
-   angles     = linspace(0,315,length(experimentStructure.cndTotal)/2);
+   angles     = linspace(0,315,length(experimentStructure.cndTotal));
     % Show tuning curve
     hold on
     for x =1:size(experimentStructure.dFperCndMeanFBS{1,i},2)

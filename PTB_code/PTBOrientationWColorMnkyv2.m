@@ -223,7 +223,7 @@ masktex=Screen('MakeTexture', windowPtr, mask);
 
 %% START STIM PRESENTATION
 
-HideCursor(windowPtr, []);
+% HideCursor(windowPtr, []);
 
 if doNotSendEvents ==0
     % trigger image scan start with digital port A

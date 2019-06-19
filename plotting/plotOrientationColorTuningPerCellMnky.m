@@ -34,8 +34,8 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
         case 'FBS'
             yData     = cell2mat(experimentStructure.dFstimWindowAverageFBS{1,i});
             blankResponse = cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i});
-%             blankResponseMean = mean(mean(cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i})));
-%             blackResponseStd = mean(std(cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i})));
+            %             blankResponseMean = mean(mean(cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i})));
+            %             blackResponseStd = mean(std(cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i})));
             yResponse     = experimentStructure.dFperCndFBS{1,i};
             yResponseMean = experimentStructure.dFperCndMeanFBS{1,i};
             
@@ -44,8 +44,8 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
         case 'FISSA'
             yData     = cell2mat(experimentStructure.dFstimWindowAverage{1,i});
             blankResponse = cell2mat(experimentStructure.dFpreStimWindowAverage{1,i});
-%             blankResponseMean = mean(mean(cell2mat(experimentStructure.dFpreStimWindowAverage{1,i})));
-%             blackResponseStd = mean(std(cell2mat(experimentStructure.dFpreStimWindowAverage{1,i})));
+            %             blankResponseMean = mean(mean(cell2mat(experimentStructure.dFpreStimWindowAverage{1,i})));
+            %             blackResponseStd = mean(std(cell2mat(experimentStructure.dFpreStimWindowAverage{1,i})));
             yResponse     = experimentStructure.dFperCnd{1,i};
             yResponseMean = experimentStructure.dFperCndMean{1,i};
             
@@ -106,11 +106,20 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     
     
     % get max and min data for limiting axes
-    maxData = yResponseMean + errorBars;
-    maxData = max(maxData(:));
+    if useSTDorSEM == 1
+        maxData = yResponseMean + errorBars;
+        maxData = max(maxData(:));
+        minData = yResponseMean - errorBars;
+        minData = min(minData(:));
+        
+    elseif useSTDorSEM ==2
+        
+         maxData = yResponseMean + (errorBars/2);
+        maxData = max(maxData(:));
+        minData = yResponseMean - (errorBars/2);
+        minData = min(minData(:));
+    end
     
-    minData = yResponseMean - errorBars;
-    minData = min(minData(:));
     
     % Show tuning curve
     
@@ -174,19 +183,19 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
             saveas(figHandle, [experimentStructure.savePath 'SEMs\Orientation Tuning Cell ' num2str(i) '.svg']);
         end
     else % if using FISSA data
-         if useSTDorSEM == 1
-        if ~exist([experimentStructure.savePath 'STDs\FISSA\'], 'dir')
-            mkdir([experimentStructure.savePath 'STDs\FISSA\']);
+        if useSTDorSEM == 1
+            if ~exist([experimentStructure.savePath 'STDs\FISSA\'], 'dir')
+                mkdir([experimentStructure.savePath 'STDs\FISSA\']);
+            end
+            saveas(figHandle, [experimentStructure.savePath 'STDs\FISSA\Orientation Tuning Cell ' num2str(i) '.tif']);
+            saveas(figHandle, [experimentStructure.savePath 'STDs\FISSA\Orientation Tuning Cell ' num2str(i) '.svg']);
+        elseif useSTDorSEM == 2
+            if ~exist([experimentStructure.savePath 'SEMs\FISSA\'], 'dir')
+                mkdir([experimentStructure.savePath 'SEMs\FISSA\']);
+            end
+            saveas(figHandle, [experimentStructure.savePath 'SEMs\FISSA\Orientation Tuning Cell ' num2str(i) '.tif']);
+            saveas(figHandle, [experimentStructure.savePath 'SEMs\FISSA\Orientation Tuning Cell ' num2str(i) '.svg']);
         end
-        saveas(figHandle, [experimentStructure.savePath 'STDs\FISSA\Orientation Tuning Cell ' num2str(i) '.tif']);
-        saveas(figHandle, [experimentStructure.savePath 'STDs\FISSA\Orientation Tuning Cell ' num2str(i) '.svg']);
-    elseif useSTDorSEM == 2
-        if ~exist([experimentStructure.savePath 'SEMs\FISSA\'], 'dir')
-            mkdir([experimentStructure.savePath 'SEMs\FISSA\']);
-        end
-        saveas(figHandle, [experimentStructure.savePath 'SEMs\FISSA\Orientation Tuning Cell ' num2str(i) '.tif']);
-        saveas(figHandle, [experimentStructure.savePath 'SEMs\FISSA\Orientation Tuning Cell ' num2str(i) '.svg']);
-    end
     end
     close;
 end

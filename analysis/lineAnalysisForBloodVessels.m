@@ -111,7 +111,8 @@ while happy == 0
 end
 
 % create subfunction from here
-plotLineDynamics(stackImagePlusObj,registeredVolMIJI, experimentStructure );
+plotLineDynamics(stackImagePlusObj,registeredVolMIJI, experimentStructure,1 );
+plotLineDynamicsForF32(stackImagePlusObj,registeredVolMIJI, experimentStructure, 0, 1);
 
 hold;
 end

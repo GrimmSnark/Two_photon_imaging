@@ -155,7 +155,7 @@ for q =1:experimentStructure.cellCount
     experimentStructure.baseline(q,:)  = baselinePercentileFilter((experimentStructure.extractedF_FISSA(q,:)'+offset),experimentStructure.rate,lowPassFiltCutOff,percentileFiltCutOff(q));
 end
 
-experimentStructure.percentileFiltCutOff = percentileFiltCutOff(q);
+experimentStructure.percentileFiltCutOff = percentileFiltCutOff;
 
 % computer delta F/F traces
 experimentStructure.dF = ((experimentStructure.extractedF_FISSA+offset)-experimentStructure.baseline)./experimentStructure.baseline;

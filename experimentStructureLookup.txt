@@ -1,0 +1,78 @@
+experimentType: Type of experiment which was run for this file. Used to gate processing types
+savePath: Save path generated for this analysis run
+prairiePath: Raw data path 
+prairiePathVoltage: Raw event file string
+prairiePathXML: Raw data meta data file
+date: Date and time of recording
+scanType: Image scan type
+scanMode: Mirror scan mode (galvo, resonant, etc)
+dwellTime: Dwell time per pixel 
+framePeriod: Frame period
+laserPower: Pockles value per lazer (1 = Deep See, 2= Femtotrain)
+waveLengthExcitation: Excitation wavelength
+linesPerFrame: Line scans per frame
+micronsPerPixel: Resolution ( x y z)
+lensName: Objective used
+lensMag: magnification of lens
+lensNA: Numerical appature of lens 
+opticalZoom: optical zoom magnification
+pixelsPerLine: Pixels per line
+PMTGain: PMT sensitivity (1= Red channel, 2 = green)
+currentPostion: Stage posititon (X Y Z)
+rastersPerFrame: Averages per frame aquired
+twoPhotonLaserPower: Arbetrary lazer power
+absoluteFrameTimes: Array of absolute frame times
+relativeFrameTimes:  Array of relative frame times
+filenamesFrame: File names of each frame
+fullfile: String for file image file
+PTB_TimingFilePath: String for internal pyschtoolbox event file
+rawTrials: Cell array of raw events split into trials
+validTrial: Logical flag for valid trial ( 0 = invalid, 1 = valid)
+cndTotal: Array for number of conditions and amount of repeats
+block: trial number by block identity 
+cnd: trial number by condition identity 
+cndTrials: cel array for each condition and trial number for each
+nonEssentialEvent: event identities and times
+EventFrameIndx: event identities aligned to closest frame
+xyShifts: motion correction shifts ( array indicates rigid correction, structure indicates non-rigid
+options_nonrigid: options for non-rigid correction ( empty if rigid correction used)
+stimSTDImageCND: Pixel X, pixel y, conditon, repititon standard deviation over stim period 
+preStimSTDImageCND: Pixel X, pixel y, conditon, repititon standard deviation over prestim period 
+stimMeanImageCND: Pixel X, pixel y, conditon, repititon mean over stim period 
+preStimMeanImageCND: Pixel X, pixel y, conditon, repititon mean over prestim period 
+cellCount: cell ROIs found
+labeledCellROI: cell ROI mask, cell number is mask identity 
+extractedF_FISSA: FISSA neuropil corrected F
+percentileFiltCutOff: calculated baseline filter level
+stimOnFrames: Stimulus on and off frames aligned to trial start
+dFpreStimWindow: Cell, condition, repititon, frame for each prestim period dF (FISSA subtraction)
+dFpreStimWindowAverage: Cell, condition, repititon, average prestim period dF (FISSA subtraction)
+dFstimWindow: Cell, condition, repititon, frame for each stim period dF (FISSA subtraction)
+dFstimWindowAverage: Cell, condition, repititon, average stim period dF (FISSA subtraction)
+rawFperCnd: Cell, condition, repititon, raw F
+dFperCndFBS: Cell, condition, repititon, frame for each trial period dF (First frame before stim subtraction)
+dFpreStimWindowFBS: Cell, condition, repititon, frame for each prestim period dF (First frame before stim subtraction)
+dFpreStimWindowAverageFBS: Cell, condition, repititon, average prestim period dF (First frame before stim subtraction)
+dFstimWindowFBS:  Cell, condition, repititon, frame for each stim period dF (First frame before stim subtraction)
+dFstimWindowAverageFBS: Cell, condition, repititon, average stim period dF (First frame before stim subtraction)
+dFperCndMeanFBS: Cell, condition, average for each trial period dF (First frame before stim subtraction)
+dFperCndSTDFBS: Cell, condition, standard deviation for each trial period dF (First frame before stim subtraction)
+responsiveCellFlag: Binary flag for responsive cells in First frame before stim subtraction (0- Non responsive, 1- responsive)
+responsiveCellFlagFISSA: Binary flag for responsive cells in FISSA subtraction (0- Non responsive, 1- responsive)
+OSI: Orientation selectivity indices for frist before stimulution data (NaN - non responsive)
+OSI_FISSA: Orientation selectivity indices for FISSA (NaN - non responsive)
+rawF: Raw F per cell, frame
+xPos: X center positions for cell ROIs
+yPos: Y center positions for cell ROIs
+rate: Frame rate
+baseline: baseline F trace for FISSA subtraction
+dF: cell, frame DF for FISSA subtraction
+meanFrameLength: mean trial frame length
+dFperCnd: Cell, condition, repititon, frame for each trial period dF (FISSA subtraction)
+dFperCndMean: Cell, condition, average for each trial period dF (FISSA subtraction)
+dFperCndSTD: Cell, condition, standard deviation for each trial period dF (FISSA subtraction)
+COIdent: vector for cell cytochrome oxidase patch identity (0 - Interpatch, 1- Patch , 2- On border)
+pixelCellOrienationAverage: color, cell orientation preference for pixel cell ROI masked region (no neuropil subtraction)
+pixelCellOrientationSelectivity: color, cell orientation selectivity for pixel cell ROI masked region (no neuropil subtraction)
+dFstimWindowAverageFBSSigmaFit: color, cell guassian fit sigma for orientation tuning, based on first frame before stimulus data
+dFstimWindowAverageFBSSigmaR2: color, cell guassian fit R2 value for orientation tuning, based on first frame before stimulus data

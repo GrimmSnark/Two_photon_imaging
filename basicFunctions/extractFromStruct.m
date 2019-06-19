@@ -28,7 +28,12 @@ if ~isempty(listEntry) % if you want to get data from a list
         end
         
         for i=1:length(eval(structStringList)) % runs through the list
-            a{i} = eval([structStringList '{1,i}.' suffixString]);
+            
+            try
+                a{i} = eval([structStringList '{1,i}.' suffixString]);
+            catch
+                a{i} = eval([structStringList '(1,i).' suffixString]);
+            end
             
             if isNumeric % converts data to numbers
                 a{i} =  str2num(a{i});

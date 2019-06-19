@@ -14,7 +14,7 @@ for i = 1:length(subFolders)
 %     subSubFolders = returnSubFolderList([directory subFolders(i).name]);
     subSubFolders = dir([directory subFolders(i).name '\TSeries*']);
     for x = 1:length(subSubFolders)
-        prepData([directory subFolders(i).name '\' subSubFolders(x).name],1 ,1,saveMovie, 'orientation', [],'nonRigid', templateImg,1);
+        prepData([directory subFolders(i).name '\' subSubFolders(x).name],1 ,1,saveMovie, 'orientation', 1,'subMicronMethod', templateImg,1 );
     end
     
 end
