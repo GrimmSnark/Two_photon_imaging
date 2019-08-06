@@ -9,8 +9,13 @@ switch setup
         res = 1024; % vertical resolution of monitor in cm
         
     case 2 % RSB LCD Monitor Monkey
-        hM = 30; % hight of monitor in cm
+        hM = 30; % hight of monitor in cm, width is 53 cm
         d = 57; % distance from monitor in cm
+        res = 1440; % vertical resolution of monitor in cm
+        
+    case 3 % RSB LCD Monitor Mouse
+        hM = 30; % hight of monitor in cm, width is 53cm
+        d = 20; % distance from monitor in cm
         res = 1440; % vertical resolution of monitor in cm
 end
 

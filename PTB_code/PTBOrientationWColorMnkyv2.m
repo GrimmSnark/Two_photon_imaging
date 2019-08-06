@@ -69,10 +69,10 @@ cyclespersecond =4; % temporal frequency to stimulate all cells (in Hz)
 contrast =  1; % contrast for grating
 
 % set up color and orientation levels
-[colorLevels, colorDescriptors] = PTBOrientationColorValuesMonkeyV2;
+[colorLevelsOri, colorDescriptors] = PTBOrientationColorValuesMonkeyV2;
 
-backgroundColor = [colorLevels(1,:) 1]; %RGBA offset color
-colorLevels = colorLevels(2:end,:);
+backgroundColor = [colorLevelsOri(1,:) 1]; %RGBA offset color
+colorLevels = colorLevelsOri(2:end,:);
 colorDescriptors = colorDescriptors(2:end);
 
 % orientations = [0 45 90 135]; % 4 orientations
@@ -82,6 +82,28 @@ colorDescriptors = colorDescriptors(2:end);
 Angle =repmat(orientations,[1 size(colorLevels, 1)]); % angle in degrees x number of colors
 
 numCnd = length(Angle); % conditions = angle x colors
+
+
+
+% Add stim parameters to structure for saving
+stimParams.width = width;
+stimParams.stimCenter;
+stimParams.preStimTime = preStimTime;
+stimParams.stimTime = stimTime;
+stimParams.rampTime = rampTime;
+stimParams.numReps = numReps;
+stimParams.freq = freq;
+stimParams.ITItime = ITItime;
+stimParams.cyclespersecond = cyclespersecond;
+stimParams.contrast = contrast;
+stimParams.blendDistance = blendDistance;
+stimParams.Angle = Angle;
+stimParams.colorLevelsOri = colorLevelsOri;
+stimParams.colorDescriptors = colorDescriptors;
+
+save([dataDir 'stimParams_' timeSave '.mat'], 'stimParams');
+
+
 
 % make balanced numbers of left/right start movement stims
 nOfDirectionPerOrien = length(orientations)/2;

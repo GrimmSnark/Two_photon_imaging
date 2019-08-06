@@ -1,4 +1,4 @@
-function PTBOrientation(width, stimCenter, preStimTime, stimTime, dropRed, rampTime, numReps, varargin)
+function PTBOrientationSFMouse(width, stimCenter, preStimTime, stimTime, dropRed, rampTime, numReps, varargin)
 % Experiment which displays moving gratings at 2Hz
 %
 % options width (degrees) for full screen leave blank
@@ -63,30 +63,32 @@ heightInPix =widthInPix;
 radius=widthInPix/2; % circlar apature in pixels
 
 %spatial frequency
-freq = 0.05 ; % in cycles per degree
-freq = 1/freq; % hack hack hack
-freqPix = degreeVisualAngle2Pixels(3,freq);
-freqPix =1/freqPix; % use the inverse as the function below takes bloody cycles/pixel...
+SFs = [ 0.005    0.0158    0.05    0.1581    0.5]; % in cycles per degree (log sampled)
+SFsConverted = 1 ./SFs; % hack hack hack
+freqPix = degreeVisualAngle2Pixels(3,SFsConverted);
+freqPix =1 ./freqPix; % use the inverse as the function below takes bloody cycles/pixel...
 
 cyclespersecond =1; % temporal frequency to stimulate all cells (in Hz)
 
 contrast =  1 ; % contrast for grating
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Angle =[0    45    90   135   180   225   270   315]; % angle in degrees
+% Angle =[0    45    90   135   180   225   270   315]; % angle in degrees
+orientations = [0    45    90   135   180   225   270   315];
+Angle =repmat(orientations,[1 length(SFs)]); % angle in degrees x number of SFs
 
 numCnd = length(Angle);
 
 
 % Add stim parameters to structure for saving
 stimParams.width = width;
-stimParams.stimCenter;
+stimParams.stimCenter = stimCenter;
 stimParams.preStimTime = preStimTime;
 stimParams.stimTime = stimTime;
 stimParams.rampTime = rampTime;
+stimParams.ITItime = ITItime;
 stimParams.numReps = numReps;
 stimParams.dropRed = dropRed;
-stimParams.freq = freq;
-stimParams.ITItime = ITItime;
+stimParams.freq = SFs;
 stimParams.cyclespersecond = cyclespersecond;
 stimParams.contrast = contrast;
 stimParams.Angle = Angle;
@@ -220,6 +222,15 @@ while ~KbCheck
         
         for trialCnd = 1:length(cndOrder)
             
+            phase = 0;
+            
+             % Get trial cnds
+            trialParams = Angle(cndOrder(trialCnd)); % get angle identity
+            indexForOrientation = find(Angle==trialParams, 1); % get index for that angle
+            
+            % get color condition
+            currentSF = ceil(cndOrder(trialCnd)/length(orientations));
+            
             if doNotSendEvents ==0
                 AnalogueOutEvent(daq, 'TRIAL_START');
                 stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_START');
@@ -239,8 +250,9 @@ while ~KbCheck
                 'Condition No: %i \n'...
                 'Trial No: %i of %i \n' ...
                 'Orientation: %i degrees \n'...
+                'Spatial Freq: %.3f cpd \n' ...
                 '############################################## \n'] ...
-                ,blockNum,cndOrder(trialCnd), trialCnd, length(cndOrder), trialParams(1));
+                ,blockNum,cndOrder(trialCnd), trialCnd, length(cndOrder), trialParams(1), SFs(currentSF));
             
             if doNotSendEvents ==0
                 % send out cnds to imaging comp
@@ -279,7 +291,7 @@ while ~KbCheck
                     % Increment phase by cycles/s:
                     phase = phase + phaseincrement;
                     %create auxParameters matrix
-                    propertiesMat = [phase, freqPix, contrastLevels(frameNo), 0];
+                    propertiesMat = [phase, freqPix(currentSF), contrastLevels(frameNo), 0];
                     % draw grating on screen
                     %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
                     
@@ -300,7 +312,7 @@ while ~KbCheck
                 % Increment phase by cycles/s:
                 phase = phase + phaseincrement;
                 %create auxParameters matrix
-                propertiesMat = [phase, freqPix, contrast, 0];
+                propertiesMat = [phase, freqPix(currentSF), contrast, 0];
                 
                 % draw grating on screen
                 %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
@@ -350,7 +362,7 @@ while ~KbCheck
                     % Increment phase by cycles/s:
                     phase = phase + phaseincrement;
                     %create auxParameters matrix
-                    propertiesMat = [phase, freqPix, contrastLevels(frameNo), 0];
+                    propertiesMat = [phase, freqPix(currentSF), contrastLevels(frameNo), 0];
                     % draw grating on screen
                     %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
                     Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
