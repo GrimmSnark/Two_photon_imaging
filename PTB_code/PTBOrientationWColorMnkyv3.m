@@ -13,6 +13,7 @@ function PTBOrientationWColorMnkyv3(width, stimCenter, preStimTime, stimTime, ra
 %           varargin (if filled DOES NOT send events out via DAQ)
 
 
+
 %% set up parameters of stimuli
 clc
 sca;
@@ -197,7 +198,7 @@ end
 
 % Retrieve video redraw interval for later control of our animation timing:
 ifi = Screen('GetFlipInterval', windowPtr);
-
+frameWaitTime = ifi - 0.5;
 
 % Compute increment of phase shift per redraw:
 phaseincrement = cyclespersecond * freqPix * ifi;
@@ -341,6 +342,7 @@ while ~KbCheck
             end
             
             stimOnFlag =1;
+            vbl = Screen('Flip', windowPtr);
             %% start constrast ramp on
             if rampTime > 0
                 for frameNo =1:contrast_rampFrames
@@ -385,7 +387,9 @@ while ~KbCheck
                     Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)), [] , contrastLevels(frameNo), [], [], [] );
                     
                     Screen('DrawTexture', windowPtr, masktex, [], [], 0);
-                    Screen('Flip', windowPtr);
+                    Screen('DrawingFinished', windowPtr);
+                    
+                    vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
                     
                     % Abort requested? Test for keypress:
                     if KbCheck
@@ -446,7 +450,7 @@ while ~KbCheck
                     AnalogueOutEvent(daq, 'SCREEN_REFRESH');
                     stimCmpEvents(end+1,:)= addCmpEvents('SCREEN_REFRESH');
                 end
-                Screen('Flip', windowPtr);
+                vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
                 
                 % Abort requested? Test for keypress:
                 if KbCheck
@@ -489,6 +493,7 @@ while ~KbCheck
                 
                 Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)), [] , 1, [], [], [] );
                 Screen('DrawTexture', windowPtr, masktex, [], [], 0);
+                Screen('DrawingFinished', windowPtr);
                 
                 %             Screen('DrawDots', windowPtr, screenCentre, [5], [1 0 0], [] , [], []); % Fixation/ screen centre spot
                 
@@ -497,7 +502,7 @@ while ~KbCheck
                     AnalogueOutEvent(daq, 'SCREEN_REFRESH');
                     stimCmpEvents(end+1,:)= addCmpEvents('SCREEN_REFRESH');
                 end
-                Screen('Flip', windowPtr);
+                vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
                 
                 
                 % Abort requested? Test for keypress:
@@ -552,8 +557,9 @@ while ~KbCheck
                     
                     Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)), [] , contrastLevels(frameNo), [], [], [] );
                     Screen('DrawTexture', windowPtr, masktex, [], [], 0);
+                    Screen('DrawingFinished', windowPtr);
                     
-                    Screen('Flip', windowPtr);
+                   vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
                     
                 end
                 
@@ -564,7 +570,7 @@ while ~KbCheck
                 
             end
             
-            Screen('Flip', windowPtr);
+            vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
             
             % Abort requested? Test for keypress:
             if KbCheck

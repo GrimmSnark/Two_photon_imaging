@@ -113,9 +113,9 @@ disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
 
 keypressNo = find(keyCode);
 
-   if keypressNo == 27 % ESC code = 27
-        return 
-   end
+if keypressNo == 27 % ESC code = 27
+    return
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -171,18 +171,19 @@ try
 catch
     load 'C:\PostDoc Docs\Two Photon Rig\calibrations\LCD monitor\gammaTableGamma.mat'
 end
-Screen('LoadNormalizedGammaTable', windowPtr, gammaTable1*[1 1 1]);
+oldTable = Screen('LoadNormalizedGammaTable', windowPtr, gammaTable1*[1 1 1]);
 
 
 %create all gratings on GPU.....should be very fast
 if fullfieldStim ==0
-    [gratingid, gratingrect] = CreateProceduralSineGrating(windowPtr, widthInPix, heightInPix, backgroundColorOffset, radius, contrast);
+    [gratingid, gratingrect] = CreateProceduralSineGrating(windowPtr, widthInPix, heightInPix, backgroundColorOffset, radius, 0.5);
 else
-    [gratingid, gratingrect] = CreateProceduralSineGrating(windowPtr, screenXpixels*1.5, screenXpixels*1.5, backgroundColorOffset, [], contrast);
+    [gratingid, gratingrect] = CreateProceduralSineGrating(windowPtr, screenXpixels*1.5, screenXpixels*1.5, backgroundColorOffset, [], 0.5);
 end
 
 % Retrieve video redraw interval for later control of our animation timing:
 ifi = Screen('GetFlipInterval', windowPtr);
+frameWaitTime = ifi - 0.5;
 
 % Get frame rate fro moving patch
 frameRate=Screen('FrameRate',screenNumber);
@@ -214,6 +215,7 @@ end
 
 while ~KbCheck
     tic;
+    vbl = Screen('Flip', windowPtr);
     for currentBlkNum = 1:numReps
         
         % randomizes the order of the conditions for this block
@@ -224,7 +226,7 @@ while ~KbCheck
             
             phase = 0;
             
-             % Get trial cnds
+            % Get trial cnds
             trialParams = Angle(cndOrder(trialCnd)); % get angle identity
             indexForOrientation = find(Angle==trialParams, 1); % get index for that angle
             
@@ -276,7 +278,7 @@ while ~KbCheck
             end
             
             for prestimFrameNp = 1:preStimFrames
-                Screen('Flip', windowPtr);
+                vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
             end
             
             if doNotSendEvents ==0
@@ -304,7 +306,9 @@ while ~KbCheck
                     end
                     
                     Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
-                    Screen('Flip', windowPtr);
+                    Screen('DrawingFinished', windowPtr);
+                    
+                    vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
                 end
             end
             
@@ -317,6 +321,7 @@ while ~KbCheck
                 % draw grating on screen
                 %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
                 Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                Screen('DrawingFinished', windowPtr);
                 
                 if doNotSendEvents ==0
                     if rampTime == 0
@@ -335,7 +340,7 @@ while ~KbCheck
                     AnalogueOutEvent(daq, 'SCREEN_REFRESH');
                     stimCmpEvents(end+1,:)= addCmpEvents('SCREEN_REFRESH');
                 end
-                Screen('Flip', windowPtr);
+                vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
                 
                 % Abort requested? Test for keypress:
                 if KbCheck
@@ -366,7 +371,9 @@ while ~KbCheck
                     % draw grating on screen
                     %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
                     Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
-                    Screen('Flip', windowPtr);
+                    Screen('DrawingFinished', windowPtr);
+                    
+                    vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
                 end
                 
                 if doNotSendEvents ==0
@@ -376,7 +383,7 @@ while ~KbCheck
                 
             end
             
-            Screen('Flip', windowPtr);
+            vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
             
             WaitSecs(ITItime);
             
@@ -400,7 +407,7 @@ if doNotSendEvents ==0
 end
 
 % ShowCursor([],[windowPtr],[]);
-
+Screen('LoadNormalizedGammaTable', windowPtr, oldTable);
 % Clear screen
 sca;
 end
