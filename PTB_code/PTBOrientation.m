@@ -160,7 +160,7 @@ PsychImaging('PrepareConfiguration');
 
 % look into PsychImaging('AddTask', 'General', 'UseGPGPUCompute', apitype [, flags]);???
 
-PsychImaging('AddTask','General', 'FloatingPoint32Bit'); % sets accuracy of frame buffer to 32bit floating point
+% PsychImaging('AddTask','General', 'FloatingPoint32Bit'); % sets accuracy of frame buffer to 32bit floating point
 
 [windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, [ grey ] ); %opens screen and sets background to grey
 
@@ -212,184 +212,181 @@ if doNotSendEvents ==0
     DaqDConfigPort(daq,1,1) % configure port B for input
 end
 
-while ~KbCheck
-    tic;
-    vbl = Screen('Flip', windowPtr);
-    for currentBlkNum = 1:numReps
+tic;
+vbl = Screen('Flip', windowPtr);
+for currentBlkNum = 1:numReps
+    
+    % randomizes the order of the conditions for this block
+    cndOrder = datasample(1:numCnd,numCnd,'Replace', false);
+    blockNum = blockNum+1;
+    
+    for trialCnd = 1:length(cndOrder)
         
-        % randomizes the order of the conditions for this block
-        cndOrder = datasample(1:numCnd,numCnd,'Replace', false);
-        blockNum = blockNum+1;
+        if doNotSendEvents ==0
+            AnalogueOutEvent(daq, 'TRIAL_START');
+            stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_START');
+        end
         
-        for trialCnd = 1:length(cndOrder)
+        % Get trial cnds
+        trialParams = Angle(cndOrder(trialCnd));
+        
+        if fullfieldStim ==0
+            dstRect = OffsetRect(gratingrect, screenStimCentre(1)-radius, screenStimCentre(2)-radius);
+        else
+            dstRect = [];
+        end
+        %display trial conditions
+        
+        fprintf(['Block No: %i \n'...
+            'Condition No: %i \n'...
+            'Trial No: %i of %i \n' ...
+            'Orientation: %i degrees \n'...
+            '############################################## \n'] ...
+            ,blockNum,cndOrder(trialCnd), trialCnd, length(cndOrder), trialParams(1));
+        
+        if doNotSendEvents ==0
+            % send out cnds to imaging comp
+            AnalogueOutEvent(daq, 'PARAM_START');
+            stimCmpEvents(end+1,:)= addCmpEvents('PARAM_START');
+            AnalogueOutCode(daq, blockNum); % block num
+            stimCmpEvents(end+1,:)= addCmpEvents(blockNum);
+            WaitSecs(0.001);
+            AnalogueOutCode(daq, cndOrder(trialCnd)); % condition num
+            stimCmpEvents(end+1,:)= addCmpEvents(cndOrder(trialCnd));
+            WaitSecs(0.001);
+            AnalogueOutEvent(daq, 'PARAM_END');
+            stimCmpEvents(end+1,:)= addCmpEvents('PARAM_END');
+        end
+        
+        % blank screen flips for prestimulus time period
+        if doNotSendEvents ==0
             
-            if doNotSendEvents ==0
-                AnalogueOutEvent(daq, 'TRIAL_START');
-                stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_START');
-            end
-            
-            % Get trial cnds
-            trialParams = Angle(cndOrder(trialCnd));
-            
-            if fullfieldStim ==0
-                dstRect = OffsetRect(gratingrect, screenStimCentre(1)-radius, screenStimCentre(2)-radius);
-            else
-                dstRect = [];
-            end
-            %display trial conditions
-            
-            fprintf(['Block No: %i \n'...
-                'Condition No: %i \n'...
-                'Trial No: %i of %i \n' ...
-                'Orientation: %i degrees \n'...
-                '############################################## \n'] ...
-                ,blockNum,cndOrder(trialCnd), trialCnd, length(cndOrder), trialParams(1));
-            
-            if doNotSendEvents ==0
-                % send out cnds to imaging comp
-                AnalogueOutEvent(daq, 'PARAM_START');
-                stimCmpEvents(end+1,:)= addCmpEvents('PARAM_START');
-                AnalogueOutCode(daq, blockNum); % block num
-                stimCmpEvents(end+1,:)= addCmpEvents(blockNum);
-                WaitSecs(0.001);
-                AnalogueOutCode(daq, cndOrder(trialCnd)); % condition num
-                stimCmpEvents(end+1,:)= addCmpEvents(cndOrder(trialCnd));
-                WaitSecs(0.001);
-                AnalogueOutEvent(daq, 'PARAM_END');
-                stimCmpEvents(end+1,:)= addCmpEvents('PARAM_END');
-            end
-            
-            % blank screen flips for prestimulus time period
-            if doNotSendEvents ==0
-                
-                AnalogueOutEvent(daq, 'PRESTIM_ON');
-                stimCmpEvents(end+1,:)= addCmpEvents('PRESTIM_ON');
-            end
-            
-            for prestimFrameNp = 1:preStimFrames
-                vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
-            end
-            
-            if doNotSendEvents ==0
-                AnalogueOutEvent(daq, 'PRESTIM_OFF');
-                stimCmpEvents(end+1,:)= addCmpEvents('PRESTIM_OFF');
-            end
-            
-            stimOnFlag =1;
-            % start constrast ramp on
-            if rampTime > 0
-                for frameNo =1:contrast_rampFrames
-                    % Increment phase by cycles/s:
-                    phase = phase + phaseincrement;
-                    %create auxParameters matrix
-                    propertiesMat = [phase, freqPix, contrastLevels(frameNo), 0];
-                    % draw grating on screen
-                    %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
-                    
-                    if doNotSendEvents ==0
-                        if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
-                            AnalogueOutEvent(daq, 'STIM_ON');
-                            stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
-                            stimOnFlag = 0;
-                        end
-                    end
-                    
-                    Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), 0 , [], [modulateCol], [], [], propertiesMat' );
-                    Screen('DrawingFinished', windowPtr);
-                    
-                    vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
-                end
-            end
-            
-            for frameNo =1:totalNumFrames % stim presentation loop
+            AnalogueOutEvent(daq, 'PRESTIM_ON');
+            stimCmpEvents(end+1,:)= addCmpEvents('PRESTIM_ON');
+        end
+        
+        for prestimFrameNp = 1:preStimFrames
+            vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
+        end
+        
+        if doNotSendEvents ==0
+            AnalogueOutEvent(daq, 'PRESTIM_OFF');
+            stimCmpEvents(end+1,:)= addCmpEvents('PRESTIM_OFF');
+        end
+        
+        stimOnFlag =1;
+        % start constrast ramp on
+        if rampTime > 0
+            for frameNo =1:contrast_rampFrames
                 % Increment phase by cycles/s:
                 phase = phase + phaseincrement;
                 %create auxParameters matrix
-                propertiesMat = [phase, freqPix, contrast, 0];
-                
+                propertiesMat = [phase, freqPix, contrastLevels(frameNo), 0];
                 % draw grating on screen
                 %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
-                Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), 0 , [], [modulateCol], [], [], propertiesMat' );
-                Screen('DrawingFinished', windowPtr);
                 
                 if doNotSendEvents ==0
-                    if rampTime == 0
-                        if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
-                            AnalogueOutEvent(daq, 'STIM_ON');
-                            stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
-                            stimOnFlag = 0;
-                        end
+                    if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
+                        AnalogueOutEvent(daq, 'STIM_ON');
+                        stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
+                        stimOnFlag = 0;
                     end
                 end
                 
-                %             Screen('DrawDots', windowPtr, screenCentre, [5], [1 0 0], [] , [], []); % Fixation/ screen centre spot
-                
-                % Flip to the screen
-                if doNotSendEvents ==0
-                    AnalogueOutEvent(daq, 'SCREEN_REFRESH');
-                    stimCmpEvents(end+1,:)= addCmpEvents('SCREEN_REFRESH');
-                end
+                Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), 0 , [], [modulateCol], [], [], propertiesMat' );
+                Screen('DrawingFinished', windowPtr);
                 
                 vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
-                
-                % Abort requested? Test for keypress:
-                if KbCheck
-                    break;
+            end
+        end
+        
+        for frameNo =1:totalNumFrames % stim presentation loop
+            % Increment phase by cycles/s:
+            phase = phase + phaseincrement;
+            %create auxParameters matrix
+            propertiesMat = [phase, freqPix, contrast, 0];
+            
+            % draw grating on screen
+            %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
+            Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), 0 , [], [modulateCol], [], [], propertiesMat' );
+            Screen('DrawingFinished', windowPtr);
+            
+            if doNotSendEvents ==0
+                if rampTime == 0
+                    if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
+                        AnalogueOutEvent(daq, 'STIM_ON');
+                        stimCmpEvents(end+1,:)= addCmpEvents('STIM_ON');
+                        stimOnFlag = 0;
+                    end
                 end
-                
-            end % end stim presentation loop
+            end
+            
+            %             Screen('DrawDots', windowPtr, screenCentre, [5], [1 0 0], [] , [], []); % Fixation/ screen centre spot
+            
+            % Flip to the screen
+            if doNotSendEvents ==0
+                AnalogueOutEvent(daq, 'SCREEN_REFRESH');
+                stimCmpEvents(end+1,:)= addCmpEvents('SCREEN_REFRESH');
+            end
+            
+            vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
             
             % Abort requested? Test for keypress:
             if KbCheck
                 break;
             end
-            if doNotSendEvents ==0
-                if rampTime == 0
-                    AnalogueOutEvent(daq, 'STIM_OFF');
-                    stimCmpEvents(end+1,:)= addCmpEvents('STIM_OFF');
-                end
-            end
-            %             Screen('Flip', windowPtr);
             
-            if rampTime > 0
-                % start constrast ramp off
-                for frameNo =contrast_rampFrames:-1:1
-                    % Increment phase by cycles/s:
-                    phase = phase + phaseincrement;
-                    %create auxParameters matrix
-                    propertiesMat = [phase, freqPix, contrastLevels(frameNo), 0];
-                    % draw grating on screen
-                    %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
-                    Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), 0 , [], [modulateCol], [], [], propertiesMat' );
-                    Screen('DrawingFinished', windowPtr);
-                    
-                    vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
-                end
-                
-                if doNotSendEvents ==0
-                    AnalogueOutEvent(daq, 'STIM_OFF');
-                    stimCmpEvents(end+1,:)= addCmpEvents('STIM_OFF');
-                end
-                
-            end
-            
-            vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
-            
-            WaitSecs(ITItime);
-            
-            if doNotSendEvents ==0
-                AnalogueOutEvent(daq, 'TRIAL_END');
-                stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_END');
-            end
-        end
+        end % end stim presentation loop
+        
         % Abort requested? Test for keypress:
         if KbCheck
             break;
         end
-    end % end number of blocks
-    toc;
-    break % breaks when reaches requested number of blocks
-end
+        if doNotSendEvents ==0
+            if rampTime == 0
+                AnalogueOutEvent(daq, 'STIM_OFF');
+                stimCmpEvents(end+1,:)= addCmpEvents('STIM_OFF');
+            end
+        end
+        %             Screen('Flip', windowPtr);
+        
+        if rampTime > 0
+            % start constrast ramp off
+            for frameNo =contrast_rampFrames:-1:1
+                % Increment phase by cycles/s:
+                phase = phase + phaseincrement;
+                %create auxParameters matrix
+                propertiesMat = [phase, freqPix, contrastLevels(frameNo), 0];
+                % draw grating on screen
+                %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
+                Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), 0 , [], [modulateCol], [], [], propertiesMat' );
+                Screen('DrawingFinished', windowPtr);
+                
+                vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
+            end
+            
+            if doNotSendEvents ==0
+                AnalogueOutEvent(daq, 'STIM_OFF');
+                stimCmpEvents(end+1,:)= addCmpEvents('STIM_OFF');
+            end
+            
+        end
+        
+        vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
+        
+        WaitSecs(ITItime);
+        
+        if doNotSendEvents ==0
+            AnalogueOutEvent(daq, 'TRIAL_END');
+            stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_END');
+        end
+    end
+    % Abort requested? Test for keypress:
+    if KbCheck
+        break;
+    end
+end % end number of blocks
+toc;
 
 %% save things before close
 if doNotSendEvents ==0
