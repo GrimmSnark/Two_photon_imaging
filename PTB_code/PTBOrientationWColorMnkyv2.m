@@ -60,12 +60,12 @@ blendDistancePixels = degreeVisualAngle2Pixels(2,blendDistance);
 
 
 %spatial frequency
-freq = 0.5 ; % in cycles per degree
+freq = 0.05 ; % in cycles per degree
 freq = 1/freq; % hack hack hack
 freqPix = degreeVisualAngle2Pixels(2,freq);
 freqPix =1/freqPix; % use the inverse as the function below takes bloody cycles/pixel...
 
-cyclespersecond =4; % temporal frequency to stimulate all cells (in Hz)
+cyclespersecond =0.5; % temporal frequency to stimulate all cells (in Hz)
 contrast =  1; % contrast for grating
 
 % set up color and orientation levels
@@ -87,7 +87,7 @@ numCnd = length(Angle); % conditions = angle x colors
 
 % Add stim parameters to structure for saving
 stimParams.width = width;
-stimParams.stimCenter;
+stimParams.stimCenter = stimCenter;
 stimParams.preStimTime = preStimTime;
 stimParams.stimTime = stimTime;
 stimParams.rampTime = rampTime;

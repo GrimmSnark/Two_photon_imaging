@@ -148,7 +148,8 @@ end
 
 
 %% initial set up of experiment
-Screen('Preference', 'VisualDebugLevel', 1); % removes welcome screen
+Screen('Preference', 'VisualDebugLevel', 0); % removes welcome screen
+Screen('Preference','SkipSyncTests', 0);
 PsychDefaultSetup(2); % PTB defaults for setup
 
 if doNotSendEvents ==0
@@ -384,7 +385,7 @@ while ~KbCheck
                     
                     
                     Screen('BlendFunction', windowPtr, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                    Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)), [] , contrastLevels(frameNo), [], [], [] );
+                    Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)), 0 , contrastLevels(frameNo), [], [], [] );
                     
                     Screen('DrawTexture', windowPtr, masktex, [], [], 0);
                     Screen('DrawingFinished', windowPtr);
@@ -425,7 +426,7 @@ while ~KbCheck
                 srcRect=[xoffset 0 xoffset + screenXpixels*1.5 screenXpixels*1.5];
                 
                 
-                Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)), [] , 1, [], [], [] );
+                Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)), 0 , 1, [], [], [] );
                 Screen('DrawTexture', windowPtr, masktex, [], [], 0);
                 
                 if doNotSendEvents ==0
@@ -491,7 +492,7 @@ while ~KbCheck
                 
                 srcRect=[xoffset 0 xoffset + screenXpixels*1.5 screenXpixels*1.5];
                 
-                Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)), [] , 1, [], [], [] );
+                Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)),0 , 1, [], [], [] );
                 Screen('DrawTexture', windowPtr, masktex, [], [], 0);
                 Screen('DrawingFinished', windowPtr);
                 
@@ -555,7 +556,7 @@ while ~KbCheck
                     
                     
                     
-                    Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)), [] , contrastLevels(frameNo), [], [], [] );
+                    Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)), 0 , contrastLevels(frameNo), [], [], [] );
                     Screen('DrawTexture', windowPtr, masktex, [], [], 0);
                     Screen('DrawingFinished', windowPtr);
                     

@@ -118,10 +118,11 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% intial set up of experiment
-Screen('Preference', 'VisualDebugLevel', 1); % removes welcome screen
+Screen('Preference', 'VisualDebugLevel', 0); % removes welcome screen
 PsychDefaultSetup(2); % PTB defaults for setup
 
 if doNotSendEvents ==0
+    
     daq =[];
     
     % set up DAQ
@@ -293,7 +294,7 @@ while ~KbCheck
                         end
                     end
                     
-                    Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                    Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), 0 , [], [modulateCol], [], [], propertiesMat' );
                     Screen('DrawingFinished', windowPtr);
                     
                     vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
@@ -308,7 +309,7 @@ while ~KbCheck
                 
                 % draw grating on screen
                 %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
-                Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), 0 , [], [modulateCol], [], [], propertiesMat' );
                 Screen('DrawingFinished', windowPtr);
                 
                 if doNotSendEvents ==0
@@ -359,7 +360,7 @@ while ~KbCheck
                     propertiesMat = [phase, freqPix, contrastLevels(frameNo), 0];
                     % draw grating on screen
                     %Screen('DrawTexture', windowPointer, texturePointer [,sourceRect] [,destinationRect] [,rotationAngle] [, filterMode] [, globalAlpha] [, modulateColor] [, textureShader] [, specialFlags] [, auxParameters]);
-                    Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), [] , [], [modulateCol], [], [], propertiesMat' );
+                    Screen('DrawTexture', windowPtr, gratingid, [], dstRect , Angle(cndOrder(trialCnd)), 0 , [], [modulateCol], [], [], propertiesMat' );
                     Screen('DrawingFinished', windowPtr);
                     
                     vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
