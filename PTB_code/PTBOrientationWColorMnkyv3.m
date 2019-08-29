@@ -193,7 +193,7 @@ oldTable = Screen('LoadNormalizedGammaTable', windowPtr, gammaTable1*[1 1 1]);
 
 
 for colNo = 1:size(colorLevels, 1)
-    [gratingid(colNo), gratingrect(:,colNo), ~]  = createSquareWaveGrating(windowPtr,screenXpixels*3, screenXpixels*3, colorLevels(colNo,:), backgroundColor(1:3), freqPix);
+    [gratingid(colNo), gratingrect(:,colNo), ~]  = createSquareWaveGrating(windowPtr,screenXpixels*3, screenXpixels*3, colorLevels(colNo,:), backgroundColor(1:3), freqPix, 1);
 end
 
 
