@@ -461,6 +461,11 @@ for currentBlkNum = 1:numReps
             
         end % end stim presentation loop
         
+         % Abort requested? Test for keypress:
+            if KbCheck
+                break;
+            end
+        
         %% second movement direction
         
         % add movment direction event

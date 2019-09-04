@@ -194,7 +194,7 @@ totalNumFrames = frameRate * stimTime;
 preStimFrames = frameRate * preStimTime;
 
 % Get frame number to interate over contrast ramp
-contrast_rampFrames = frameRate *  rampTime;
+contrast_rampFrames = round(frameRate *  rampTime);
 contrastLevels = linspace(0, contrast, contrast_rampFrames);
 
 % Compute increment of phase shift per redraw:
@@ -330,11 +330,6 @@ for currentBlkNum = 1:numReps
             end
             
             vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
-            
-            % Abort requested? Test for keypress:
-            if KbCheck
-                break;
-            end
             
         end % end stim presentation loop
         
