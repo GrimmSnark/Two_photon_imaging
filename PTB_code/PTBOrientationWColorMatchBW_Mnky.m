@@ -1,5 +1,7 @@
-function PTBOrientationWColorMnkyv3(width, stimCenter, preStimTime, stimTime, rampTime, blendDistance , numReps, staticPresentation, varargin)
-% Experiment which displays moving or static square wave colored gratings
+function PTBOrientationWColorMatchBW_Mnky(width, stimCenter, preStimTime, stimTime, rampTime, blendDistance , numReps, staticPresentation, color2match, varargin)
+% Experiment which displays moving or static monochrome square wave
+% gratings which are luminance matched to the a specificed cone isolating
+% color stimulus used in PTBOrientationWColorMnky
 %
 % options:  width - (degrees) for full screen leave blank
 %           stimCenter - [0,0] (degrees visual angle from screen center)
@@ -10,6 +12,8 @@ function PTBOrientationWColorMnkyv3(width, stimCenter, preStimTime, stimTime, ra
 %           blendDistance - guassian blur window (degrees)
 %           numReps - (number of blocks of all stim repeats, if blank is infinite)
 %           staticPresentation - 0/1 flag for static stimuli
+%           color2match - 1-4 option to use luminance matched monochrome
+%           stimulus ( 1: L cone ++, 2: M cone --, 3: L/M ++, 4: S cone --) 
 %           varargin (if filled DOES NOT send events out via DAQ)
 
 
@@ -42,7 +46,7 @@ end
 % Should not change %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 dataDir = 'C:\PostDoc Docs\Ca Imaging Project\PTB_Timing_Files\'; % save dir for timing files
 timeSave = datestr(now,'yyyymmddHHMMSS');
-indentString = 'OrientationWColorMnky_';
+indentString = 'OrientationWColorMatchBW_Mnky_';
 
 % stimTime = 1; %in s
 ITItime = 5; % intertrial interval in seconds
@@ -71,17 +75,30 @@ cyclespersecond =0.5; % temporal frequency to stimulate all cells (in Hz)
 contrast =  1; % contrast for grating
 
 % set up color and orientation levels
-[colorLevelsOri, colorDescriptors] = PTBOrientationColorValuesMonkeyV2;
+[colorLevelsOri, ~] = PTBOrientationColorValuesMonkeyV2;
 
 backgroundColor = [colorLevelsOri(1,:) 1]; %RGBA offset color
-colorLevels = colorLevelsOri(2:end,:);
-colorDescriptors = colorDescriptors(2:end);
+
+% set the color match for the white stimulus
+
+switch color2match
+    
+    case 1 % L ++ cone stimulus match
+        onLevel = [0.3626 0.3626 0.3626];
+    case 2 % M -- cone stimulus match
+        onLevel = [0.2546 0.2546 0.2546];
+    case 3 %L/M ++ stimulus match
+        onLevel = [0.5916 0.5916 0.5916];
+    case 4 % S-- stimulus match
+        onLevel = [0.3387 0.3387 0.3387];
+end
+
 
 % orientations = [0 45 90 135]; % 4 orientations
 orientations = [0:30:150]; % 6 orientations
 % orientations = [0:15:165]; % 12 orientations
 
-Angle =repmat(orientations,[1 size(colorLevels, 1)]); % angle in degrees x number of colors
+Angle =orientations; % angle in degrees x number of colors
 
 numCnd = length(Angle); % conditions = angle x colors
 
@@ -100,11 +117,14 @@ stimParams.cyclespersecond = cyclespersecond;
 stimParams.contrast = contrast;
 stimParams.blendDistance = blendDistance;
 stimParams.Angle = Angle;
-stimParams.colorLevelsOri = colorLevelsOri;
-stimParams.colorDescriptors = colorDescriptors;
+stimParams.backgroundColor = backgroundColor;
+stimParams.color2match = color2match;
+stimParams.whiteLevel = onLevel;
 
-save([dataDir 'stimParams_' timeSave '.mat'], 'stimParams');
 
+if doNotSendEvents ==0
+    save([dataDir 'stimParams_' timeSave '.mat'], 'stimParams');
+end
 
 
 % make balanced numbers of left/right start movement stims
@@ -120,7 +140,7 @@ directionStartPerOrientation2 = ~directionStartPerOrientation;
 
 directionStartPerOrientation = [directionStartPerOrientation; directionStartPerOrientation2];
 
-blockMovementsBalanced = repmat(directionStartPerOrientation,length(colorLevels)/2,1);
+blockMovementsBalanced = directionStartPerOrientation;
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Display total experiment predicted time and query continue.....
@@ -179,8 +199,20 @@ PsychImaging('PrepareConfiguration');
 
 % look into PsychImaging('AddTask', 'General', 'UseGPGPUCompute', apitype [, flags]);???
 
+% try to open screen, can have issues on windows, so retry till it works
+count = 0;
+errorCount = 0;
+while count == errorCount
+    try
+        [windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, [ backgroundColor(1:3) ] ); %opens screen and sets background to grey
+    catch
+        disp(['Screen opening error detected......retrying']);
+        errorCount = errorCount+1;
+    end
+    count = count+1;
+end
 
-[windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, [ backgroundColor(1:3) ] ); %opens screen and sets background to grey
+
 
 % load gamma table
 try
@@ -192,9 +224,7 @@ end
 oldTable = Screen('LoadNormalizedGammaTable', windowPtr, gammaTable1*[1 1 1]);
 
 
-for colNo = 1:size(colorLevels, 1)
-    [gratingid(colNo), gratingrect(:,colNo), ~]  = createSquareWaveGrating(windowPtr,screenXpixels*3, screenXpixels*3, colorLevels(colNo,:), backgroundColor(1:3), freqPix, 1);
-end
+[gratingid, gratingrect, ~]  = createSquareWaveGrating(windowPtr,screenXpixels*3, screenXpixels*3, onLevel, backgroundColor(1:3), freqPix, 1);
 
 
 % Retrieve video redraw interval for later control of our animation timing:
@@ -256,7 +286,8 @@ if doNotSendEvents ==0
     DaqDConfigPort(daq,1,1) % configure port B for input
 end
 
-tic;
+experimentStartTime = tic;
+
 for currentBlkNum = 1:numReps
     % randomizes the order of the conditions for this block
     cndOrder = datasample(1:numCnd,numCnd,'Replace', false);
@@ -300,16 +331,22 @@ for currentBlkNum = 1:numReps
         else
             dstRect = [];
         end
+        
+        % get current time till estimated finish
+        currentTimeUsed = toc(experimentStartTime);
+        timeLeft = (totalTime - currentTimeUsed)/60;
+        
         %display trial conditions
         
-        fprintf(['Block No: %i \n'...
+        fprintf(['Block No: %i of %i \n'...
             'Condition No: %i \n'...
             'Trial No: %i of %i \n' ...
-            'Color Cnd: %s (No. %i) \n' ...
             'Orientation: %.1f degrees \n'...
             'First Direction = %s \n' ...
+            'Estimated Time to Finish = %.1f minutes \n' ...
             '############################################## \n'] ...
-            ,blockNum,cndOrder(trialCnd), trialCnd, length(cndOrder) , colorDescriptors{currentColLevel}, currentColLevel,  trialParams(1), movementDirection);
+            ,blockNum, numReps,cndOrder(trialCnd), trialCnd, length(cndOrder),  trialParams(1), movementDirection, timeLeft);
+        
         
         if doNotSendEvents ==0
             % send out cnds to imaging comp
@@ -461,10 +498,11 @@ for currentBlkNum = 1:numReps
             
         end % end stim presentation loop
         
-         % Abort requested? Test for keypress:
-            if KbCheck
-                break;
-            end
+        
+        % Abort requested? Test for keypress:
+        if KbCheck
+            break;
+        end
         
         %% second movement direction
         
@@ -524,6 +562,7 @@ for currentBlkNum = 1:numReps
         if KbCheck
             break;
         end
+        
         if doNotSendEvents ==0
             if rampTime == 0
                 AnalogueOutEvent(daq, 'STIM_OFF');
@@ -591,8 +630,12 @@ for currentBlkNum = 1:numReps
             stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_END');
         end
     end
+    
+    if KbCheck
+        break;
+    end
 end % end number of blocks
-toc;
+toc(experimentStartTime);
 
 %% save things before close
 if doNotSendEvents ==0

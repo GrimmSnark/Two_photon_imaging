@@ -158,11 +158,19 @@ end
 
 PsychImaging('PrepareConfiguration');
 
-% look into PsychImaging('AddTask', 'General', 'UseGPGPUCompute', apitype [, flags]);???
+% try to open screen, can have issues on windows, so retry till it works
+count = 0;
+errorCount = 0;
+while count == errorCount
+    try
+        [windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, [ grey ] ); %opens screen and sets background to grey
+    catch
+        disp(['Screen opening error detected......retrying']);
+        errorCount = errorCount+1;
+    end
+    count = count+1;
+end
 
-% PsychImaging('AddTask','General', 'FloatingPoint32Bit'); % sets accuracy of frame buffer to 32bit floating point
-
-[windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, [ grey ] ); %opens screen and sets background to grey
 
 % load gamma table
 try
@@ -212,7 +220,8 @@ if doNotSendEvents ==0
     DaqDConfigPort(daq,1,1) % configure port B for input
 end
 
-tic;
+experimentStartTime = tic;
+
 vbl = Screen('Flip', windowPtr);
 for currentBlkNum = 1:numReps
     
@@ -235,14 +244,20 @@ for currentBlkNum = 1:numReps
         else
             dstRect = [];
         end
+        
+        % get current time till estimated finish
+        currentTimeUsed = toc(experimentStartTime);
+        timeLeft = (totalTime - currentTimeUsed)/60;
+        
         %display trial conditions
         
-        fprintf(['Block No: %i \n'...
+        fprintf(['Block No: %i of %i \n'...
             'Condition No: %i \n'...
             'Trial No: %i of %i \n' ...
             'Orientation: %i degrees \n'...
+            'Estimated Time to Finish = %.1f minutes \n' ...
             '############################################## \n'] ...
-            ,blockNum,cndOrder(trialCnd), trialCnd, length(cndOrder), trialParams(1));
+            ,blockNum, numReps,cndOrder(trialCnd), trialCnd, length(cndOrder), trialParams(1), timeLeft);
         
         if doNotSendEvents ==0
             % send out cnds to imaging comp
@@ -381,7 +396,7 @@ for currentBlkNum = 1:numReps
         break;
     end
 end % end number of blocks
-toc;
+toc(experimentStartTime);
 
 %% save things before close
 if doNotSendEvents ==0
