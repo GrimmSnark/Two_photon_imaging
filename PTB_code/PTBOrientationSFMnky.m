@@ -1,6 +1,6 @@
-function PTBOrientationWColorMnky(width, stimCenter, preStimTime, stimTime, rampTime, blendDistance , numReps, staticPresentation, varargin)
-% Experiment which displays moving or static square wave cone isolating
-% gratings
+function PTBOrientationSFMnky(width, stimCenter, preStimTime, stimTime, rampTime, blendDistance , numReps, staticPresentation, varargin)
+% Experiment which displays moving sine gratings of different orientations
+% and spatial frequencies, optimised for monkey
 %
 % options:  width - (degrees) for full screen leave blank
 %           stimCenter - [0,0] (degrees visual angle from screen center)
@@ -22,7 +22,6 @@ sca;
 
 
 doNotSendEvents = 0;
-fullfieldStim = 0;
 
 if ~isempty(varargin)
     doNotSendEvents = 1;
@@ -33,7 +32,6 @@ if isempty(numReps)
 end
 
 if isempty(width)
-    fullfieldStim =1;
     width = 0;
 end
 
@@ -44,7 +42,7 @@ end
 % Should not change %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 dataDir = 'C:\PostDoc Docs\Ca Imaging Project\PTB_Timing_Files\'; % save dir for timing files
 timeSave = datestr(now,'yyyymmddHHMMSS');
-indentString = 'OrientationWColorMnky_';
+indentString = 'OrientationSFMnky_';
 
 % stimTime = 1; %in s
 ITItime = 5; % intertrial interval in seconds
@@ -62,28 +60,23 @@ radius=widthInPix/2; % circlar apature in pixels
 
 blendDistancePixels = degreeVisualAngle2Pixels(2,blendDistance);
 
+backgroundColor = [0.5 0.5 0.5 1];
 
 %spatial frequency
-freq = 0.05 ; % in cycles per degree
-freq = 1/freq; % hack hack hack
-freqPix = degreeVisualAngle2Pixels(2,freq);
-%  freqPix =1/freqPix; % use the inverse as the function below takes bloody cycles/pixel...
+% calculated using exp(linspace(log(0.05),log(1),4))
+SFs = [  0.0500    0.1357    0.3684    1.0000]; % in cycles per degree (log sampled)
+SFsConverted = 1 ./SFs; % hack hack hack
+freqPix = degreeVisualAngle2Pixels(3,SFsConverted);
+freqPix =1 ./freqPix; % use the inverse as the function below takes bloody cycles/pixel...
 
 cyclespersecond =0.5; % temporal frequency to stimulate all cells (in Hz)
 contrast =  1; % contrast for grating
-
-% set up color and orientation levels
-[colorLevelsOri, colorDescriptors] = PTBOrientationColorValuesMonkeyV2;
-
-backgroundColor = [colorLevelsOri(1,:) 1]; %RGBA offset color
-colorLevels = colorLevelsOri(2:end,:);
-colorDescriptors = colorDescriptors(2:end);
 
 % orientations = [0 45 90 135]; % 4 orientations
 orientations = [0:30:150]; % 6 orientations
 % orientations = [0:15:165]; % 12 orientations
 
-Angle =repmat(orientations,[1 size(colorLevels, 1)]); % angle in degrees x number of colors
+Angle =repmat(orientations,[1 length(SFs)]); % angle in degrees x number of colors
 
 numCnd = length(Angle); % conditions = angle x colors
 
@@ -96,14 +89,13 @@ stimParams.preStimTime = preStimTime;
 stimParams.stimTime = stimTime;
 stimParams.rampTime = rampTime;
 stimParams.numReps = numReps;
-stimParams.freq = freq;
+stimParams.freq = SFs;
 stimParams.ITItime = ITItime;
 stimParams.cyclespersecond = cyclespersecond;
 stimParams.contrast = contrast;
 stimParams.blendDistance = blendDistance;
 stimParams.Angle = Angle;
-stimParams.colorLevelsOri = colorLevelsOri;
-stimParams.colorDescriptors = colorDescriptors;
+
 
 if doNotSendEvents ==0
     save([dataDir 'stimParams_' timeSave '.mat'], 'stimParams');
@@ -123,7 +115,7 @@ directionStartPerOrientation2 = ~directionStartPerOrientation;
 
 directionStartPerOrientation = [directionStartPerOrientation; directionStartPerOrientation2];
 
-blockMovementsBalanced = repmat(directionStartPerOrientation,length(colorLevels)/2,1);
+blockMovementsBalanced = repmat(directionStartPerOrientation,length(SFs)/2,1);
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Display total experiment predicted time and query continue.....
@@ -187,7 +179,7 @@ count = 0;
 errorCount = 0;
 while count == errorCount
     try
-        [windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, [ backgroundColor(1:3) ] ); %opens screen and sets background to grey
+        [windowPtr, ~] = PsychImaging('OpenWindow', screenNumber, [backgroundColor(1:3) ] ); %opens screen and sets background to grey
     catch
         disp(['Screen opening error detected......retrying']);
         errorCount = errorCount+1;
@@ -206,17 +198,14 @@ end
 oldTable = Screen('LoadNormalizedGammaTable', windowPtr, gammaTable1*[1 1 1]);
 
 
-for colNo = 1:size(colorLevels, 1)
-    [gratingid(colNo), gratingrect(:,colNo), ~]  = createSquareWaveGrating(windowPtr,screenXpixels*3, screenXpixels*3, colorLevels(colNo,:), backgroundColor(1:3), freqPix, 1);
-end
-
+[gratingid, gratingrect] = CreateProceduralSineGrating(windowPtr, screenXpixels*1.5, screenXpixels*1.5, backgroundColor, [], 0.5);
 
 % Retrieve video redraw interval for later control of our animation timing:
 ifi = Screen('GetFlipInterval', windowPtr);
 frameWaitTime = ifi - 0.5;
 
 % Compute increment of phase shift per redraw:
-phaseincrement = cyclespersecond * freqPix * ifi;
+phaseincrement = (cyclespersecond * 360) * ifi;
 
 
 % Get frame rate fro moving patch
@@ -246,7 +235,9 @@ mask(:,:,2) = mask(:,:,2) * backgroundColor(2); % green value
 mask(:,:,3) = mask(:,:,3) * backgroundColor(3); % blue value
 
 mask2 = NaN(screenYpixels, screenXpixels+10); %alpha mask
-blendVec = linspace(1, 0, blendDistancePixels);
+% blendVec = linspace(1, 0, blendDistancePixels);
+blendVec= exp(linspace(log(2),log(01), blendDistancePixels));
+blendVec = blendVec -1;
 
 for i =1:blendDistancePixels
     mask2(i:end-(i-1),i:end-(i-1)) =  blendVec(i);
@@ -286,11 +277,10 @@ for currentBlkNum = 1:numReps
         indexForOrientation = find(Angle==trialParams, 1); % get index for that angle
         
         % get color condition
-        currentColLevel = ceil(cndOrder(trialCnd)/length(orientations));
-        %             modulateCol = colorLevels(currentColLevel, :);
+        currentSF = ceil(cndOrder(trialCnd)/length(orientations));
         
         % get first direction flag ( 0 == left first, 1 == right first)
-        directionFlag = blockMovementsBalanced(currentColLevel, indexForOrientation);
+        directionFlag = blockMovementsBalanced(currentSF, indexForOrientation);
         
         if directionFlag == 0
             movementDirection = 'Postive';
@@ -309,13 +299,6 @@ for currentBlkNum = 1:numReps
         end
         
         
-        
-        if fullfieldStim ==0
-            dstRect = OffsetRect(gratingrect(currentColLevel), screenStimCentre(1)-radius, screenStimCentre(2)-radius);
-        else
-            dstRect = [];
-        end
-        
         % get current time till estimated finish
         currentTimeUsed = toc(experimentStartTime);
         timeLeft = (totalTime - currentTimeUsed)/60;
@@ -326,12 +309,12 @@ for currentBlkNum = 1:numReps
         fprintf(['Block No: %i of %i \n'...
             'Condition No: %i \n'...
             'Trial No: %i of %i \n' ...
-            'Color Cnd: %s (No. %i of %i) \n' ...
+            'Spatial Freq Cnd: %.3f (No. %i of %i) \n' ...
             'Orientation: %.1f degrees \n'...
             'First Direction = %s \n' ...
             'Estimated Time to Finish = %.1f minutes \n' ...
             '############################################## \n'] ...
-            ,blockNum, numReps ,cndOrder(trialCnd), trialCnd, length(cndOrder) , colorDescriptors{currentColLevel}, currentColLevel, length(colorDescriptors), trialParams(1), movementDirection, timeLeft);
+            ,blockNum, numReps ,cndOrder(trialCnd), trialCnd, length(cndOrder) , SFs(currentSF), currentSF, length(SFs),  trialParams(1), movementDirection, timeLeft);
         
         if doNotSendEvents ==0
             % send out cnds to imaging comp
@@ -379,18 +362,11 @@ for currentBlkNum = 1:numReps
                 
                 % Increment phase by cycles/s:
                 if staticPresentation ==0
-                    xoffset = eval(['xoffset ' movementOperator ' phaseincrement']);
+                    phase = eval(['phase ' movementOperator ' phaseincrement']);
                 end
                 
-                % makes rolling buffer so grating doesn't reach limit
-                % of presentation
-                if xoffset < 1
-                    xoffset = xoffset + freqPix;
-                elseif xoffset > freqPix
-                    xoffset = xoffset - freqPix;
-                end
-                
-                srcRect=[xoffset 0 xoffset + screenXpixels*1.5 screenXpixels*1.5];
+                %create auxParameters matrix
+                propertiesMat = [phase, freqPix(currentSF), contrastLevels(frameNo), 0];
                 
                 if doNotSendEvents ==0
                     if stimOnFlag ==1 % only sends stim on at the first draw of moving grating
@@ -405,15 +381,14 @@ for currentBlkNum = 1:numReps
                     end
                 end
                 
-                
+                Screen('DrawTexture', windowPtr, gratingid, [], [] , Angle(cndOrder(trialCnd)), [] , [], [], [], [], propertiesMat' );
                 
                 Screen('BlendFunction', windowPtr, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)), [] , contrastLevels(frameNo), [], [], [] );
-                
                 Screen('DrawTexture', windowPtr, masktex, [], [], 0);
                 Screen('DrawingFinished', windowPtr);
                 
                 vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
+                Screen('BlendFunction', windowPtr, GL_ONE, GL_ZERO);
                 
                 % Abort requested? Test for keypress:
                 if KbCheck
@@ -434,23 +409,18 @@ for currentBlkNum = 1:numReps
             
             % Increment phase by cycles/s:
             if staticPresentation ==0
-                xoffset = eval(['xoffset ' movementOperator ' phaseincrement']);
+                phase = eval(['phase ' movementOperator ' phaseincrement']);
             end
             
+            %create auxParameters matrix
+            propertiesMat = [phase, freqPix(currentSF), contrast, 0];
             
-            % makes rolling buffer so grating doesn't reach limit
-            % of presentation
-            if xoffset < 1
-                xoffset = xoffset + freqPix;
-            elseif xoffset > freqPix
-                xoffset = xoffset - freqPix;
-            end
+            Screen('DrawTexture', windowPtr, gratingid, [], [] , Angle(cndOrder(trialCnd)), [] , [], [], [], [], propertiesMat' );
             
-            srcRect=[xoffset 0 xoffset + screenXpixels*1.5 screenXpixels*1.5];
-            
-            
-            Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)), [] , 1, [], [], [] );
+            Screen('BlendFunction', windowPtr, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             Screen('DrawTexture', windowPtr, masktex, [], [], 0);
+            Screen('DrawingFinished', windowPtr);
+            
             
             if doNotSendEvents ==0
                 if rampTime == 0
@@ -474,7 +444,9 @@ for currentBlkNum = 1:numReps
                 AnalogueOutEvent(daq, 'SCREEN_REFRESH');
                 stimCmpEvents(end+1,:)= addCmpEvents('SCREEN_REFRESH');
             end
+            
             vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
+            Screen('BlendFunction', windowPtr, GL_ONE, GL_ZERO);
             
             % Abort requested? Test for keypress:
             if KbCheck
@@ -506,21 +478,15 @@ for currentBlkNum = 1:numReps
             
             % Increment phase by cycles/s:
             if staticPresentation ==0
-                xoffset = eval(['xoffset ' movementOperator ' phaseincrement']);
+                phase = eval(['phase ' movementOperator ' phaseincrement']);
             end
             
+            %create auxParameters matrix
+            propertiesMat = [phase, freqPix(currentSF), contrast, 0];
             
-            % makes rolling buffer so grating doesn't reach limit
-            % of presentation
-            if xoffset < 1
-                xoffset = xoffset + freqPix;
-            elseif xoffset > freqPix
-                xoffset = xoffset - freqPix;
-            end
+            Screen('DrawTexture', windowPtr, gratingid, [], [] , Angle(cndOrder(trialCnd)), [] , [], [], [], [], propertiesMat' );
             
-            srcRect=[xoffset 0 xoffset + screenXpixels*1.5 screenXpixels*1.5];
-            
-            Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)), [] , 1, [], [], [] );
+            Screen('BlendFunction', windowPtr, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             Screen('DrawTexture', windowPtr, masktex, [], [], 0);
             Screen('DrawingFinished', windowPtr);
             
@@ -532,7 +498,7 @@ for currentBlkNum = 1:numReps
                 stimCmpEvents(end+1,:)= addCmpEvents('SCREEN_REFRESH');
             end
             vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
-            
+            Screen('BlendFunction', windowPtr, GL_ONE, GL_ZERO);
             
             % Abort requested? Test for keypress:
             if KbCheck
@@ -552,7 +518,7 @@ for currentBlkNum = 1:numReps
                 stimCmpEvents(end+1,:)= addCmpEvents('STIM_OFF');
             end
         end
-        %             Screen('Flip', windowPtr);
+        
         %% ramp off
         if rampTime > 0
             % start constrast ramp off
@@ -566,25 +532,16 @@ for currentBlkNum = 1:numReps
                 
                 % Increment phase by cycles/s:
                 if staticPresentation ==0
-                    xoffset = eval(['xoffset ' movementOperator ' phaseincrement']);
+                    phase = eval(['phase ' movementOperator ' phaseincrement']);
                 end
                 
                 
+                %create auxParameters matrix
+                propertiesMat = [phase, freqPix(currentSF), contrastLevels(frameNo), 0];
                 
-                % makes rolling buffer so grating doesn't reach limit
-                % of presentation
-                if xoffset < 1
-                    xoffset = xoffset + freqPix;
-                elseif xoffset > freqPix
-                    xoffset = xoffset - freqPix;
-                end
+                Screen('DrawTexture', windowPtr, gratingid, [], [] , Angle(cndOrder(trialCnd)), [] , [], [], [], [], propertiesMat' );
                 
-                
-                srcRect=[xoffset 0 xoffset + screenXpixels*1.5 screenXpixels*1.5];
-                
-                
-                
-                Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)), [] , contrastLevels(frameNo), [], [], [] );
+                Screen('BlendFunction', windowPtr, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 Screen('DrawTexture', windowPtr, masktex, [], [], 0);
                 Screen('DrawingFinished', windowPtr);
                 
@@ -600,6 +557,7 @@ for currentBlkNum = 1:numReps
         end
         
         vbl = Screen('Flip', windowPtr, vbl + frameWaitTime);
+        Screen('BlendFunction', windowPtr, GL_ONE, GL_ZERO);
         
         % Abort requested? Test for keypress:
         if KbCheck
@@ -613,7 +571,7 @@ for currentBlkNum = 1:numReps
             stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_END');
         end
     end
-   
+    
     % Abort requested? Test for keypress:
     if KbCheck
         break;
@@ -632,4 +590,5 @@ Screen('LoadNormalizedGammaTable', windowPtr, oldTable);
 % Clear screen
 sca;
 end
+
 

@@ -1,6 +1,6 @@
-function PTBOrientationWColorMnky(width, stimCenter, preStimTime, stimTime, rampTime, blendDistance , numReps, staticPresentation, varargin)
-% Experiment which displays moving or static square wave cone isolating
-% gratings
+function PTBOrientationIntensityMnky(width, stimCenter, preStimTime, stimTime, rampTime, blendDistance , numReps, contrastSpacing , staticPresentation, varargin)
+% Experiment which displays moving or static square wave black and white
+% gratings of different intensity levels
 %
 % options:  width - (degrees) for full screen leave blank
 %           stimCenter - [0,0] (degrees visual angle from screen center)
@@ -11,6 +11,8 @@ function PTBOrientationWColorMnky(width, stimCenter, preStimTime, stimTime, ramp
 %           blendDistance - guassian blur window (degrees)
 %           numReps - (number of blocks of all stim repeats, if blank is
 %           infinite)
+%           contrastSpacing - 1: linear spaced, 2: log spaced spacing of
+%           contrast conditions
 %           staticPresentation - 0/1 flag for static stimuli
 %           varargin (if filled DOES NOT send events out via DAQ)
 
@@ -22,7 +24,6 @@ sca;
 
 
 doNotSendEvents = 0;
-fullfieldStim = 0;
 
 if ~isempty(varargin)
     doNotSendEvents = 1;
@@ -33,7 +34,6 @@ if isempty(numReps)
 end
 
 if isempty(width)
-    fullfieldStim =1;
     width = 0;
 end
 
@@ -62,6 +62,8 @@ radius=widthInPix/2; % circlar apature in pixels
 
 blendDistancePixels = degreeVisualAngle2Pixels(2,blendDistance);
 
+backgroundColor = [0.5 0.5 0.5 1];
+
 
 %spatial frequency
 freq = 0.05 ; % in cycles per degree
@@ -70,24 +72,27 @@ freqPix = degreeVisualAngle2Pixels(2,freq);
 %  freqPix =1/freqPix; % use the inverse as the function below takes bloody cycles/pixel...
 
 cyclespersecond =0.5; % temporal frequency to stimulate all cells (in Hz)
-contrast =  1; % contrast for grating
 
-% set up color and orientation levels
-[colorLevelsOri, colorDescriptors] = PTBOrientationColorValuesMonkeyV2;
 
-backgroundColor = [colorLevelsOri(1,:) 1]; %RGBA offset color
-colorLevels = colorLevelsOri(2:end,:);
-colorDescriptors = colorDescriptors(2:end);
+% contrast levels
+
+switch contrastSpacing
+    case 1 % linspaced
+        contrastLevels =  linspace(0,1,7);
+        contrastLevels =  contrastLevels(2:end);
+    case 2 % log spaced
+        contrastLevels =  exp(linspace(log(1),log(2),7)); % contrast for grating
+        contrastLevels = contrastLevels -1;
+        contrastLevels =  contrastLevels(2:end);
+end
 
 % orientations = [0 45 90 135]; % 4 orientations
 orientations = [0:30:150]; % 6 orientations
 % orientations = [0:15:165]; % 12 orientations
 
-Angle =repmat(orientations,[1 size(colorLevels, 1)]); % angle in degrees x number of colors
+Angle =repmat(orientations,[1 length(contrastLevels)]); % angle in degrees x number of colors
 
 numCnd = length(Angle); % conditions = angle x colors
-
-
 
 % Add stim parameters to structure for saving
 stimParams.width = width;
@@ -99,11 +104,9 @@ stimParams.numReps = numReps;
 stimParams.freq = freq;
 stimParams.ITItime = ITItime;
 stimParams.cyclespersecond = cyclespersecond;
-stimParams.contrast = contrast;
+stimParams.contrast = contrastLevels;
 stimParams.blendDistance = blendDistance;
 stimParams.Angle = Angle;
-stimParams.colorLevelsOri = colorLevelsOri;
-stimParams.colorDescriptors = colorDescriptors;
 
 if doNotSendEvents ==0
     save([dataDir 'stimParams_' timeSave '.mat'], 'stimParams');
@@ -123,7 +126,7 @@ directionStartPerOrientation2 = ~directionStartPerOrientation;
 
 directionStartPerOrientation = [directionStartPerOrientation; directionStartPerOrientation2];
 
-blockMovementsBalanced = repmat(directionStartPerOrientation,length(colorLevels)/2,1);
+blockMovementsBalanced = repmat(directionStartPerOrientation,length(contrastLevels)/2,1);
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Display total experiment predicted time and query continue.....
@@ -206,9 +209,8 @@ end
 oldTable = Screen('LoadNormalizedGammaTable', windowPtr, gammaTable1*[1 1 1]);
 
 
-for colNo = 1:size(colorLevels, 1)
-    [gratingid(colNo), gratingrect(:,colNo), ~]  = createSquareWaveGrating(windowPtr,screenXpixels*3, screenXpixels*3, colorLevels(colNo,:), backgroundColor(1:3), freqPix, 1);
-end
+
+    [gratingid, gratingrect, ~]  = createSquareWaveGrating(windowPtr,screenXpixels*3, screenXpixels*3, [1 1 1], [0 0 0], freqPix, 1);
 
 
 % Retrieve video redraw interval for later control of our animation timing:
@@ -230,7 +232,7 @@ preStimFrames = frameRate * preStimTime;
 
 % Get frame number to interate over contrast ramp
 contrast_rampFrames = round(frameRate *  rampTime);
-contrastLevels = linspace(0, contrast, contrast_rampFrames);
+contrastLevelsRamp = linspaceVector(zeros(length(contrastLevels),1), contrastLevels, contrast_rampFrames);
 
 
 % set up gaussian window
@@ -238,17 +240,20 @@ contrastLevels = linspace(0, contrast, contrast_rampFrames);
 % blendDistance = 200;
 
 % set up color channels for background
-mask = ones(screenYpixels, screenXpixels+10, 3);
+mask = ones(screenYpixels, screenXpixels+5, 3);
 
 % background values
 mask(:,:,1) = mask(:,:,1) * backgroundColor(1); % red value
 mask(:,:,2) = mask(:,:,2) * backgroundColor(2); % green value
 mask(:,:,3) = mask(:,:,3) * backgroundColor(3); % blue value
 
-mask2 = NaN(screenYpixels, screenXpixels+10); %alpha mask
+mask2 = NaN(screenYpixels, screenXpixels+5); %alpha mask
 blendVec = linspace(1, 0, blendDistancePixels);
+% blendVec= exp(logspace(log(2),log(1), blendDistancePixels));
+% blendVec = [blendVec/max(blendVec) 0];
 
-for i =1:blendDistancePixels
+
+for i =1:length(blendVec)
     mask2(i:end-(i-1),i:end-(i-1)) =  blendVec(i);
 end
 
@@ -286,11 +291,11 @@ for currentBlkNum = 1:numReps
         indexForOrientation = find(Angle==trialParams, 1); % get index for that angle
         
         % get color condition
-        currentColLevel = ceil(cndOrder(trialCnd)/length(orientations));
+        currentConstrastLevel = ceil(cndOrder(trialCnd)/length(orientations));
         %             modulateCol = colorLevels(currentColLevel, :);
         
         % get first direction flag ( 0 == left first, 1 == right first)
-        directionFlag = blockMovementsBalanced(currentColLevel, indexForOrientation);
+        directionFlag = blockMovementsBalanced(currentConstrastLevel, indexForOrientation);
         
         if directionFlag == 0
             movementDirection = 'Postive';
@@ -309,13 +314,6 @@ for currentBlkNum = 1:numReps
         end
         
         
-        
-        if fullfieldStim ==0
-            dstRect = OffsetRect(gratingrect(currentColLevel), screenStimCentre(1)-radius, screenStimCentre(2)-radius);
-        else
-            dstRect = [];
-        end
-        
         % get current time till estimated finish
         currentTimeUsed = toc(experimentStartTime);
         timeLeft = (totalTime - currentTimeUsed)/60;
@@ -326,12 +324,12 @@ for currentBlkNum = 1:numReps
         fprintf(['Block No: %i of %i \n'...
             'Condition No: %i \n'...
             'Trial No: %i of %i \n' ...
-            'Color Cnd: %s (No. %i of %i) \n' ...
+            'Contrast Cnd: %.3f (No. %i of %i) \n' ...
             'Orientation: %.1f degrees \n'...
             'First Direction = %s \n' ...
             'Estimated Time to Finish = %.1f minutes \n' ...
             '############################################## \n'] ...
-            ,blockNum, numReps ,cndOrder(trialCnd), trialCnd, length(cndOrder) , colorDescriptors{currentColLevel}, currentColLevel, length(colorDescriptors), trialParams(1), movementDirection, timeLeft);
+            ,blockNum, numReps ,cndOrder(trialCnd), trialCnd, length(cndOrder) , contrastLevels(currentConstrastLevel), currentConstrastLevel, length(contrastLevels) , trialParams(1), movementDirection, timeLeft);
         
         if doNotSendEvents ==0
             % send out cnds to imaging comp
@@ -408,7 +406,7 @@ for currentBlkNum = 1:numReps
                 
                 
                 Screen('BlendFunction', windowPtr, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)), [] , contrastLevels(frameNo), [], [], [] );
+                Screen('DrawTexture', windowPtr, gratingid, srcRect, [] , Angle(cndOrder(trialCnd)), [] , contrastLevelsRamp(currentConstrastLevel,frameNo), [], [], [] );
                 
                 Screen('DrawTexture', windowPtr, masktex, [], [], 0);
                 Screen('DrawingFinished', windowPtr);
@@ -449,7 +447,7 @@ for currentBlkNum = 1:numReps
             srcRect=[xoffset 0 xoffset + screenXpixels*1.5 screenXpixels*1.5];
             
             
-            Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)), [] , 1, [], [], [] );
+            Screen('DrawTexture', windowPtr, gratingid, srcRect, [] , Angle(cndOrder(trialCnd)), [] , contrastLevels(currentConstrastLevel), [], [], [] );
             Screen('DrawTexture', windowPtr, masktex, [], [], 0);
             
             if doNotSendEvents ==0
@@ -520,7 +518,7 @@ for currentBlkNum = 1:numReps
             
             srcRect=[xoffset 0 xoffset + screenXpixels*1.5 screenXpixels*1.5];
             
-            Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)), [] , 1, [], [], [] );
+            Screen('DrawTexture', windowPtr, gratingid, srcRect, [] , Angle(cndOrder(trialCnd)), [] , contrastLevels(currentConstrastLevel), [], [], [] );
             Screen('DrawTexture', windowPtr, masktex, [], [], 0);
             Screen('DrawingFinished', windowPtr);
             
@@ -584,7 +582,7 @@ for currentBlkNum = 1:numReps
                 
                 
                 
-                Screen('DrawTexture', windowPtr, gratingid(currentColLevel), srcRect, dstRect , Angle(cndOrder(trialCnd)), [] , contrastLevels(frameNo), [], [], [] );
+                Screen('DrawTexture', windowPtr, gratingid, srcRect, [] , Angle(cndOrder(trialCnd)), [] , contrastLevelsRamp(currentConstrastLevel,frameNo), [], [], [] );
                 Screen('DrawTexture', windowPtr, masktex, [], [], 0);
                 Screen('DrawingFinished', windowPtr);
                 
