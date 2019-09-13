@@ -1,7 +1,6 @@
 function PTBOrientationWColorMatchBW_Mnky(width, stimCenter, preStimTime, stimTime, rampTime, blendDistance , numReps, staticPresentation, color2match, varargin)
-% Experiment which displays moving or static monochrome square wave
-% gratings which are luminance matched to the a specificed cone isolating
-% color stimulus used in PTBOrientationWColorMnky
+% Experiment which displays moving or static monochrome square wave and
+% specificed cone isolating gratings which are luminance matched
 %
 % options:  width - (degrees) for full screen leave blank
 %           stimCenter - [0,0] (degrees visual angle from screen center)
@@ -13,7 +12,8 @@ function PTBOrientationWColorMatchBW_Mnky(width, stimCenter, preStimTime, stimTi
 %           numReps - (number of blocks of all stim repeats, if blank is infinite)
 %           staticPresentation - 0/1 flag for static stimuli
 %           color2match - 1-4 option to use luminance matched monochrome
-%           stimulus ( 1: L cone ++, 2: M cone --, 3: L/M ++, 4: S cone --) 
+%           and cone isolating stimuli stimulus ( 1: L cone ++,
+%           2: M cone --, 3: L/M ++, 4: S cone --)
 %           varargin (if filled DOES NOT send events out via DAQ)
 
 
@@ -75,22 +75,32 @@ cyclespersecond =0.5; % temporal frequency to stimulate all cells (in Hz)
 contrast =  1; % contrast for grating
 
 % set up color and orientation levels
-[colorLevelsOri, ~] = PTBOrientationColorValuesMonkeyV2;
+[colorLevelsOri, colorDescriptors] = PTBOrientationColorValuesMonkeyV2;
 
 backgroundColor = [colorLevelsOri(1,:) 1]; %RGBA offset color
+colorLevels = colorLevelsOri(2:end,:);
+colorDescriptors = colorDescriptors(2:end);
 
 % set the color match for the white stimulus
 
 switch color2match
     
     case 1 % L ++ cone stimulus match
-        onLevel = [0.3626 0.3626 0.3626];
+        bwLevel = [0.3626 0.3626 0.3626];
+        colorLevel = colorLevels(1,:);
+        colorDescriptor = colorDescriptors(1);
     case 2 % M -- cone stimulus match
-        onLevel = [0.2546 0.2546 0.2546];
+        bwLevel = [0.2546 0.2546 0.2546];
+        colorLevel = colorLevels(2,:);
+        colorDescriptor = colorDescriptors(2);
     case 3 %L/M ++ stimulus match
-        onLevel = [0.5916 0.5916 0.5916];
+        bwLevel = [0.5916 0.5916 0.5916];
+        colorLevel = colorLevels(3,:);
+        colorDescriptor = colorDescriptors(3);
     case 4 % S-- stimulus match
-        onLevel = [0.3387 0.3387 0.3387];
+        bwLevel = [0.3387 0.3387 0.3387];
+        colorLevel = colorLevels(4,:);
+        colorDescriptor = colorDescriptors(4);
 end
 
 
@@ -98,7 +108,7 @@ end
 orientations = [0:30:150]; % 6 orientations
 % orientations = [0:15:165]; % 12 orientations
 
-Angle =orientations; % angle in degrees x number of colors
+Angle =[orientations orientations]; % angle in degrees x number of colors
 
 numCnd = length(Angle); % conditions = angle x colors
 
@@ -119,7 +129,9 @@ stimParams.blendDistance = blendDistance;
 stimParams.Angle = Angle;
 stimParams.backgroundColor = backgroundColor;
 stimParams.color2match = color2match;
-stimParams.whiteLevel = onLevel;
+stimParams.whiteLevel = bwLevel;
+stimParams.colorLevel = colorLevel;
+stimParams.colorDescriptor = colorDescriptor;
 
 
 if doNotSendEvents ==0
@@ -223,8 +235,10 @@ end
 
 oldTable = Screen('LoadNormalizedGammaTable', windowPtr, gammaTable1*[1 1 1]);
 
+% create BW and color grating objects
+[gratingid(1), gratingrect(1,:), ~]  = createSquareWaveGrating(windowPtr,screenXpixels*3, screenXpixels*3, bwLevel, backgroundColor(1:3), freqPix, 1);
+[gratingid(2), gratingrect(1,:), ~]  = createSquareWaveGrating(windowPtr,screenXpixels*3, screenXpixels*3, colorLevel, backgroundColor(1:3), freqPix, 1);
 
-[gratingid, gratingrect, ~]  = createSquareWaveGrating(windowPtr,screenXpixels*3, screenXpixels*3, onLevel, backgroundColor(1:3), freqPix, 1);
 
 
 % Retrieve video redraw interval for later control of our animation timing:
@@ -289,8 +303,15 @@ end
 experimentStartTime = tic;
 
 for currentBlkNum = 1:numReps
-    % randomizes the order of the conditions for this block
-    cndOrder = datasample(1:numCnd,numCnd,'Replace', false);
+    % randomizes the order of the conditions for this block  but interleave
+    % BW and color stimulus
+    cndOrderBW = datasample(1:numCnd/2,numCnd/2,'Replace', false);
+    cndOrderColor = datasample(1:numCnd/2,numCnd/2,'Replace', false) + numCnd/2;
+    
+    % interleave the two vectors
+    cndOrder=[cndOrderBW; cndOrderColor];
+    cndOrder=cndOrder(:)';
+    
     blockNum = blockNum+1;
     
     for trialCnd = 1:length(cndOrder)
@@ -303,7 +324,12 @@ for currentBlkNum = 1:numReps
         
         % get color condition
         currentColLevel = ceil(cndOrder(trialCnd)/length(orientations));
-        %             modulateCol = colorLevels(currentColLevel, :);
+        
+        if currentColLevel ==1
+            colorDispString =  [colorDescriptor{:} ' BW'];
+        else
+            colorDispString =  colorDescriptor{:};
+        end
         
         % get first direction flag ( 0 == left first, 1 == right first)
         directionFlag = blockMovementsBalanced(currentColLevel, indexForOrientation);
@@ -341,11 +367,12 @@ for currentBlkNum = 1:numReps
         fprintf(['Block No: %i of %i \n'...
             'Condition No: %i \n'...
             'Trial No: %i of %i \n' ...
+            'Color Cnd: %s \n' ...
             'Orientation: %.1f degrees \n'...
             'First Direction = %s \n' ...
             'Estimated Time to Finish = %.1f minutes \n' ...
             '############################################## \n'] ...
-            ,blockNum, numReps,cndOrder(trialCnd), trialCnd, length(cndOrder),  trialParams(1), movementDirection, timeLeft);
+            ,blockNum, numReps,cndOrder(trialCnd), trialCnd, length(cndOrder), colorDispString,  trialParams(1), movementDirection, timeLeft);
         
         
         if doNotSendEvents ==0

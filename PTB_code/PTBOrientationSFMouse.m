@@ -1,14 +1,18 @@
 function PTBOrientationSFMouse(width, stimCenter, preStimTime, stimTime, dropRed, rampTime, numReps, varargin)
-% Experiment which displays moving gratings at 2Hz
+% Experiment which displays moving sine gratings of different orientations
+% and spatial frequencies, optimised for mouse
 %
-% options width (degrees) for full screen leave blank
-% stimCenter [0,0] (degrees visual angle from screen center)
-% pre stimulus spontaneous activity period (preStimTime, in seconds)
-% stim time (seconds)
-% dropRed 1/0 (drops the red channel completely, useful as mice do not see
-% red)
-% numReps (number of blocks of all stim repeats, if blank is infinite)
-% varargin (if filled DOES NOT send events out via DAQ)
+% options:  width - (degrees) for full screen leave blank
+%           stimCenter - [0,0] (degrees visual angle from screen center)
+%           preStimTime - pre stimulus spontaneous activity period (in
+%                         seconds)
+%           stimTime - stim time (seconds)
+%           dropRed -  1/0 (drops the red channel completely, useful as
+%           mice do not see red)
+%           rampTime - ramp time added on and off for stimulus (seconds)
+%           numReps - (number of blocks of all stim repeats, if blank is
+%           infinite)
+%           varargin (if filled DOES NOT send events out via DAQ)
 
 
 %% set up parameters of stimuli

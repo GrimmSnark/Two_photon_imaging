@@ -9,7 +9,8 @@ function PTBOrientationWColorMnky(width, stimCenter, preStimTime, stimTime, ramp
 %           stimTime - stim time (seconds)
 %           rampTime - ramp time added on and off for stimulus (seconds)
 %           blendDistance - guassian blur window (degrees)
-%           numReps - (number of blocks of all stim repeats, if blank is infinite)
+%           numReps - (number of blocks of all stim repeats, if blank is
+%           infinite)
 %           staticPresentation - 0/1 flag for static stimuli
 %           varargin (if filled DOES NOT send events out via DAQ)
 
