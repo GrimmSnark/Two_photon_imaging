@@ -15,6 +15,18 @@ eventArray = readEventFilePrairieV2(dataFilepathPrairie, []); % read in events f
 
 %% if path to PTB file is set check consistency between set and recorded events
 PTBPath = dir([experimentStructure.prairiePath '*.mat']);
+
+% find index of stimParams mat
+indexCell = strfind({PTBPath.name}, 'stimParams');
+indexOfStimParams = find(~cellfun(@isempty,indexCell));
+
+% copy stimParams to experimentStructure
+load(fullfile(PTBPath(indexOfStimParams).folder, PTBPath(indexOfStimParams).name));
+experimentStructure.stimParams = stimParams;
+
+% clear entry
+PTBPath(indexOfStimParams) = [];
+
 if ~isempty(PTBPath)
     experimentStructure.PTB_TimingFilePath = [PTBPath.folder '\' PTBPath.name ];
     [eventArray, PTBeventArray ]= checkConsistency(eventArray, experimentStructure.PTB_TimingFilePath);

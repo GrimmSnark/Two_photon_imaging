@@ -1,5 +1,12 @@
-function plotCellOrienationPref(experimentStructure, orientationNo, colorNo, orienatationRange, dataType)
-
+function plotCellOrienationPref(experimentStructure, orientationNo, colorNo, orientationRange, dataType)
+% Creates a RGB image of maximal response for orientation pref for every
+% cell based on the DF/F FISSA or DF/F FBS
+% Inputs:   experimentStructure - experimentStructure of analysised data
+%           orientationNo - No of orientations tested
+%           colorNo - No of colors or SF tested
+%           orientationRange - range of orientations, ie [0 360] or [0 180]
+%           dataType - OPTIONAL, either 'FBS' or 'FISSA'
+%
 
 if nargin <5
     dataType = 'FBS';
@@ -10,7 +17,7 @@ cellROIs = experimentStructure.labeledCellROI;
 cellMap = zeros(experimentStructure.pixelsPerLine);
 nonResponsiveMap = cellMap;
 
-orientations = linspace(orienatationRange(1), orienatationRange(2), orientationNo+1);
+orientations = linspace(orientationRange(1), orientationRange(2), orientationNo+1);
 orientations = orientations(1:end-1);
 cmap = ggb1;
 

@@ -1,5 +1,5 @@
 function plotCellIndexMap(experimentStructure, mapType, limitVal)
-% Plots and saves image of index preference for a variety of indices
+% Plots and saves RGB image of index preference for a variety of indices
 % Input:    experimentStructure
 %           mapType- string variable of the index to use, ie 'OSI',
 %           'ratioLM', 'ratioLMS'

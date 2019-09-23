@@ -81,8 +81,9 @@ switch contrastSpacing
         contrastLevels =  linspace(0,1,7);
         contrastLevels =  contrastLevels(2:end);
     case 2 % log spaced
-        contrastLevels =  exp(linspace(log(1),log(2),7)); % contrast for grating
-        contrastLevels = contrastLevels -1;
+        %        contrastLevels =  exp(linspace(log(1),log(2),7)); % contrast for grating
+        contrastLevels =  log(linspace(exp(0),exp(1),7)); % contrast for grating
+%         contrastLevels = contrastLevels -1;
         contrastLevels =  contrastLevels(2:end);
 end
 
@@ -249,6 +250,7 @@ mask(:,:,3) = mask(:,:,3) * backgroundColor(3); % blue value
 
 mask2 = NaN(screenYpixels, screenXpixels+5); %alpha mask
 blendVec = linspace(1, 0, blendDistancePixels);
+% blendVec= log(linspace(exp(1),exp(0), blendDistancePixels));
 % blendVec= exp(logspace(log(2),log(1), blendDistancePixels));
 % blendVec = [blendVec/max(blendVec) 0];
 

@@ -2,6 +2,9 @@ function plotOrientationColorTuningPerCellMnky(experimentStructure, cellNo, orie
 % plots and saves figure for cells with preferred stimulus average (with
 % individual trial and the average responses for each condition. Written
 % for ORIENTATION/COLOR stimulus
+%
+% PARAMETERIZED FOR MULTIPLE COLORS
+%
 % Inputs:   experimentStucture- experiment processed data from
 %                               experimentStrucure.mat
 %           cellNo- number or vector of numbers for cells to plot

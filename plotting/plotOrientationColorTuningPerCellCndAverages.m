@@ -3,6 +3,8 @@ function plotOrientationColorTuningPerCellCndAverages(experimentStructure, cellN
 % each condition. Written for ORIENTATION/COLOR stimulus, used to create
 % figures for papers/presentation 
 %
+% HARDCODED FOR MOUSE 2 COLOR STIMULUS....
+%
 % Inputs:   experimentStucture- experiment processed data from
 %                               experimentStrucure.mat
 %           cellNo- number or vector of numbers for cells to plot
@@ -10,7 +12,7 @@ function plotOrientationColorTuningPerCellCndAverages(experimentStructure, cellN
 %           hardYLim - two number vector for setting Y axis limits for all
 %                      cells in cellNo (matches axes)
 
-useSTDorSEM = 2;
+% useSTDorSEM = 2;
 
 % experimentStructure.savePath = 'D:\Data\CristinaR21\PVCre\old\PV_cre_ChR2_Old_M4\5off_5on_6\TSeries-03082019-1001-005\20190315115604\';
 
