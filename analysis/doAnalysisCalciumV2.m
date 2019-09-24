@@ -181,6 +181,17 @@ if isempty(behaviouralResponseFlag) % if no behaviour, ie trials are the same le
         analysisFrameLength = ceil(mean(experimentStructure.EventFrameIndx.TRIAL_END - experimentStructure.EventFrameIndx.PRESTIM_ON));
         stimOnFrames = [ceil(mean(experimentStructure.EventFrameIndx.STIM_ON - experimentStructure.EventFrameIndx.PRESTIM_ON))+1 ...
             ceil(mean(experimentStructure.EventFrameIndx.STIM_OFF - experimentStructure.EventFrameIndx.PRESTIM_ON))-1];
+        
+        % check that analysisFrameLength is not too long for last trial...
+        endFrame = experimentStructure.EventFrameIndx.PRESTIM_ON(end) + analysisFrameLength-1;
+        endVol = length(experimentStructure.dF);
+        
+        diffBetween = endVol - endFrame;
+        
+        if diffBetween < 0
+            analysisFrameLength = analysisFrameLength + diffBetween;
+        end
+        
     else
         analysisFrameLength = ceil(mean(experimentStructure.EventFrameIndx.TRIAL_END - (experimentStructure.EventFrameIndx.STIM_ON- prestimFrameTime)));
         stimOnFrames = [ceil(mean(experimentStructure.EventFrameIndx.STIM_ON -(experimentStructure.EventFrameIndx.STIM_ON- prestimFrameTime)))-1 ...

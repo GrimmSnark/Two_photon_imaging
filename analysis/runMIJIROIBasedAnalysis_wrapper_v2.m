@@ -9,6 +9,11 @@ if nargin <3
     channel2Use = 2; % sets deafult channel to use if in mult
 end
 
+try
+   MIJ.closeAllWindows; 
+catch
+    
+end
 
 %choose all ROIs
 if chooseROIs == 1
@@ -27,7 +32,7 @@ for x = startFolderNo:length(subFolders)
     subSubFolder =  returnSubFolderList([subFolders(x).folder '\' subFolders(x).name '\TSeries*' ]);
     
 %     runMijiROIBasedAnalysisBatch([subSubFolder(end).folder '\' subSubFolder(end).name '\'], 'Single', [], 'adaptive', 1, [], 2);
-    runMijiROIBasedAnalysisBatchV2([subSubFolder(end).folder '\' subSubFolder(end).name '\'], 'Single',[], [], 1, channel2Use)
+    runMijiROIBasedAnalysisBatchV2([subSubFolder(end).folder '\' subSubFolder(end).name '\'], 'Single',[], [], channel2Use)
     
 end
 
