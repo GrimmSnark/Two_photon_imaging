@@ -17,7 +17,10 @@ for i = 1: numROIs
 
 end
 % sets color map for the cell ROIs
-cmap = distinguishable_colors(numROIs+1,'k');
+
+ cmap = distinguishable_colors(numROIs+1,'k');
+% cmap = linspecer(numROIs+1, 'qualitative');
+% cmap = cmap(randperm(size(cmap,1)),:);
 cmap(1,:) = [0,0,0];
 
 

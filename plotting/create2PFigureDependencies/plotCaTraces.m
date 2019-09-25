@@ -24,7 +24,7 @@ switch figData.plotChoice
         %%
         data2plot = experimentStructure.rawF(cellNum,:);
         hLine = handle(line(1:length(data2plot),data2plot,...
-            'Color',cmap(cellNum+1, :), 'Parent',hAx,'LineWidth',1));
+            'Color',cmap(cellNum+1, :), 'Parent',hAx,'LineWidth',2));
         
         hAx.XLim = [0 length(data2plot)];
         hAx.XTick = [0:250:length(data2plot) ];
@@ -44,7 +44,7 @@ switch figData.plotChoice
         %%
         data2plot = experimentStructure.dF(cellNum,:);
         hLine = handle(line(1:length(data2plot),data2plot,...
-            'Color',cmap(cellNum+1, :), 'Parent',hAx,'LineWidth',1));
+            'Color',cmap(cellNum+1, :), 'Parent',hAx,'LineWidth',2));
         
         hAx.XLim = [0 length(data2plot)];
         hAx.XTick = [0:250:length(data2plot) ];
@@ -83,7 +83,7 @@ switch figData.plotChoice
             
             % plot data
             hLine(numel(hLine)+1) = handle(line(xlocations,data2plot(:,x) ...
-                ,'Color',lineCol, 'Parent',hAx,'LineWidth',1));
+                ,'Color',lineCol, 'Parent',hAx,'LineWidth',2));
             
             % plot error bars
             hLine(numel(hLine)+1) = handle(line(xlocations,(data2plot(:,x)+errorBars) ...
@@ -123,7 +123,7 @@ switch figData.plotChoice
         data2plot = mean(data2plot,2);
         
         hLine = handle(line(1:length(data2plot),data2plot,...
-            'Color',cmap(cellNum+1, :), 'Parent',hAx,'LineWidth',1));
+            'Color',cmap(cellNum+1, :), 'Parent',hAx,'LineWidth',2));
         
         hAx.XLim = [1 length(data2plot)];
         
@@ -155,7 +155,7 @@ switch figData.plotChoice
         %%
         data2plot = experimentStructure.rawF_FISSA(cellNum,:);
         hLine = handle(line(1:length(data2plot),data2plot,...
-            'Color',cmap(cellNum+1, :), 'Parent',hAx,'LineWidth',1));
+            'Color',cmap(cellNum+1, :), 'Parent',hAx,'LineWidth',2));
         
         hAx.XLim = [0 length(data2plot)];
         hAx.XTick = [0:50:length(data2plot) ];
@@ -174,7 +174,7 @@ switch figData.plotChoice
         %%
         data2plot = experimentStructure.extractedDF_FISSA(cellNum,:);
         hLine = handle(line(1:length(data2plot),data2plot,...
-            'Color',cmap(cellNum+1, :), 'Parent',hAx,'LineWidth',1));
+            'Color',cmap(cellNum+1, :), 'Parent',hAx,'LineWidth',2));
         
         hAx.XLim = [0 length(data2plot)];
         hAx.XTick = [0:50:length(data2plot) ];
@@ -198,7 +198,7 @@ switch figData.plotChoice
         for i =1:size(experimentStructure.extractedDFperCndMeanFISSA{1,cellNum}, 2)
             
             hLine(numel(hLine)+1) = handle(line(1:size(data2plot,1),data2plot(:,i) ...
-                ,'Color',conditionCols(i, :), 'Parent',hAx,'LineWidth',1));
+                ,'Color',conditionCols(i, :), 'Parent',hAx,'LineWidth',2));
             
             legendText = [legendText {['Condition ' num2str(i)]}];
         end
@@ -226,7 +226,7 @@ switch figData.plotChoice
         data2plot = mean(data2plot,2);
         
         hLine = handle(line(1:length(data2plot),data2plot,...
-            'Color',cmap(cellNum+1, :), 'Parent',hAx,'LineWidth',1));
+            'Color',cmap(cellNum+1, :), 'Parent',hAx,'LineWidth',2));
         
         hAx.XLim = [1 length(data2plot)];
         
@@ -278,7 +278,7 @@ switch figData.plotChoice
             
             % plot data
             hLine(numel(hLine)+1) = handle(line(xlocations,data2plot(:,x) ...
-                ,'Color',lineCol, 'Parent',hAx,'LineWidth',1));
+                ,'Color',lineCol, 'Parent',hAx,'LineWidth',2));
             
             % plot error bars
             hLine(numel(hLine)+1) = handle(line(xlocations,(data2plot(:,x)+errorBars) ...
