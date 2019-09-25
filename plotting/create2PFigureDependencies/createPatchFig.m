@@ -23,13 +23,16 @@ cmap(1,:) = [0,0,0];
 
 imHandle = handle(imshow(displayImage));
 hold on
+set(imHandle, 'HitTest', 'off');
 currentAx = gca(gcf);
 % build patch structure
 
 for i =1:numROIs
     
-    patch(currentAx,boundaries{i,1}(:,2), boundaries{i,1}(:,1), cmap(i+1, :), 'FaceAlpha', 0.3);
+    p(i) = patch(currentAx,boundaries{i,1}(:,2), boundaries{i,1}(:,1), cmap(i+1, :), 'FaceAlpha', 0.3);
+    set(p(i), 'HitTest', 'off');
     
 end
 
+set(currentAx,  'HitTest', 'on', 'ButtonDownFcn', @(src,evnt)plotMouseClick(experimentStructure,src,evnt,cmap));
 end

@@ -1,7 +1,7 @@
-function create2PFigure(data, channel2Use)
+function create2PFigure(experimentStructure, channel2Use)
 % Creates interactive calcium trace plot viewer for quick look at the
 % recording data
-% Input:  data - either experimentStructure structure or data folder path
+% Input:  experimentStructure - either experimentStructure structure or data folder path
 %                which contains experimentStructure.mat
 %         channel2Use - Channel to use for multichannel recording
 %
@@ -33,11 +33,11 @@ end
 % check if dataDir is an actual experiment structure and load in
 % appropriately
 
-if ~isstruct(data)
+if ~isstruct(experimentStructure)
     try
-        load(data);
+        load(experimentStructure);
     catch
-        load([data 'experimentStructure.mat']);
+        load([experimentStructure 'experimentStructure.mat']);
     end
 end
 
@@ -51,7 +51,7 @@ end
 %% Start plot set up
 [H.im, H.ax, cmap] = createPatchFig(experimentStructure.labeledCellROI, displayIm);
 % H.im = handle(imagesc(experimentStructure.labeledCellROI)); % plots image and gets handle
-% H.ax = handle(gca); % gets axis handle
+%  H.ax = handle(gca); % gets axis handle
 H.fig = handle(gcf); % gets figure handle
 
 
@@ -63,7 +63,7 @@ set(H.ax,...
     'alimmode','manual',...
     'XGrid','off',...
     'YGrid','off',...
-    'Visible','off',...
+    'Visible','on',...
     'Clipping','off',...
     'YDir','reverse',...
     'Units','normalized',...
@@ -77,7 +77,7 @@ H.fig.KeyPressFcn = @(src,evnt)plotButtonControl(experimentStructure,src,evnt,cm
 figData.plotChoice = 'mean Cnd dF/F_FBS';
 figData.experimentStructure = experimentStructure;
 figData.cmap = cmap;
-set(H.ax,'UserData', figData);
+set(H.fig,'UserData', figData);
 
 traceMenu = uimenu('Text', 'Type of Trace Plotted');
 

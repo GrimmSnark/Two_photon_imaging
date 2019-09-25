@@ -46,8 +46,8 @@ vp = .5625;
 
 % creates subplot for trace
 if isempty(hFig) || ~isvalid(hFig)
-    hFig = src.Parent.Parent;
-    roiAx = src.Parent;
+    hFig = src.Parent;
+    roiAx = src;
     if sz(4) > sz(3) % (vertical)
         roiAx.Position = [0 0 1 vp];
     else				% (horizontal)
@@ -117,7 +117,7 @@ switch evnt.Button
             'BackgroundColor',[.1 .1 .1 .3],...
             'Margin',1,...
             'Position', round([experimentStructure.xPos(cellNum) experimentStructure.yPos(cellNum)]) - [0 5],...
-            'Parent', src.Parent,...
+            'Parent', src,...
             'Color',cmap(cellNum+1, :)));
         
         % sets figure user data for next time around

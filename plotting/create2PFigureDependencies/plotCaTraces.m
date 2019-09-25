@@ -98,7 +98,7 @@ switch figData.plotChoice
                 xlocations(1)+experimentStructure.stimOnFrames(1)-1, yLim(2)+40; ...
                 xlocations(1)+experimentStructure.stimOnFrames(2)-1, yLim(2)+40; ...
                 xlocations(1)+experimentStructure.stimOnFrames(2)-1, yLim(1)-40];
-            hLine(numel(hLine)+1) = patch( 'vertices', patchVertices, 'faces', [1,2,3,4], 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.5);
+            hLine(numel(hLine)+1) = patch( 'vertices', patchVertices, 'faces', [1,2,3,4], 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.5, 'Parent',hAx);
             
             
             yMaxVector(x) =  max(data2plot(:,x)+errorBars);
@@ -146,7 +146,7 @@ switch figData.plotChoice
             experimentStructure.stimOnFrames(1), yLim(2)+0.5; ...
             experimentStructure.stimOnFrames(2), yLim(2)+0.5; ...
             experimentStructure.stimOnFrames(2), yLim(1)];
-        hLine(numel(hLine)+1) = patch( 'vertices', patchVertices, 'faces', [1,2,3,4], 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.5);
+        hLine(numel(hLine)+1) = patch( 'vertices', patchVertices, 'faces', [1,2,3,4], 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.5, 'Parent',hAx);
         
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%% FISSA Plots %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -293,7 +293,7 @@ switch figData.plotChoice
                 xlocations(1)+experimentStructure.stimOnFrames(1)-1, yLim(2)+40; ...
                 xlocations(1)+experimentStructure.stimOnFrames(2)-1, yLim(2)+40; ...
                 xlocations(1)+experimentStructure.stimOnFrames(2)-1, yLim(1)-40];
-            hLine(numel(hLine)+1) = patch( 'vertices', patchVertices, 'faces', [1,2,3,4], 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.5);
+            hLine(numel(hLine)+1) = patch( 'vertices', patchVertices, 'faces', [1,2,3,4], 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.5, 'Parent',hAx);
             
             yMaxVector(x) =  max(data2plot(:,x)+errorBars);
             yMinVector(x) =  min(data2plot(:,x)-errorBars);
