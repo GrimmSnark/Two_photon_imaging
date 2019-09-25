@@ -33,10 +33,12 @@ end
 % check if dataDir is an actual experiment structure and load in
 % appropriately
 
-if isstruct(data)
-    load(data);
-else
-    load([data 'experimentStructure.mat']);
+if ~isstruct(data)
+    try
+        load(data);
+    catch
+        load([data 'experimentStructure.mat']);
+    end
 end
 
 % load in average image
