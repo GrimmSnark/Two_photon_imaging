@@ -58,8 +58,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% initial set up of experiment
-ardBoard = serial('COM3', 'BaudRate', 9600,'Terminator','CR/LF');
-fopen(ardBoard);
+
 
 if doNotSendEvents ==0
     daq =[];
@@ -70,8 +69,19 @@ if doNotSendEvents ==0
     end
 end
 
+ardBoard = serial('COM4', 'BaudRate', 9600,'Terminator','CR/LF');
+fopen(ardBoard);
 
 %% start experiment
+
+if doNotSendEvents ==0
+    % trigger image scan start with digital port A
+    DaqDConfigPort(daq,0,0); % configure port A for output
+    err = DigiOut(daq, 0, 255, 0.1);
+    
+    DaqDConfigPort(daq,1,1) % configure port B for input
+end
+
 
 experimentStartTime = tic;
 for currentBlkNum = 1:numReps
@@ -139,6 +149,7 @@ for currentBlkNum = 1:numReps
             end
             
             melanopsinStimON(ardBoard, channel ,levelStim(trialCnd),stimTime*1000);
+            WaitSecs(stimTime);
             
             if doNotSendEvents ==0
                 AnalogueOutEvent(daq, 'STIM_OFF');
@@ -151,7 +162,20 @@ for currentBlkNum = 1:numReps
                 AnalogueOutEvent(daq, 'TRIAL_END');
                 stimCmpEvents(end+1,:)= addCmpEvents('TRIAL_END');
             end
+            
+            % Abort requested? Test for keypress:
+            if KbCheck
+                break;
+            end
         end
+        % Abort requested? Test for keypress:
+        if KbCheck
+            break;
+        end
+    end
+    % Abort requested? Test for keypress:
+    if KbCheck
+        break;
     end
 end
 
