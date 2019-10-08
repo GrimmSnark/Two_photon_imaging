@@ -30,8 +30,13 @@ function prepData(dataDir, loadMeta, regOrNot, saveRegMovie, experimentType, cha
 % dataDir = 'D:\Data\2P_Data\Raw\Mouse\Vascular\vasc_mouse1\';
 experimentStructure = [];
 defaultRegChannel = 1;
+experimentFlag = 1;
 
 experimentStructure.experimentType = experimentType;
+
+if isempty(experimentType)
+    experimentFlag = 0;
+end
 
 savePath = createSavePath(dataDir, 1);
 
@@ -61,7 +66,7 @@ else
     micronsPerPix =[];
 end
 
-if ~isempty(experimentType)
+if experimentFlag == 1
     experimentStructure = prepTrialDataV2(experimentStructure, experimentStructure.prairiePathVoltage, experimentType);
 end
 
@@ -104,7 +109,7 @@ if length(channelNo)> 1 % choose one channel to register if multiple exist
     % deal with second channel
     indForOtherChannel = find(~strcmp(channelNo, channelNo{channel2register}));
     vol = shiftImageStack(volSplit(:,:,:,indForOtherChannel),xyShifts([2 1],:)'); % Apply actual shifts to tif stack
-    experimentStructure =  prepDataSubFunction(vol, experimentStructure, saveRegMovie, channelNo{indForOtherChannel});
+    experimentStructure =  prepDataSubFunction(vol, experimentStructure, saveRegMovie, experimentFlag,channelNo{indForOtherChannel});
     
     
 else
@@ -136,7 +141,7 @@ else
         experimentStructure.options_nonrigid = options_nonrigid;
     end
     
-    experimentStructure =  prepDataSubFunction(vol, experimentStructure, saveRegMovie);
+    experimentStructure =  prepDataSubFunction(vol, experimentStructure, saveRegMovie, experimentFlag);
     
 end
 

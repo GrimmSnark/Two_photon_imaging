@@ -1,16 +1,18 @@
-function experimentStructure = prepDataSubFunction(vol, experimentStructure, saveRegMovie, channelIdentifier)
+function experimentStructure = prepDataSubFunction(vol, experimentStructure, saveRegMovie, experimentFlag, channelIdentifier)
 % prepData workhouse function, written to make multiple calls for multi
 % channel recordings easier. Completes tiff stack saving, stim STD and mean
 % per condition averages, normal STD and average image calculations
 % Input- vol: registered channel imaging stack, ie 512 x 512 x noOfFrames
 %        experimentStructure: experiment structure
 %        saveRegMovie: flag 0/1 to save registered movie file
-%        channelIdentifier: OPTIONAL, string identifier for channel, ie '_Ch1' 
+%        experimentFlag flag 1/0 to create images which require experiment
+%        events
+%        channelIdentifier: OPTIONAL, string identifier for channel, ie '_Ch1'
 %
 % Output- experimentStructure: experimentStructure updated
 
-if nargin<4
-   channelIdentifier = []; 
+if nargin<5
+    channelIdentifier = [];
 end
 
 if saveRegMovie ==1
@@ -22,25 +24,26 @@ if saveRegMovie ==1
 end
 
 GPU_used = gpuDevice();
-
-if GPU_used.TotalMemory > 6e+9 % uses GPU to do calc if large enough
-    % Create and save STD sums
-    [stimSTDSum, preStimSTDSum, stimMeanSum , preStimMeanSum ,experimentStructure] = createStimSTDAverageGPU(vol, experimentStructure, channelIdentifier);
-    
-    %save images
-    saveastiff(stimSTDSum, [experimentStructure.savePath 'STD_Stim_Sum' channelIdentifier '.tif']);
-    saveastiff(preStimSTDSum, [experimentStructure.savePath 'STD_Prestim_Sum ' channelIdentifier '.tif']);
-    saveastiff(stimMeanSum, [experimentStructure.savePath 'Mean_Stim_Sum' channelIdentifier '.tif']);
-    saveastiff(preStimMeanSum, [experimentStructure.savePath 'Mean_Prestim_Sum' channelIdentifier '.tif']);
-    
-else  % otherwise uses CPU...
-    
-    % Create and save STD sums
-    [stimSTDSum, preStimSTDSum,experimentStructure] = createStimSTDAverage(vol, experimentStructure, channelIdentifier);
-    
-    %save images
-    saveastiff(stimSTDSum, [experimentStructure.savePath 'STD_Stim_Sum' channelIdentifier '.tif']);
-    saveastiff(preStimSTDSum, [experimentStructure.savePath 'STD_Prestim_Sum ' channelIdentifier '.tif']);
+if experimentFlag == 1
+    if GPU_used.TotalMemory > 6e+9 % uses GPU to do calc if large enough
+        % Create and save STD sums
+        [stimSTDSum, preStimSTDSum, stimMeanSum , preStimMeanSum ,experimentStructure] = createStimSTDAverageGPU(vol, experimentStructure, channelIdentifier);
+        
+        %save images
+        saveastiff(stimSTDSum, [experimentStructure.savePath 'STD_Stim_Sum' channelIdentifier '.tif']);
+        saveastiff(preStimSTDSum, [experimentStructure.savePath 'STD_Prestim_Sum ' channelIdentifier '.tif']);
+        saveastiff(stimMeanSum, [experimentStructure.savePath 'Mean_Stim_Sum' channelIdentifier '.tif']);
+        saveastiff(preStimMeanSum, [experimentStructure.savePath 'Mean_Prestim_Sum' channelIdentifier '.tif']);
+        
+    else  % otherwise uses CPU...
+        
+        % Create and save STD sums
+        [stimSTDSum, preStimSTDSum,experimentStructure] = createStimSTDAverage(vol, experimentStructure, channelIdentifier);
+        
+        %save images
+        saveastiff(stimSTDSum, [experimentStructure.savePath 'STD_Stim_Sum' channelIdentifier '.tif']);
+        saveastiff(preStimSTDSum, [experimentStructure.savePath 'STD_Prestim_Sum ' channelIdentifier '.tif']);
+    end
 end
 
 % Create STD average image and save
