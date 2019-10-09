@@ -17,7 +17,7 @@ if directionStimFlag ==1
    [~, oppositeDirIndex] = find(angles == oppositeDir);
 
    
-   OSI = (dataMean(prefAngleIndex) + dataMean(oppositeDirIndex) -  ( dataMean(orthoPosIndex) + dataMean(orthoNegIndex))) / (dataMean(prefAngleIndex) + dataMean(oppositeDirIndex));
+   OSI = (dataMean(prefAngleIndex) + dataMean(oppositeDirIndex) -  ( dataMean(orthoPosIndex) + dataMean(orthoNegIndex))) / (dataMean(prefAngleIndex) + dataMean(oppositeDirIndex)); % van hooser 2014
    
 elseif directionStimFlag == 0
     if ~isempty(orthoPosIndex)

@@ -86,12 +86,12 @@ if noColor ==2
         
         % Green stimulus
         % Kevin code
-        angleStructG = mean_vector_direction_magnitude([circ_rad2ang(pixelVectorAngles(pixelNo,1:8,1))' pixelVectorAngles(pixelNo,1:8,2)']) ;
+        angleStructG = mean_vector_direction_magnitude([circ_rad2ang(pixelVectorAngles(pixelNo,1:4,1))' pixelVectorAngles(pixelNo,1:4,2)']) ;
         pixelWeightedMeanVectorG(pixelNo,:) = [angleStructG.mean_angle_degrees/2 angleStructG.mean_magnitude mean(pixelVectorAngles(pixelNo,:,3))];
         
         % Blue Stimulus
         % kevin code
-        angleStructB = mean_vector_direction_magnitude([circ_rad2ang(pixelVectorAngles(pixelNo,9:16,1))' pixelVectorAngles(pixelNo,9:16,2)']) ;
+        angleStructB = mean_vector_direction_magnitude([circ_rad2ang(pixelVectorAngles(pixelNo,5:8,1))' pixelVectorAngles(pixelNo,5:8,2)']) ;
         pixelWeightedMeanVectorB(pixelNo,:) = [angleStructB.mean_angle_degrees/2 angleStructB.mean_magnitude mean(pixelVectorAngles(pixelNo,:,3))];
     end
     
