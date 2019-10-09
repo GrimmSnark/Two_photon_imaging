@@ -18,12 +18,13 @@ OSI = nan(experimentStructure.cellCount,1);
 switch dataType
     case 'FBS'
         data = experimentStructure.dFstimWindowAverageFBS;
-        responseFlagText = 'responsiveCellFlag';
         OSI_text = 'OSI_FBS';
+        DSI_text = 'DSI_FBS';
+        
     case 'FISSA'
         data = experimentStructure.dFstimWindowAverage;
-        responseFlagText = 'responsiveCellFlagFISSA';
         OSI_text = 'OSI_FISSA';
+        DSI_text = 'OSI_FISSA';
 end
 
 % checks if your inputs for condition numbers are correct
@@ -56,8 +57,17 @@ for i = 1:experimentStructure.cellCount
         if colorNo>1
             orientationVals = dataMean((orientationNo*prefColor)-orientationNo+1:orientationNo*prefColor);
             OSI(i) = calculateOSI_V2(prefOrientation, orientationVals, angles, directionStimFlag);
+            
+            if directionStimFlag == 1
+                DSI(i) = calculateDSI(prefOrientation, orientationVals, angles);
+            end
+            
         else
             OSI(i) = calculateOSI_V2(prefOrientation, dataMean, angles, directionStimFlag);
+            
+            if directionStimFlag == 1
+                DSI(i) = calculateDSI(prefOrientation, dataMean, angles);
+            end
         end
 end
 
@@ -66,8 +76,12 @@ figHandle= histogram( OSI,50);
 title(OSI_text)
 set(gcf, 'units','normalized','outerposition',[0 0 1 1]);
 
-% adds OSI field to experimentStructure
+% adds OSI & DSI field to experimentStructure
 eval(['experimentStructure.' OSI_text '= OSI;']);
+
+if directionStimFlag == 1
+    eval(['experimentStructure.' DSI_text '= DSI;']);
+end
 
 % saves everything
 saveas(figHandle, [experimentStructure.savePath OSI_text '_hist.tif']);
