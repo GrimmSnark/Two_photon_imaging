@@ -1,8 +1,6 @@
 function calculateOSIPopulation_wrapper(filepath)
 
-cd(filepath);
-
-filepathList = dir(['**\*experimentStructure.mat']);
+filepathList = dir([filepath '\**\*experimentStructure.mat']);
 
 for i = 1:length(filepathList)
     load([filepathList(i).folder '\experimentStructure.mat']);

@@ -24,7 +24,7 @@ switch dataType
     case 'FISSA'
         data = experimentStructure.dFstimWindowAverage;
         OSI_text = 'OSI_FISSA';
-        DSI_text = 'OSI_FISSA';
+        DSI_text = 'DSI_FISSA';
 end
 
 % checks if your inputs for condition numbers are correct
