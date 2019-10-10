@@ -21,9 +21,10 @@ indexCell = strfind({PTBPath.name}, 'stimParams');
 indexOfStimParams = find(~cellfun(@isempty,indexCell));
 
 % copy stimParams to experimentStructure
-load(fullfile(PTBPath(indexOfStimParams).folder, PTBPath(indexOfStimParams).name));
-experimentStructure.stimParams = stimParams;
-
+if ~isempty(indexOfStimParams)
+    load(fullfile(PTBPath(indexOfStimParams).folder, PTBPath(indexOfStimParams).name));
+    experimentStructure.stimParams = stimParams;
+end
 % clear entry
 PTBPath(indexOfStimParams) = [];
 
