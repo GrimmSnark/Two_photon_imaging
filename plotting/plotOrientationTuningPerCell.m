@@ -6,6 +6,9 @@ function plotOrientationTuningPerCell(experimentStructure, cellNo, useSTDorSEM, 
 %                               experimentStrucure.mat
 %           cellNo- number or vector of numbers for cells to plot
 %           useSTDorSEM- 1= STD errrobars, 2 = SEM errorbars
+%           data2Use - specify the type of data to use
+%                       FBS- first before stimulus subtraction (For LCS)
+%                       Neuro_corr- Neuropil corrected based suntraction
 
 for i =cellNo %[2 38 69 86] %1:cellNumber
     figure('units','normalized','outerposition',[0 0 1 1])

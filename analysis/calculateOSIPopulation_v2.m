@@ -6,7 +6,7 @@ function calculateOSIPopulation_v2(experimentStructure, orientationNo, direction
 %           angleMax - maximum angle tested for orientation, eg 180 or 360
 %           or 0 if stimulus moves both ways during a single presentation
 %           colorNo- number of color conditions
-%           dataType - 'FBS' or 'FISSA'
+%           dataType - 'FBS' or 'Neuro_corr'
 
 if nargin <6
     dataType = 'FBS';
@@ -21,10 +21,10 @@ switch dataType
         OSI_text = 'OSI_FBS';
         DSI_text = 'DSI_FBS';
         
-    case 'FISSA'
+    case 'Neuro_corr'
         data = experimentStructure.dFstimWindowAverage;
-        OSI_text = 'OSI_FISSA';
-        DSI_text = 'DSI_FISSA';
+        OSI_text = 'OSI_Neuro_corr';
+        DSI_text = 'DSI_Neuro_corr';
 end
 
 % checks if your inputs for condition numbers are correct

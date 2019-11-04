@@ -1,6 +1,6 @@
 <deployment-project plugin="plugin.apptool" plugin-version="1.0">
-  <configuration build-checksum="1320011592" file="C:\PostDoc Docs\code\matlab\Two_photon_imaging\plotting\2P Data Viewer.prj" location="C:\PostDoc Docs\code\matlab\Two_photon_imaging\plotting" name="2P Data Viewer" target="target.mlapps" target-name="Package App">
-    <param.appname>2P Data Viewer</param.appname>
+  <configuration build-checksum="1511075655" file="C:\PostDoc Docs\code\matlab\Two_photon_imaging\plotting\Ca Data Viewer.prj" location="C:\PostDoc Docs\code\matlab\Two_photon_imaging\plotting" name="Ca Data Viewer" target="target.mlapps" target-name="Package App">
+    <param.appname>Ca Data Viewer</param.appname>
     <param.authnamewatermark />
     <param.email />
     <param.company />
@@ -8,14 +8,14 @@
     <param.icons />
     <param.summary />
     <param.description />
-    <param.screenshot>C:\Users\msavage1\AppData\Local\Temp\tp599fab08_a5a5_4dd8_972e_1ffd93d10dd1.png</param.screenshot>
+    <param.screenshot>C:\Users\msavage1\AppData\Local\Temp\tpa0bd1b02_9223_4e84_a7aa_722c763875ed.png</param.screenshot>
     <param.version>1.0</param.version>
     <param.products.name />
     <param.products.id />
     <param.products.version />
     <param.platforms />
     <param.output>${PROJECT_ROOT}</param.output>
-    <param.guid>8e57fead-165c-4b86-8a14-fa96cce5ebd7</param.guid>
+    <param.guid>ec2e4fc5-d190-40e6-a12d-7a48dd2667b0</param.guid>
     <unset>
       <param.authnamewatermark />
       <param.email />
@@ -32,13 +32,13 @@
       <param.output />
     </unset>
     <fileset.main>
-      <file>${PROJECT_ROOT}\creat2PFigureApp.mlapp</file>
+      <file>${PROJECT_ROOT}\Ca_Data_Viewer.mlapp</file>
     </fileset.main>
     <fileset.depfun>
-      <file>C:\PostDoc Docs\code\matlab\Two_photon_imaging\general\distinguishable_colors.m</file>
-      <file>C:\PostDoc Docs\code\matlab\Two_photon_imaging\general\read_Tiffs.m</file>
-      <file>C:\PostDoc Docs\code\matlab\Two_photon_imaging\general\shadedErrorBarV2.m</file>
-      <file>C:\PostDoc Docs\code\matlab\Two_photon_imaging\general\vline2.m</file>
+      <file>C:\Users\msavage1\Documents\MATLAB\Add-Ons\Apps\2P_Data_Viewer\general\distinguishable_colors.m</file>
+      <file>C:\Users\msavage1\Documents\MATLAB\Add-Ons\Apps\2P_Data_Viewer\general\read_Tiffs.m</file>
+      <file>C:\Users\msavage1\Documents\MATLAB\Add-Ons\Apps\2P_Data_Viewer\general\shadedErrorBarV2.m</file>
+      <file>C:\Users\msavage1\Documents\MATLAB\Add-Ons\Apps\2P_Data_Viewer\general\vline2.m</file>
     </fileset.depfun>
     <fileset.resources />
     <fileset.package />
