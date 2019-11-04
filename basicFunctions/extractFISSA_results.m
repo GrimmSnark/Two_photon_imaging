@@ -13,8 +13,8 @@ for cellNo =1:length(fieldnames(FISSAStruct.raw))
     %     experimentStructure.rawF_FISSA(cellNo,:) = eval(['FISSAStruct.raw.cell' num2str(cellNo-1) '.trial0(1,:)']);
     %     experimentStructure.rawDF_FISSA(cellNo,:) = eval(['FISSAStruct.df_raw.cell' num2str(cellNo-1) '.trial0(1,:)']);
     %     experimentStructure.rawBaseline_FISSA(cellNo,:) = eval(['FISSAStruct.rawBaseline.cell' num2str(cellNo-1) '.trial0(1,:)']);
-    %     experimentStructure.extractedDF_FISSA(cellNo,:) = eval(['FISSAStruct.df_result.cell' num2str(cellNo-1) '.trial0(1,:)']);
-    %     experimentStructure.extractedBaseline_FISSA(cellNo,:) = eval(['FISSAStruct.resultBaseline.cell' num2str(cellNo-1) '.trial0(1,:)']);
+         experimentStructure.extractedDF_FISSA(cellNo,:) = eval(['FISSAStruct.df_result.cell' num2str(cellNo-1) '.trial0(1,:)']);
+         experimentStructure.extractedBaseline_FISSA(cellNo,:) = eval(['FISSAStruct.resultBaseline.cell' num2str(cellNo-1) '.trial0(1,:)']);
     %
 end
 end

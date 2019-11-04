@@ -4,7 +4,7 @@ function createFISSARunFile(experimentStructure)
 ROIString = strrep([experimentStructure.savePath 'ROIcells.zip'],'\','/');
 imagesLoc = strrep([experimentStructure.savePath 'FISSA'],'\','/');
 folderString = imagesLoc;   
-framRate = num2str(1/experimentStructure.framePeriod); % frame rate = 1/frame period
+framRate = num2str((1/experimentStructure.framePeriod)*2); % frame rate = 1/frame period
 
 
 fileID = fopen([experimentStructure.savePath 'FISSA\FISSA_run.py'],'w');

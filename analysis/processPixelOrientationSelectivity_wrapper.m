@@ -6,9 +6,9 @@ function processPixelOrientationSelectivity_wrapper(experimentDir)
 % experimentDir = 'D:\Data\2P_Data\Processed\Mouse\gCamp6s\Old Mice\M1\';
 subFolders = returnSubFolderList(experimentDir);
 % color = [ones(1,7) 0];
-noOrientations = 8;
-noColors =1;
-maxAngle = 360;
+noOrientations = 4;
+noColors =2;
+maxAngle = 180;
 
 for i =1:length(subFolders)
     subSubFolder =  returnSubFolderList([subFolders(i).folder '\' subFolders(i).name '\TSeries*' ]);

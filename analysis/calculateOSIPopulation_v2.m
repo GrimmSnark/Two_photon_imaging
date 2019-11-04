@@ -64,6 +64,7 @@ for i = 1:experimentStructure.cellCount
             
         else
             OSI(i) = calculateOSI_V2(prefOrientation, dataMean, angles, directionStimFlag);
+            OSIPriebe(i) = calculateOSI_V3(dataMean, angles, directionStimFlag);
             
             if directionStimFlag == 1
                 DSI(i) = calculateDSI(prefOrientation, dataMean, angles);
@@ -72,15 +73,15 @@ for i = 1:experimentStructure.cellCount
 end
 
 % plots histogram of OSO
-figHandle= histogram( OSI,50);
+figHandle= histogram( OSIPriebe,50);
 title(OSI_text)
 set(gcf, 'units','normalized','outerposition',[0 0 1 1]);
 
 % adds OSI & DSI field to experimentStructure
-eval(['experimentStructure.' OSI_text '= OSI;']);
+eval(['experimentStructure.' OSI_text '= OSIPriebe'';']);
 
 if directionStimFlag == 1
-    eval(['experimentStructure.' DSI_text '= DSI;']);
+    eval(['experimentStructure.' DSI_text '= DSI'';']);
 end
 
 % saves everything
