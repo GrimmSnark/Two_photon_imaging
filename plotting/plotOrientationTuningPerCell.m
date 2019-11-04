@@ -1,4 +1,4 @@
-function plotOrientationTuningPerCell(experimentStructure, cellNo, useSTDorSEM )
+function plotOrientationTuningPerCell(experimentStructure, cellNo, useSTDorSEM, data2Use )
 % plots and saves figure for cells with preferred stimulus average (with
 % individual trial and the average responses for each condition. Written
 % for ORIENTATION stimulus
@@ -13,21 +13,53 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
 %     cndRepitions     = round(mean(experimentStructure.cndTotal(:)));
     angles     = linspace(0,315,length(experimentStructure.cndTotal));
     
-    empties = cellfun('isempty',experimentStructure.dFstimWindowAverageFBS{1,i});
+     % get Data
+    switch data2Use
+        
+        case 'FBS'
+            
+            % correct for errors in cell traces (empties)
+            empties = cellfun('isempty',experimentStructure.dFstimWindowAverageFBS{1,i});
+            
+            experimentStructure.dFstimWindowAverageFBS{1,i}(empties) = {NaN};
+            experimentStructure.dFpreStimWindowAverageFBS{1,i}(empties) = {NaN};
+            experimentStructure.dFpreStimWindowAverageFBS{1,i}(empties) = {NaN};
+            
+            % get data
+            yData     = cell2mat(experimentStructure.dFstimWindowAverageFBS{1,i});
+            blankResponse = cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i});
+            
+            
+            yResponse     = experimentStructure.dFperCndFBS{1,i};
+            yResponseMean = experimentStructure.dFperCndMeanFBS{1,i};
+            
+            errorBars = experimentStructure.dFperCndSTDFBS{1,i};
+            
+        case 'Neuro_corr'
+            
+              % correct for errors in cell traces (empties)
+            empties = cellfun('isempty',experimentStructure.dFstimWindowAverage{1,i});
+            
+            experimentStructure.dFstimWindowAverage{1,i}(empties) = {NaN};
+            experimentStructure.dFpreStimWindowAverage{1,i}(empties) = {NaN};
+            experimentStructure.dFpreStimWindowAverage{1,i}(empties) = {NaN};
+            
+            % get data
+            yData     = cell2mat(experimentStructure.dFstimWindowAverage{1,i});
+            blankResponse = cell2mat(experimentStructure.dFpreStimWindowAverage{1,i});
+            
+            
+            yResponse     = experimentStructure.dFperCnd{1,i};
+            yResponseMean = experimentStructure.dFperCndMean{1,i};
+            
+            errorBars = experimentStructure.dFperCndSTD{1,i};
+    end
+            
     
-    experimentStructure.dFstimWindowAverageFBS{1,i}(empties) = {NaN};
-    experimentStructure.dFpreStimWindowAverageFBS{1,i}(empties) = {NaN};
-    experimentStructure.dFpreStimWindowAverageFBS{1,i}(empties) = {NaN};
-    
-    yData     = cell2mat(experimentStructure.dFstimWindowAverageFBS{1,i});
-    yMean = nanmean(yData,1);
+     yMean = nanmean(yData,1);
+
     preferredStimulus = find(yMean(1:(end-1)) == max(yMean(1:(end-1))));
-    
-    % get mean of prestim response (blank screen)
-    blankResponse = cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i});
-    blankResponseMean = nanmean(nanmean(cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i})));
-    blackResponseStd = nanmean(nanstd(cell2mat(experimentStructure.dFpreStimWindowAverageFBS{1,i})));
-    
+
     prefResponses = yData(:,preferredStimulus);
     blankPrefResponses = blankResponse(:,preferredStimulus);
     
@@ -38,24 +70,18 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     else
         sigText = 'Non-signficant Response';
     end
- 
-    
-%     responseThreshold = blankResponseMean+2*blackResponseStd; % The average response at the preferred stimulus must be 2 standard deviations above the blank condition mean
-%     IsRespSignificant = yMean(preferredStimulus)>responseThreshold;
-    
+     
+     yResponsePreferred = yResponse{1, preferredStimulus};
+    yResponseMeanPreferred = yResponseMean(:,preferredStimulus);
     
     % Compute stats for preferred response
-    timeFrame = [1:experimentStructure.meanFrameLength] * experimentStructure.framePeriod;
-    
-    yResponse     = experimentStructure.dFperCndFBS{1,i}{1, preferredStimulus};
-    yResponseMean = experimentStructure.dFperCndMeanFBS{1,i}(:,preferredStimulus);
-    
-    
+    timeFrame = ((1: experimentStructure.meanFrameLength) * experimentStructure.framePeriod) - experimentStructure.stimOnFrames(1)*experimentStructure.framePeriod;
+     
     % Show response timcourse for preferred response
     subplot(1,2,1);
-    plot(timeFrame,yResponseMean,'-r','lineWidth',3);
+    plot(timeFrame,yResponseMeanPreferred,'-r','lineWidth',3);
     hold on;
-    plot(timeFrame,yResponse,'--k','Color',0.25*[1,0,0]);
+    plot(timeFrame,yResponsePreferred,'--k','Color',0.25*[1,0,0]);
     legend({'Average response','Trial responses'},'Location','northwest');
     xlim([min(timeFrame) max(timeFrame)]);
     set(gca,'Box','off');
@@ -84,12 +110,12 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
         lineCol = 'k';
         
           if useSTDorSEM == 1
-            errorBars = experimentStructure.dFperCndSTDFBS{1,i}(:,x);
+             errorBarsPlot = errorBars (:,x);
         elseif useSTDorSEM ==2
-            errorBars = experimentStructure.dFperCndSTDFBS{1,i}(:,x)/ (sqrt(experimentStructure.cndTotal(x)));
+           errorBarsPlot = errorBars (:,x)/ (sqrt(experimentStructure.cndTotal(x)));
           end
         
-        shadedErrorBar(xlocations, experimentStructure.dFperCndMeanFBS{1,i}(:,x),errorBars, 'lineprops' , lineCol);
+        shadedErrorBar(xlocations, yResponseMean(:,x)',errorBarsPlot, 'lineprops' , lineCol);
     end
     
     xticks(xlocationMid);
@@ -101,7 +127,35 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
     figHandle = gcf;
     tightfig;
     
-    saveas(figHandle, [experimentStructure.savePath ' Orientation Tuning Cell ' num2str(i) '.tif']);
+    if strcmp(data2Use, 'FBS') % if FBS data
+        if useSTDorSEM == 1
+            if ~exist([experimentStructure.savePath 'STDs\'], 'dir')
+                mkdir([experimentStructure.savePath 'STDs\']);
+            end
+            saveas(figHandle, [experimentStructure.savePath 'STDs\Orientation Tuning Cell ' num2str(i) '.tif']);
+            saveas(figHandle, [experimentStructure.savePath 'STDs\Orientation Tuning Cell ' num2str(i) '.svg']);
+        elseif useSTDorSEM == 2
+            if ~exist([experimentStructure.savePath 'SEMs\'], 'dir')
+                mkdir([experimentStructure.savePath 'SEMs\']);
+            end
+            saveas(figHandle, [experimentStructure.savePath 'SEMs\Orientation Tuning Cell ' num2str(i) '.tif']);
+            saveas(figHandle, [experimentStructure.savePath 'SEMs\Orientation Tuning Cell ' num2str(i) '.svg']);
+        end
+    else % if using Neuro_corr data
+        if useSTDorSEM == 1
+            if ~exist([experimentStructure.savePath 'STDs\Neuro_corr\'], 'dir')
+                mkdir([experimentStructure.savePath 'STDs\Neuro_corr\']);
+            end
+            saveas(figHandle, [experimentStructure.savePath 'STDs\Neuro_corr\Orientation Tuning Cell ' num2str(i) '.tif']);
+            saveas(figHandle, [experimentStructure.savePath 'STDs\Neuro_corr\Orientation Tuning Cell ' num2str(i) '.svg']);
+        elseif useSTDorSEM == 2
+            if ~exist([experimentStructure.savePath 'SEMs\Neuro_corr\'], 'dir')
+                mkdir([experimentStructure.savePath 'SEMs\Neuro_corr\']);
+            end
+            saveas(figHandle, [experimentStructure.savePath 'SEMs\Neuro_corr\Orientation Tuning Cell ' num2str(i) '.tif']);
+            saveas(figHandle, [experimentStructure.savePath 'SEMs\Neuro_corr\Orientation Tuning Cell ' num2str(i) '.svg']);
+        end
+    end
     close;
 end
 

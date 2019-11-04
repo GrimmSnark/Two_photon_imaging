@@ -11,7 +11,7 @@ function plotOrientationColorTuningPerCellMnky(experimentStructure, cellNo, orie
 %           useSTDorSEM- 1= STD errrobars, 2 = SEM errorbars
 %           data2Use - specify the type of data to use
 %                       FBS- first before stimulus subtraction (For LCS)
-%                       FISSA- FISSA based suntraction
+%                       Neuro_corr- Neuropil corrected based suntraction
 
 if nargin < 6 || isempty(data2Use)
     data2Use = 'FBS';
@@ -44,7 +44,7 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
             
             errorBars = experimentStructure.dFperCndSTDFBS{1,i};
             
-        case 'FISSA'
+        case 'Neuro_corr'
             yData     = cell2mat(experimentStructure.dFstimWindowAverage{1,i});
             blankResponse = cell2mat(experimentStructure.dFpreStimWindowAverage{1,i});
             %             blankResponseMean = mean(mean(cell2mat(experimentStructure.dFpreStimWindowAverage{1,i})));
@@ -185,19 +185,19 @@ for i =cellNo %[2 38 69 86] %1:cellNumber
             saveas(figHandle, [experimentStructure.savePath 'SEMs\Orientation Tuning Cell ' num2str(i) '.tif']);
             saveas(figHandle, [experimentStructure.savePath 'SEMs\Orientation Tuning Cell ' num2str(i) '.svg']);
         end
-    else % if using FISSA data
+    else % if using Neuro_corr data
         if useSTDorSEM == 1
-            if ~exist([experimentStructure.savePath 'STDs\FISSA\'], 'dir')
-                mkdir([experimentStructure.savePath 'STDs\FISSA\']);
+            if ~exist([experimentStructure.savePath 'STDs\Neuro_corr\'], 'dir')
+                mkdir([experimentStructure.savePath 'STDs\Neuro_corr\']);
             end
-            saveas(figHandle, [experimentStructure.savePath 'STDs\FISSA\Orientation Tuning Cell ' num2str(i) '.tif']);
-            saveas(figHandle, [experimentStructure.savePath 'STDs\FISSA\Orientation Tuning Cell ' num2str(i) '.svg']);
+            saveas(figHandle, [experimentStructure.savePath 'STDs\Neuro_corr\Orientation Tuning Cell ' num2str(i) '.tif']);
+            saveas(figHandle, [experimentStructure.savePath 'STDs\Neuro_corr\Orientation Tuning Cell ' num2str(i) '.svg']);
         elseif useSTDorSEM == 2
-            if ~exist([experimentStructure.savePath 'SEMs\FISSA\'], 'dir')
-                mkdir([experimentStructure.savePath 'SEMs\FISSA\']);
+            if ~exist([experimentStructure.savePath 'SEMs\Neuro_corr\'], 'dir')
+                mkdir([experimentStructure.savePath 'SEMs\Neuro_corr\']);
             end
-            saveas(figHandle, [experimentStructure.savePath 'SEMs\FISSA\Orientation Tuning Cell ' num2str(i) '.tif']);
-            saveas(figHandle, [experimentStructure.savePath 'SEMs\FISSA\Orientation Tuning Cell ' num2str(i) '.svg']);
+            saveas(figHandle, [experimentStructure.savePath 'SEMs\Neuro_corr\Orientation Tuning Cell ' num2str(i) '.tif']);
+            saveas(figHandle, [experimentStructure.savePath 'SEMs\Neuro_corr\Orientation Tuning Cell ' num2str(i) '.svg']);
         end
     end
     close;
