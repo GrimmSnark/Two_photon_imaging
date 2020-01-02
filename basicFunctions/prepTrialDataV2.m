@@ -108,19 +108,19 @@ if any(validTrial==0)
     
     for i = invalidTrials % for each trial
         disp(['Fixing essential event error in Trial No. ' num2str(i) ' ...']);
-        trialEssentialEventLocPTB = essentialEventLocPTB(:,invalidTrials(i)); % get PTB locations for current trial essential events
+        trialEssentialEventLocPTB = essentialEventLocPTB(:,i); % get PTB locations for current trial essential events
         
         for z = 1:length(essentialEventsNum) % for each event
-            if any(rawTrials{invalidTrials,1}(:,2) ~= essentialEventsNum(z)) % if can not find event in current trial
-                [~, erroredIndx] = min(abs(rawTrials{invalidTrials,1}(:,2)- essentialEventsNum(z))); % find mismatched index
-                rawTrials{invalidTrials,1}(erroredIndx,2) = essentialEventsNum(z); % set the mismatched event to the appropriate one
+            if any(rawTrials{i,1}(:,2) ~= essentialEventsNum(z)) % if can not find event in current trial
+                [~, erroredIndx] = min(abs(rawTrials{i,1}(:,2)- essentialEventsNum(z))); % find mismatched index
+                rawTrials{i,1}(erroredIndx,2) = essentialEventsNum(z); % set the mismatched event to the appropriate one
             end
         end
         
         % fix block/cnd codes
-        paramStartIndx = find(rawTrials{invalidTrials,1}(:,2) == paramStartCode); % get the indx for param start in eventArray
-        rawTrials{invalidTrials,1}(paramStartIndx+1,2) = PTBeventArray(trialEssentialEventLocPTB(paramStartPosition)+1); % set the block (param start +1) to PTB block code
-        rawTrials{invalidTrials,1}(paramStartIndx+2,2) = PTBeventArray(trialEssentialEventLocPTB(paramStartPosition)+2); % set the condition (param start +2) to PTB condition code
+        paramStartIndx = find(rawTrials{i,1}(:,2) == paramStartCode); % get the indx for param start in eventArray
+        rawTrials{i,1}(paramStartIndx+1,2) = PTBeventArray(trialEssentialEventLocPTB(paramStartPosition)+1); % set the block (param start +1) to PTB block code
+        rawTrials{i,1}(paramStartIndx+2,2) = PTBeventArray(trialEssentialEventLocPTB(paramStartPosition)+2); % set the condition (param start +2) to PTB condition code
         
         % reset valid flag for this trial to true
         validTrial(i) = 1;

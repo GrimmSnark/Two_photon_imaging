@@ -39,5 +39,8 @@ for(i=1:nROIs)
             labeledROI(Y+currentW,X+currentH) = localCellImg(x);
         end
     end
+    
+    labeledROI = labeledROI(1:imgSize(1), 1:imgSize(2));
+    
     %     imagesc(labeledROI);
 end

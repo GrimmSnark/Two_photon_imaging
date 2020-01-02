@@ -75,6 +75,6 @@ meanVol = gather(meanVolTall);
 meanVol = mean(vol,3);
 meanVol = uint16(meanVol);
 
-saveastiff(meanVol, [experimentStructure.savePath 'Average ' channelIdentifier '.tif']);
+saveastiff(meanVol, [experimentStructure.savePath 'Average' channelIdentifier '.tif']);
 
 end

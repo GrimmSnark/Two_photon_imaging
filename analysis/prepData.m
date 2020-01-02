@@ -29,7 +29,7 @@ function prepData(dataDir, loadMeta, regOrNot, saveRegMovie, experimentType, cha
 
 % dataDir = 'D:\Data\2P_Data\Raw\Mouse\Vascular\vasc_mouse1\';
 experimentStructure = [];
-defaultRegChannel = 1;
+% defaultRegChannel = 1;
 experimentFlag = 1;
 
 experimentStructure.experimentType = experimentType;
@@ -76,7 +76,7 @@ if length(channelNo)> 1 % choose one channel to register if multiple exist
     % Register imaging data and save registered image stack
     if regOrNot ==1
         if isempty(channel2register)
-            channel2register = defaultRegChannel;
+            channel2register = channel2register;
         end
         
         % if we want to use the brightness average
@@ -103,7 +103,7 @@ if length(channelNo)> 1 % choose one channel to register if multiple exist
         experimentStructure.options_nonrigid = options_nonrigid;
     end
     % deal with first channel
-    experimentStructure = prepDataSubFunction(vol, experimentStructure, saveRegMovie, channelNo{channel2register});
+    experimentStructure = prepDataSubFunction(vol, experimentStructure, saveRegMovie, experimentFlag, channelNo{channel2register});
     
     
     % deal with second channel

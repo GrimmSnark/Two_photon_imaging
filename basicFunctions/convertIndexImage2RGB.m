@@ -4,8 +4,14 @@ function rgbImg = convertIndexImage2RGB(indxImg, colormap)
 %          colormap: colormap to use
 
 % rescale
-indxImgNorm = rescale(indxImg);
+% deal with Inf values
+if max(indxImg(:)) == Inf
+    nonInfMax = sort(indxImg(indxImg ~= Inf));
+    nonInfMax = nonInfMax(end);
+    indxImg(indxImg== Inf) = nonInfMax;
+end
 
+indxImgNorm = rescale(indxImg);
 
 %map onto colormap
 indxImgNormRescaled = indxImgNorm*length(colormap);

@@ -3,7 +3,7 @@ function runMIJIROIBasedAnalysis_wrapper_v2(experimentDayFile, chooseROIs, chann
 % experimentDayFile = 'D:\Data\2P_Data\Raw\Mouse\gCamp6s\M7\';
 subFolders = returnSubFolderList(experimentDayFile);
 startFolderNo = 1;
-overwriteROIFile =0;
+overwriteROIFile =1;
 
 if nargin <3
     channel2Use = 2; % sets deafult channel to use if in mult
