@@ -1,4 +1,4 @@
-function [OSI_list, DSI_list] = population_OSI_DSI(filepath, FBSorFISSA, zScoreLimit)
+function [OSI_list, DSI_list, PV_list] = population_OSI_DSI(filepath, FBSorFISSA, zScoreLimit)
 
 if nargin <3 || isempty(zScoreLimit)
     zScoreLimit = [];
@@ -6,6 +6,7 @@ end
 
 OSI_list =[];
 DSI_list =[];
+PV_list =[];
 
 filepathList = dir([filepath '\**\*experimentStructure.mat']);
 
@@ -30,7 +31,10 @@ for i = 1:length(filepathList)
                 OSI_list = [OSI_list; experimentStructure.OSI_FISSA];
                 DSI_list = [DSI_list; experimentStructure.DSI_FISSA'];
             end
+            
+            PV_list = [PV_list;experimentStructure.PVCellIndent];
         end
     catch
     end
+end
 end

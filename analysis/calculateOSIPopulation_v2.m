@@ -64,8 +64,12 @@ for i = 1:experimentStructure.cellCount
             
         else
             OSI(i) = calculateOSI_V2(prefOrientation, dataMean, angles, directionStimFlag);
-            OSIPriebe(i) = calculateOSI_V3(dataMean, angles, directionStimFlag);
             
+            % some cells can not fit gaus, this skips them
+            try
+                OSIPriebe(i) = calculateOSI_V3(dataMean, angles, directionStimFlag);
+            catch
+            end
             if directionStimFlag == 1
                 DSI(i) = calculateDSI(prefOrientation, dataMean, angles);
             end

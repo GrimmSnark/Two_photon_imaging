@@ -112,6 +112,8 @@ if length(channelNo)> 1 % choose one channel to register if multiple exist
     experimentStructure =  prepDataSubFunction(vol, experimentStructure, saveRegMovie, experimentFlag,channelNo{indForOtherChannel});
     
     
+    
+    
 else
     %% If single channel stack
     

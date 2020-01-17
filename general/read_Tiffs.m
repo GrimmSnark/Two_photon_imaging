@@ -20,11 +20,11 @@ function tifStack = read_Tiffs(filePath,imgScaling,updateFrequency,dataType,useW
 % David.Whitney@mpfi.org
 % Max Planck Florida Institude
 
-if(nargin<2), imgScaling      = 1;      end
-if(nargin<3), updateFrequency = 100;      end
-if(nargin<4), dataType        = 'uint16'; end
-if(nargin<5), useWaitBar      = false;    end
-if(nargin<6), codeVersion     = 'Tiff';   end
+if(nargin<2 || isempty(imgScaling)), imgScaling      = 1;      end
+if(nargin<3 || isempty(updateFrequency)), updateFrequency = 100;      end
+if(nargin<4 || isempty(dataType)), dataType        = 'uint16'; end
+if(nargin<5 || isempty(useWaitBar)), useWaitBar      = false;    end
+if(nargin<6 || isempty(codeVersion)), codeVersion     = 'Tiff';   end
 tic;
 
 disp(['Reading Image Stack - ' filePath]);

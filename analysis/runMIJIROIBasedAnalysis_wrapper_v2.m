@@ -20,7 +20,7 @@ if chooseROIs == 1
     for i = startFolderNo:length(subFolders)
         subSubFolder =  returnSubFolderList([subFolders(i).folder '\' subFolders(i).name '\TSeries*' ]);
         
-        chooseROIsForFIJI([subSubFolder(end).folder '\' subSubFolder(end).name], overwriteROIFile, [], channel2Use);
+        chooseROIsForFIJI([subSubFolder(end).folder '\' subSubFolder(end).name], overwriteROIFile, [], 1);
         
     end
 else

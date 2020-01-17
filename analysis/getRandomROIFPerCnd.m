@@ -1,5 +1,6 @@
 function getRandomROIFPerCnd(experimentStructure)
 
+channel2Use = 2;
 
 % load in pointers to ROI manager
 RM = ij.plugin.frame.RoiManager();
@@ -13,6 +14,24 @@ disp(['You have selected ' num2str(ROInumber) ' ROIs, moving onto analysis']);
 
 
 vol = readMultipageTifFiles(experimentStructure.prairiePath);
+
+
+% check number of channels in imaging stack
+channelIndxStart = strfind(experimentStructure.filenamesFrame{1}, '_Ch');
+for i =1:length(experimentStructure.filenamesFrame)
+    channelIdentity{i} = experimentStructure.filenamesFrame{i}(channelIndxStart:channelIndxStart+3);
+end
+channelNo = unique(channelIdentity);
+
+% chooses correct channel to analyse in multichannel recording
+if length(channelNo)>1
+    volSplit =  reshape(vol,size(vol,1),size(vol,2),[], length(channelNo));
+    vol = volSplit(:,:,:,channel2Use);
+end
+
+
+
+
 
 % apply imageregistration shifts
 registeredVol = shiftImageStack(vol,experimentStructure.xyShifts([2 1],:)'); % Apply actual shifts to tif stack

@@ -1,4 +1,4 @@
-function chooseROIsForFIJI(recordingDir, overwriteROIFile, preproFolder2Open, channel2Use)
+function chooseROIsForFIJI(recordingDir, overwriteROIFile, preproFolder2Open, useNetSegementation, trainedNetLocation)
 % Batch file for choosing all ROIs in multiple image stacks, is more user
 % input efficient that old method
 % Inputs: recordingDir- fullfile to folder containing TSeries Images
@@ -10,15 +10,29 @@ function chooseROIsForFIJI(recordingDir, overwriteROIFile, preproFolder2Open, ch
 %                             specify the preprocessed folder number 1,2
 %                             etc to use)
 %
-%         channel2Use - OPTIONAL, indicates which channel to use for 
-%                       choosing ROIs if mutiple exist  
+%         useNetSegementation - 0/1 flag to use neural net segementation to
+%                               prime cell ROIs
+%
+%         traineNetLocation - OPTIONAL, indicates which channel to use for
+%                       choosing ROIs if mutiple exist
 
 
 magSize = 300; % magnification for image viewing
 
-if nargin <4
-    channel2Use = 2; % sets deafult channel to use if in mult
+
+if useNetSegementation == 1
+    if nargin <6 || isempty(trainedNetLocation)
+        tempPath = mfilename('fullpath');
+        rootDirName = 'Two_photon_imaging';
+        rootFolderInd = strfind(tempPath, rootDirName);
+        
+        netDir = [tempPath(1:rootFolderInd + length( rootDirName)) 'neuralNet\trainedNets\'];
+        
+        netFiles = dir([netDir '*.mat']);
+        trainedNetLocation = [netFiles(end).folder '\' netFiles(end).name]; % sets default trained neural net location
+    end
 end
+
 
 %% Deals with ROI zip file creation and loading and makes neuropil surround ROIs
 
@@ -35,24 +49,12 @@ elseif  contains(recordingDir, 'Processed')
 end
 
 % open all the relevant images for ROI chosing
-if ~isempty(dir([recordingDirProcessed 'STD_Stim_Sum*']))
+if ~isempty(dir([recordingDirProcessed 'STD_Average*']))
     
-    files = dir([recordingDirProcessed 'STD_Stim_Sum*']);
+    files = dir([recordingDirProcessed 'STD_Average*']);
     
-    if size(files,1) >1 % if multiple channel recording
-        imageROI = read_Tiffs([recordingDirProcessed 'STD_Stim_Sum_Ch' num2str(channel2Use) '.tif'],1); % reads in average image
-    else
-        imageROI = read_Tiffs([recordingDirProcessed 'STD_Stim_Sum.tif'],1); % reads in average image
-    end
-    
-    if exist([recordingDirProcessed 'Pixel Orientation Pref_native_Blue.tif'], 'file')
-        pixelPrefBlue = read_Tiffs([recordingDirProcessed 'Pixel Orientation Pref_native_Blue.tif'],1);
-    end
-    if exist([recordingDirProcessed 'Pixel Orientation Pref_native_Green.tif'], 'file')
-        pixelPrefGreen = read_Tiffs([recordingDirProcessed 'Pixel Orientation Pref_native_Green.tif'],1);
-    end
-    if exist([recordingDirProcessed 'Pixel Orientation Pref_native.tif'], 'file')
-        pixelPref = read_Tiffs([recordingDirProcessed 'Pixel Orientation Pref_native.tif'],1);
+    if size(files,1) ==1 % if single channel recording
+        imageROI = read_Tiffs([recordingDirProcessed 'STD_Average.tif'],1); % reads in average image
     end
 else
     
@@ -65,25 +67,11 @@ else
     recordingDirProcessed = [firstSubFolder(preproFolder2Open).folder '\' firstSubFolder(preproFolder2Open).name '\']; % gets analysis subfolder
     
     try
-        files = dir([recordingDirProcessed 'STD_Stim_Sum*']);
+        files = dir([recordingDirProcessed 'STD_Average*']);
         
-        if size(files,1) >1 % if multiple channel recording
-            imageROI = read_Tiffs([recordingDirProcessed 'STD_Stim_Sum_Ch' num2str(channel2Use) '.tif'],1); % reads in average image
-        else
-            imageROI = read_Tiffs([recordingDirProcessed 'STD_Stim_Sum.tif'],1); % reads in average image
+        if size(files,1) ==1 % if single channel recording
+            imageROI = read_Tiffs([recordingDirProcessed 'STD_Average.tif'],1); % reads in average image
         end
-        
-        
-        if exist([recordingDirProcessed 'Pixel Orientation Pref_native_Blue.tif'], 'file')
-            pixelPrefBlue = read_Tiffs([recordingDirProcessed 'Pixel Orientation Pref_native_Blue.tif'],1);
-        end
-        if exist([recordingDirProcessed 'Pixel Orientation Pref_native_Green.tif'], 'file')
-            pixelPrefGreen = read_Tiffs([recordingDirProcessed 'Pixel Orientation Pref_native_Green.tif'],1);
-        end
-        if exist([recordingDirProcessed 'Pixel Orientation Pref_native.tif'], 'file')
-            pixelPref = read_Tiffs([recordingDirProcessed 'Pixel Orientation Pref_native.tif'],1);
-        end
-        
     catch
         disp('Average image not found, check filepath or run prepData.m  or prepDataMultiSingle.m on the recording folder')
         return
@@ -94,19 +82,79 @@ end
 intializeMIJ;
 RM = ij.plugin.frame.RoiManager();
 RC = RM.getInstance();
-RC.runCommand('Show All without labels');
-MIJ.run("Cell Magic Wand Tool");
 
 
-% get image to FIJI
-MIJImageROI = MIJ.createImage('ROI_image',imageROI,true); %#ok<NASGU> supressed warning as no need to worry about
+%  if multiple channels, build the average image for ROI extraction
+if size(files,1) >1 % if multiple channel recording
+    impChan1 = ij.IJ.openImage([recordingDirProcessed 'STD_Average_Ch1.tif']);
+    impChan2 = ij.IJ.openImage([recordingDirProcessed 'STD_Average_Ch2.tif']);
+    
+    chan1Process = impChan1.getProcessor();
+    chan2Process = impChan2.getProcessor();
+    
+    ij.plugin.filter.BackgroundSubtracter().rollingBallBackground(chan1Process, 50, 0, 0 ,0,0,0);
+    ij.plugin.filter.BackgroundSubtracter().rollingBallBackground(chan2Process, 50, 0, 0 ,0,0,0);
+    
+    chanStack = ij.ImageStack(chan1Process.getWidth, chan1Process.getHeight);
+    chanStack.addSlice(impChan1.getTitle, chan1Process);
+    chanStack.addSlice(impChan2.getTitle, chan2Process);
+    
+    chanStackImagePlus = ij.ImagePlus('Channel Stack', chanStack);
+    
+    maxIntensityImp = ij.plugin.ZProjector.run(chanStackImagePlus, 'max');
+    maxIntensityImp.show;
+    
+    imageROI = MIJ.getImage('MAX_Channel Stack');
+    imageROI = uint16(rescale(imageROI)*65535);
+    
+    saveastiff(imageROI, [recordingDirProcessed 'Max_Project.tif']);
+    
+else
+    % get image to FIJI
+    MIJImageROI = MIJ.createImage('ROI_image',imageROI,true); %#ok<NASGU> supressed warning as no need to worry about
+end
+
 WaitSecs(0.2);
 ij.IJ.run('Set... ', ['zoom=' num2str(magSize) ' x=10 y=50']);
 ij.IJ.run('Enhance Contrast', 'saturated=0.35');
 
 
+
+
+% If you want to use neural net segmentation to prime ROI extraction
+if useNetSegementation
+    net = load(trainedNetLocation, 'net');
+    net = net.net;
+    
+    % segment image
+    patch_seg = semanticseg(imageROI, net, 'outputtype', 'uint8');
+    
+    % filter to get rid of graininess
+    segmentedImage = medfilt2(patch_seg,[3,3]);
+    segmentedImage(segmentedImage==1) = 0;
+    segmentedImage(segmentedImage==2) = 255;
+    
+    % create image in FIJI
+    MIJSegNetImage = MIJ.createImage('Net_seg_image',segmentedImage,true); %#ok<NASGU> supressed warning as no need to worry about
+    
+    % process in FIJI
+    SegNetProcessor = MIJSegNetImage.getProcessor;
+    SegNetProcessor.invertLut;
+    
+    % watershed to try and break up some ROIS
+    ij.plugin.filter.EDM().toWatershed(SegNetProcessor);
+    MIJSegNetImage.updateAndDraw();
+    
+    MIJ.run( 'Analyze Particles...', 'size=20-Infinity clear add');
+    
+    MIJSegNetImage.close;
+end
+
+RC.runCommand('Show All without labels');
+MIJ.run("Cell Magic Wand Tool");
+
 %create stack for pixel pref stuff
-if exist('pixelPrefGreen', 'var')
+if exist([recordingDirProcessed 'Pixel Orientation Pref_native_Blue.tif'], 'file')
     
     greenImp = ij.IJ.openImage([recordingDirProcessed 'Pixel Orientation Pref_native_Green.tif']);
     greenImpProcess = greenImp.getProcessor();
@@ -122,7 +170,7 @@ if exist('pixelPrefGreen', 'var')
     WaitSecs(0.2);
     ij.IJ.run('Set... ', ['zoom=' num2str(magSize) ' x=500 y=50']);
     
-elseif exist('pixelPref', 'var')
+elseif exist([recordingDirProcessed 'Pixel Orientation Pref_native.tif'], 'file')
     Imp = ij.IJ.openImage([recordingDirProcessed 'Pixel Orientation Pref_native.tif']);
     Imp.show;
     WaitSecs(0.2);
@@ -170,7 +218,28 @@ else % if not overwrite, then tries to find already saved ROI file
     else %if does not exist
         disp('ROI zip file not found, adjust overwriteROIFile flag and rerun')
         if~ exist('MIJImageROI','var')
-            MIJImageROI = MIJ.createImage('ROI_image',imageROI,true); %#ok<NASGU> supressed warning as no need to worry about it
+            
+            if size(files,1) >1 % if multiple channel recording
+                impChan1 = ij.IJ.openImage([recordingDirProcessed 'STD_Average_Ch1.tif']);
+                impChan2 = ij.IJ.openImage([recordingDirProcessed 'STD_Average_Ch2.tif']);
+                
+                chan1Process = impChan1.getProcessor();
+                chan2Process = impChan2.getProcessor();
+                
+                ij.plugin.filter.BackgroundSubtracter().rollingBallBackground(chan1Process, 50, 0, 0 ,0,0,0);
+                ij.plugin.filter.BackgroundSubtracter().rollingBallBackground(chan2Process, 50, 0, 0 ,0,0,0);
+                
+                chanStack = ij.ImageStack(chan1Process.getWidth, chan1Process.getHeight);
+                chanStack.addSlice(impChan1.getTitle, chan1Process);
+                chanStack.addSlice(impChan2.getTitle, chan2Process);
+                
+                chanStackImagePlus = ij.ImagePlus('Channel Stack', chanStack);
+                
+                maxIntensityImp = ij.plugin.ZProjector.run(chanStackImagePlus, 'max');
+                maxIntensityImp.show;
+            else
+                MIJImageROI = MIJ.createImage('ROI_image',imageROI,true); %#ok<NASGU> supressed warning as no need to worry about it
+            end
         end
         % Sets up diolg box to allow for user input to choose cell ROIs
         happy = 0;

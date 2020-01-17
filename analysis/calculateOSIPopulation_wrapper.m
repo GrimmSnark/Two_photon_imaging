@@ -4,12 +4,12 @@ filepathList = dir([filepath '\**\*experimentStructure.mat']);
 
 for i = 1:length(filepathList)
     
-    try
+%     try
         load([filepathList(i).folder '\experimentStructure.mat']);
         calculateOSIPopulation_v2(experimentStructure, 8, 1, 360, 1);
-    catch
+%     catch
         
-    end
+%     end
 end
 
 end

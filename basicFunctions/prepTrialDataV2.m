@@ -103,7 +103,7 @@ if any(validTrial==0)
     end
     
     paramStartCode = stringEvent2Num('PARAM_START', codes);
-    [~,paramStartPosition] = find(essentialEventsNum == paramStartCode);
+    paramStartPosition = find(essentialEventsNum == paramStartCode);
     invalidTrials = find(validTrial==0); % get invalid trial No
     
     for i = invalidTrials % for each trial
@@ -117,16 +117,18 @@ if any(validTrial==0)
             end
         end
         
-        % fix block/cnd codes
-        paramStartIndx = find(rawTrials{i,1}(:,2) == paramStartCode); % get the indx for param start in eventArray
-        rawTrials{i,1}(paramStartIndx+1,2) = PTBeventArray(trialEssentialEventLocPTB(paramStartPosition)+1); % set the block (param start +1) to PTB block code
-        rawTrials{i,1}(paramStartIndx+2,2) = PTBeventArray(trialEssentialEventLocPTB(paramStartPosition)+2); % set the condition (param start +2) to PTB condition code
-        
         % reset valid flag for this trial to true
         validTrial(i) = 1;
     end
+    
+    paramStartPosition = find(PTBeventArray ==paramStartCode);
+    for cc = 1:length(rawTrials)
+         % fix block/cnd codes
+        paramStartIndx = find(rawTrials{cc,1}(:,2) == paramStartCode); % get the indx for param start in eventArray
+        rawTrials{cc,1}(paramStartIndx+1,2) = PTBeventArray(paramStartPosition(cc)+1); % set the block (param start +1) to PTB block code
+        rawTrials{cc,1}(paramStartIndx+2,2) = PTBeventArray(paramStartPosition(cc)+2); % set the condition (param start +2) to PTB condition code
+    end
 end
-
 %% extract stimulus conditions for each valid trial
 
 block = zeros(length(validTrial),2);
