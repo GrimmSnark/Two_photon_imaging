@@ -55,6 +55,7 @@ if ~isempty(dir([recordingDirProcessed 'STD_Average*']))
     
     if size(files,1) ==1 % if single channel recording
         imageROI = read_Tiffs([recordingDirProcessed 'STD_Average.tif'],1); % reads in average image
+        imageROI = uint16(rescale(imageROI)*65535);
     end
 else
     
@@ -71,6 +72,7 @@ else
         
         if size(files,1) ==1 % if single channel recording
             imageROI = read_Tiffs([recordingDirProcessed 'STD_Average.tif'],1); % reads in average image
+            imageROI = uint16(rescale(imageROI)*65535);
         end
     catch
         disp('Average image not found, check filepath or run prepData.m  or prepDataMultiSingle.m on the recording folder')
