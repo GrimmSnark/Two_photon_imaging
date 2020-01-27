@@ -56,6 +56,7 @@ if ~isempty(dir([recordingDirProcessed 'STD_Average*']))
     if size(files,1) ==1 % if single channel recording
         imageROI = read_Tiffs([recordingDirProcessed 'STD_Average.tif'],1); % reads in average image
         imageROI = uint16(rescale(imageROI)*65535);
+        imageROI = imadjust(imageROI); % saturate image to make neural net prediction better
     end
 else
     
@@ -73,6 +74,7 @@ else
         if size(files,1) ==1 % if single channel recording
             imageROI = read_Tiffs([recordingDirProcessed 'STD_Average.tif'],1); % reads in average image
             imageROI = uint16(rescale(imageROI)*65535);
+            imageROI = imadjust(imageROI); % saturate image to make neural net prediction better
         end
     catch
         disp('Average image not found, check filepath or run prepData.m  or prepDataMultiSingle.m on the recording folder')
@@ -111,7 +113,7 @@ if size(files,1) >1 % if multiple channel recording
     
     saveastiff(imageROI, [recordingDirProcessed 'Max_Project.tif']);
     
-    imageROI = uint16(2 * double(imageROI)); % saturate image to make neural net prediction better
+    imageROI = imadjust(imageROI); % saturate image to make neural net prediction better
     
 else
     % get image to FIJI
