@@ -111,6 +111,8 @@ if size(files,1) >1 % if multiple channel recording
     
     saveastiff(imageROI, [recordingDirProcessed 'Max_Project.tif']);
     
+    imageROI = uint16(2 * double(imageROI)); % saturate image to make neural net prediction better
+    
 else
     % get image to FIJI
     MIJImageROI = MIJ.createImage('ROI_image',imageROI,true); %#ok<NASGU> supressed warning as no need to worry about

@@ -53,7 +53,7 @@ threshold = imageMean + imageStd;
 channel2CheckFIJI = MIJ.createImage( 'Channel to Check', image,true);
 
 % create neuropil ROIs
-generateNeuropilROIs(RC.getRoisAsArray,(experimentStructure.averageROIRadius*2)); % generates neuropil surround ROIs
+generateNeuropilROIs(RC.getRoisAsArray,(experimentStructure.averageROIRadius*3)); % generates neuropil surround ROIs
 
 % get pixel values for cells and neuropil
 for x = 1:experimentStructure.cellCount

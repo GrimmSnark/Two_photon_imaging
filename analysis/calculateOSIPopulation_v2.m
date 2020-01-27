@@ -20,11 +20,15 @@ switch dataType
         data = experimentStructure.dFstimWindowAverageFBS;
         OSI_text = 'OSI_FBS';
         DSI_text = 'DSI_FBS';
+        CV_text = 'CV_FBS';
+        OSI_CV_text = 'OSI_CV_FBS';
         
     case 'Neuro_corr'
         data = experimentStructure.dFstimWindowAverage;
         OSI_text = 'OSI_Neuro_corr';
         DSI_text = 'DSI_Neuro_corr';
+        CV_text = 'CV_Neuro_corr';
+        OSI_CV_text = 'OSI_CV_Neuro_corr';
 end
 
 % checks if your inputs for condition numbers are correct
@@ -73,8 +77,14 @@ for i = 1:experimentStructure.cellCount
             if directionStimFlag == 1
                 DSI(i) = calculateDSI(prefOrientation, dataMean, angles);
             end
+        
+            CV(i) = compute_circularvariance( angles, dataMean );
+            
         end
+        
 end
+
+OSI_CV = 1-CV;
 
 % plots histogram of OSO
 figHandle= histogram( OSIPriebe,50);
@@ -83,10 +93,15 @@ set(gcf, 'units','normalized','outerposition',[0 0 1 1]);
 
 % adds OSI & DSI field to experimentStructure
 eval(['experimentStructure.' OSI_text '= OSIPriebe'';']);
+eval(['experimentStructure.' CV_text '= CV'';']);
+eval(['experimentStructure.' OSI_CV_text '= OSI_CV'';']);
+
 
 if directionStimFlag == 1
     eval(['experimentStructure.' DSI_text '= DSI'';']);
 end
+
+
 
 % saves everything
 saveas(figHandle, [experimentStructure.savePath OSI_text '_hist.tif']);

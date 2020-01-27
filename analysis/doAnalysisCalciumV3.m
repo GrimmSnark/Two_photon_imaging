@@ -35,7 +35,7 @@ end
 % OTHERWISE OVERWRITE ERRROS CAN OCCUR
 removeFields = { 'rawF', 'rawF_neuropil', 'xPos', 'yPos', 'rate', ...
     'baseline', 'dF', 'dFperCnd','dFperCndMean','dFperCndSTD', ...
-    'meanFrameLength'};
+    'meanFrameLength','correctedF'};
 
 removeFieldLogical = isfield(experimentStructure, removeFields);
 

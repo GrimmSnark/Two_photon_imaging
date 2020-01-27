@@ -201,7 +201,7 @@ for i =1:length(nonEssentialEventNumbers)
         end
         
         %         trialEventAverage = floor(mean(trialSumEvents)); % finds the correct number of a particular event in each trial
-        trialEventAverage = mode(trialSumEvents); % finds the correct number of a particular event in each trial
+        trialEventAverage = sum(PTBeventArray == nonEssentialEventNumbers(i))/sum(cndTotal(:)); % finds the correct number of a particular event in each trial
         
         
         if trialEventAverage==0 % if calculates zero, corrects to one
