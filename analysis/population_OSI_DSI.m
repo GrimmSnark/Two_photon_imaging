@@ -11,7 +11,7 @@ OSI_CV_list =[];
 
 filepathList = dir([filepath '\**\*experimentStructure.mat']);
 
-for i = 2:2:length(filepathList)
+for i = 1:length(filepathList)
     try
         load([filepathList(i).folder '\experimentStructure.mat']);
         
@@ -39,7 +39,10 @@ for i = 2:2:length(filepathList)
                 
             end
         end
+		
+		if isfield(experimentStructure, 'PVCellIndent')
          PV_list = [PV_list;experimentStructure.PVCellIndent];
+		end
     catch
     end
 end
