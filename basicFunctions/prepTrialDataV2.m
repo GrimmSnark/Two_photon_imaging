@@ -123,7 +123,7 @@ if any(validTrial==0)
     
     paramStartPosition = find(PTBeventArray ==paramStartCode);
     for cc = 1:length(rawTrials)
-         % fix block/cnd codes
+        % fix block/cnd codes
         paramStartIndx = find(rawTrials{cc,1}(:,2) == paramStartCode); % get the indx for param start in eventArray
         rawTrials{cc,1}(paramStartIndx+1,2) = PTBeventArray(paramStartPosition(cc)+1); % set the block (param start +1) to PTB block code
         rawTrials{cc,1}(paramStartIndx+2,2) = PTBeventArray(paramStartPosition(cc)+2); % set the condition (param start +2) to PTB condition code
@@ -135,12 +135,20 @@ block = zeros(length(validTrial),2);
 cnd = block;
 
 nonEssentialCodes = zeros(max(cellfun('size', rawTrials, 1)),2,length(validTrial));
+
+paramStartPosition = find(PTBeventArray ==stringEvent2Num('PARAM_START', codes));
 for i =1:length(validTrial)
     if validTrial(i) ==1 % only for valid trials
         
         if strcmp(experimentType, 'RFmap') % for RF_map experiment, we have different structure of conditions
             RF_stream(:,:,i) =  rawTrials{i,1}(find(findEvents('PARAM_START',rawTrials{i,1},codes))+1:find(findEvents('PARAM_END',rawTrials{i,1},codes))-1,:);
         else % for any experiment that is not RF mapping
+            
+            % grab cnd/ event identity from PTB codes
+            paramStartIndx = find(rawTrials{i,1}(:,2) == stringEvent2Num('PARAM_START', codes)); % get the indx for param start in eventArray
+            rawTrials{i,1}(paramStartIndx+1,2) = PTBeventArray(paramStartPosition(i)+1); % set the block (param start +1) to PTB block code
+            rawTrials{i,1}(paramStartIndx+2,2) = PTBeventArray(paramStartPosition(i)+2); % set the condition (param start +2) to PTB condition code
+            
             block(i,:) = rawTrials{i,1}(find(findEvents('PARAM_START',rawTrials{i,1},codes))+1,:); % finds block num and timestamp for all valid trials
             cnd(i,:) = rawTrials{i,1}(find(findEvents('PARAM_START',rawTrials{i,1},codes))+2,:); % finds condition num and timestamp for all valid trials
         end

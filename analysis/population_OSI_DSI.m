@@ -11,7 +11,7 @@ OSI_CV_list =[];
 
 filepathList = dir([filepath '\**\*experimentStructure.mat']);
 
-for i = 1:length(filepathList)
+for i = 2:2:length(filepathList)
     try
         load([filepathList(i).folder '\experimentStructure.mat']);
         
