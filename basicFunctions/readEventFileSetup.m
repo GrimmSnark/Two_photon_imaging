@@ -15,8 +15,10 @@ function readEventFileSetup(filepathData)
 % filepathData{1,1}= 'C:\PostDoc Docs\Ca Imaging Project\Voltage Recording Test 3\Voltage Test 2ms-001\Voltage Test 2ms-001_Cycle00001_VoltageRecording_001.csv';
 % filepathData{2,1}= 'C:\PostDoc Docs\Ca Imaging Project\Voltage Recording Test 3\Voltage Test 2ms-002\Voltage Test 2ms-002_Cycle00001_VoltageRecording_001.csv';
 % % 
- filepathData = 'C:\PostDoc Docs\Ca Imaging Project\Voltage Recording Test 4\TSeries-09262018-1149-015\TSeries-09262018-1149-015_Cycle00001_VoltageRecording_001.csv';
-
+ %filepathData = 'C:\PostDoc Docs\Ca Imaging Project\Voltage Recording Test 4\TSeries-09262018-1149-015\TSeries-09262018-1149-015_Cycle00001_VoltageRecording_001.csv';
+ 
+ % 20200130
+ filepathData = 'D:\Data\2P_Data\Raw\Calibration\TTL_test\20200130\TSeries-01302020-0806-000\TSeries-01302020-0806-000_Cycle00001_VoltageRecording_001.csv';
 
 %% basic setup info
 
@@ -45,11 +47,12 @@ end
 
  rawEventData = data.Voltage;
  
+ rawEventData = rawEventData(1:length(rawEventData)/2,:);
  %% do the peak detection
 % find first and last peak of every burst...
 
 % all peaks
-[peaks, ~]= findpeaks(rawEventData(:,2), 'MinPeakHeight', 0.01 );
+[peaks, ~]= findpeaks(rawEventData(:,2), 'MinPeakHeight', 0.03 );
 incrementAll = peaks(2:end)-peaks(1:end-1);
 incrementAll(incrementAll < 0.001) = NaN;
 incrementAll(incrementAll == 0) = NaN;
@@ -71,11 +74,11 @@ rawEventDataLasts(removeMaximums,2) = 0;
 
 % uncomment below if you want to plot the raw data together
 
-% plot(1:length(rawEventData(:,2)), rawEventData(:,2))
-% hold on
-% scatter(firstLocs, firstPeaks, 'v');
-% scatter(lastLocs, lastPeaks, 'v', 'r');
-% plot(1:length(rawEventData(:,2)), rawEventDataFirsts(:,2));
+plot(1:length(rawEventData(:,2)), rawEventData(:,2))
+hold on
+scatter(firstLocs, firstPeaks, 'v');
+scatter(lastLocs, lastPeaks, 'v', 'r');
+plot(1:length(rawEventData(:,2)), rawEventDataFirsts(:,2));
 
 
 
