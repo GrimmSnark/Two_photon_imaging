@@ -156,7 +156,7 @@ if useNetSegementation
     MIJSegNetImage.close;
 end
 
-RC.runCommand('Show All without labels');
+RC.runCommand('Show All');
 MIJ.run("Cell Magic Wand Tool");
 
 %create stack for pixel pref stuff

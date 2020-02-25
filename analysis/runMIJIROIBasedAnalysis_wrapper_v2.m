@@ -1,11 +1,15 @@
-function runMIJIROIBasedAnalysis_wrapper_v2(experimentDayFile, chooseROIs, channel2Use)
+function runMIJIROIBasedAnalysis_wrapper_v2(experimentDayFile, chooseROIs, startFolderNo, channel2Use)
 
 % experimentDayFile = 'D:\Data\2P_Data\Raw\Mouse\gCamp6s\M7\';
 subFolders = returnSubFolderList(experimentDayFile);
-startFolderNo = 1;
 overwriteROIFile =1;
 
-if nargin <3
+if nargin <3 || isempty(startFolderNo)
+    startFolderNo = 1; % sets deafult channel to use if in mult
+end
+
+
+if nargin <4
     channel2Use = 2; % sets deafult channel to use if in mult
 end
 

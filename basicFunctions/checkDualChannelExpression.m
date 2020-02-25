@@ -91,7 +91,8 @@ end
 % for each cell/neuropil pair check if signficantly different
 cellIdent = zeros(size(cellPixelsMean));
 for d = 1:experimentStructure.cellCount
-    if cellPixelsMean(d) > (neuropilPixelsMean(d) + 2*neuropilPixelsStd(d))
+%     if cellPixelsMean(d) > (neuropilPixelsMean(d) + 2*neuropilPixelsStd(d))
+    if cellPixelsMean(d) > 2*neuropilPixelsMean(d) - neuropilPixelsStd(d)
         cellIdent(d) = 1;
     end
     %     prob(d) = ranksum(cellPixels{d},neuropilPixels{d});
