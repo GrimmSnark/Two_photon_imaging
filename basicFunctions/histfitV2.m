@@ -126,7 +126,11 @@ bincenters = binedges(1:end-1)+diff(binedges)/2;
 
 % Plot the histogram with no gap between bars.
 if plotHist ==1
-    hh = bar(ax, bincenters,bincounts,1);
+    if isempty(normNo)
+        hh = bar(ax, bincenters,bincounts,1);
+    else
+        hh = bar(ax, bincenters, bincounts/normNo,1);
+    end
 end
 
 % Normalize the density to match the total area of the histogram
